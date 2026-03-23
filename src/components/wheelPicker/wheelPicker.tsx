@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react"
 
 
 const optionsInt: string[] = Array.from({ length: 100 }, (_, i) => i.toString().padStart(2, "0"))
-const optionsDecimals: string[] = Array.from({ length: 100 }, (_, i) => i.toString())
+// const optionsDecimals: string[] = Array.from({ length: 100 }, (_, i) => i.toString())
 
 export const WheelPicker = () => {
 	return (
@@ -23,7 +23,7 @@ interface WheelProps {
 	options: string[];
 }
 
-const Wheel = ({ onChange, options }: WheelProps) => {
+const Wheel = ({ options }: WheelProps) => {
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const pickerRef = useRef<HTMLDivElement>(null);
 
