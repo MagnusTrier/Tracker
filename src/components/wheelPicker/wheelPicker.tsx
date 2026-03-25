@@ -1,74 +1,60 @@
-import "./wheelPicker.css"
-import { useState, useRef, useEffect } from "react"
+import "@ncdai/react-wheel-picker/style.css"
 
+import * as WheelPickerPrimitive from "@ncdai/react-wheel-picker"
+import type { ComponentProps } from "react"
 
-const optionsInt: string[] = Array.from({ length: 100 }, (_, i) => i.toString().padStart(2, "0"))
-// const optionsDecimals: string[] = Array.from({ length: 100 }, (_, i) => i.toString())
+import { cn } from "../../lib/utils"
 
-export const WheelPicker = () => {
+type WheelPickerValue = WheelPickerPrimitive.WheelPickerValue
+
+type WheelPickerOption<T extends WheelPickerValue = string> =
+	WheelPickerPrimitive.WheelPickerOption<T>
+
+type WheelPickerClassNames = WheelPickerPrimitive.WheelPickerClassNames
+
+function WheelPickerWrapper({
+	className,
+	...props
+}: ComponentProps<typeof WheelPickerPrimitive.WheelPickerWrapper>) {
 	return (
-		<div>
-			<Wheel
-				onChange={() => { }}
-				options={optionsInt}
-			/>
-		</div>
+		<WheelPickerPrimitive.WheelPickerWrapper
+			className={cn(
+				"w-56 rounded-lg border border-zinc-200 bg-white px-1 shadow-xs dark:border-zinc-700/80 dark:bg-zinc-900",
+				"*:data-rwp:first:*:data-rwp-highlight-wrapper:rounded-s-md",
+				"*:data-rwp:last:*:data-rwp-highlight-wrapper:rounded-e-md",
+				className
+			)}
+			{...props}
+		/>
 	)
 }
 
-
-
-interface WheelProps {
-	onChange: (weight: string) => void;
-	options: string[];
+function WheelPicker<T extends WheelPickerValue = string>({
+	classNames,
+	...props
+}: WheelPickerPrimitive.WheelPickerProps<T>) {
+	return (
+		<WheelPickerPrimitive.WheelPicker
+			classNames={{
+				optionItem: cn(
+					"text-zinc-400 dark:text-zinc-500 data-disabled:opacity-40",
+					classNames?.optionItem
+				),
+				highlightWrapper: cn(
+					"bg-zinc-100 text-zinc-950 dark:bg-zinc-800 dark:text-zinc-50",
+					"data-rwp-focused:ring-2 data-rwp-focused:ring-zinc-300 data-rwp-focused:ring-inset dark:data-rwp-focused:ring-zinc-600",
+					classNames?.highlightWrapper
+				),
+				highlightItem: cn(
+					"data-disabled:opacity-40",
+					classNames?.highlightItem
+				),
+			}}
+			{...props}
+		/>
+	)
 }
 
-const Wheel = ({ options }: WheelProps) => {
-	const [currentIndex, setCurrentIndex] = useState(0);
-	const pickerRef = useRef<HTMLDivElement>(null);
+export { WheelPicker, WheelPickerWrapper }
+export type { WheelPickerClassNames, WheelPickerOption }
 
-	const [selected, setSelected] = useState<string>("0")
-
-	const handleChange = (value: string) => {
-		setSelected(value);
-	};
-	useEffect(() => {
-		if (selected && pickerRef.current) {
-			const index = options.indexOf(selected);
-			if (index >= 0) {
-				setCurrentIndex(index);
-				const itemHeight = pickerRef.current.offsetHeight / 5; // Assuming 5 items are visible
-				pickerRef.current.scrollTop = index * itemHeight;
-			}
-		}
-	}, [selected]);
-
-	const handleScroll = () => {
-		if (!pickerRef.current) return;
-
-		const { scrollTop, offsetHeight } = pickerRef.current;
-		const itemHeight = offsetHeight / 5; // Assuming 5 items visible at a time
-		const index = Math.round(scrollTop / itemHeight);
-
-		setCurrentIndex(index);
-		handleChange(optionsInt[index]);
-	};
-
-	return (
-		<div className="wheel-picker-container">
-			<div className="wheel-picker" ref={pickerRef} onScroll={handleScroll}>
-				<div style={{ height: '40%' }}></div>
-				{optionsInt.map((option, index) => (
-					<div
-						key={index}
-						className={`wheel-picker-item ${index === currentIndex ? 'active' : ''}`}
-						style={{ height: '20%' }}
-					>
-						{option}
-					</div>
-				))}
-				<div style={{ height: '40%' }}></div>
-			</div>
-		</div>
-	);
-};

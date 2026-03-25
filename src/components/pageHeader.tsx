@@ -1,21 +1,28 @@
-import "./card.css"
+import { SettingsIcon, SettingsIconSimple } from "./settings/settings";
 
-interface CardProps {
+interface PageHeaderProps {
 	children: React.ReactNode;
-	header: string;
+	settingsToggle?: boolean;
+	settingsDisplay?: React.ReactNode;
 }
-
-export const Card = ({ children, header }: CardProps) => {
+export const PageHeader = ({ children, settingsToggle = true, settingsDisplay = <></> }: PageHeaderProps) => {
 	return (
-		<div className="card blur">
-			<div
-				className="card-header"
-			>
+		<div className="card-header-container">
+			<h1>
 				<HeaderIcon />
-				{header}
-			</div>
-			{children}
+				{children}
+			</h1>
+			{
+				settingsToggle
+					?
+					<SettingsIcon>
+						{settingsDisplay}
+					</SettingsIcon>
+					:
+					<SettingsIconSimple />
+			}
 		</div>
+
 	)
 }
 
@@ -23,7 +30,7 @@ interface HeaderIconProps {
 	style?: React.CSSProperties;
 }
 
-const HeaderIcon = ({ style }: HeaderIconProps) => {
+export const HeaderIcon = ({ style }: HeaderIconProps) => {
 	return (
 		<svg width="24" height="24" viewBox="0 0 48 44" fill="none" xmlns="http://www.w3.org/2000/svg" style={style}>
 			<g filter="url(#filter0_d_1_14)">

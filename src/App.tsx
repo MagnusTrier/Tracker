@@ -1,107 +1,93 @@
 import "./App.css"
 import { useState } from 'react';
-// import { supabase, type WeightEntry } from './lib/supabase';
 import { Swiper, SwiperSlide } from "swiper/react"
-import { Pagination } from "swiper/modules";
 import { WeightComponent } from "./components/weight/weightComponent";
+import { SessionProvider, useSession } from "./components/sessionContext";
+import { DataProvider, useData } from "./components/dataContext";
+import { Login } from "./components/login/login"
+import { LoadingScreen } from "./components/loadingScreen/loadingScreen";
+import { motion } from "motion/react"
+import { Card } from "./components/generics.tsx"
 
-function App() {
-	// const [logs, setLogs] = useState<WeightEntry[]>([]);
-	// const [inputValue, setInputValue] = useState('');
-	const [currentPage, setCurrentPage] = useState<number>(0)
+const AppContent = () => {
+	const { user, isLoading: authLoading, login } = useSession()
 
-	// 1. READ: Get data when the component loads
-	// async function getWeights() {
-	// 	const { data, error } = await supabase
-	// 		.from('weight_logs') // Name of your table in Supabase
-	// 		.select('*')
-	// 		.order('created_at', { ascending: false });
-	//
-	// 	if (error) console.error('Error fetching:', error);
-	// 	else setLogs(data || []);
-	// }
+	if (authLoading) return <LoadingScreen message="Checking session..." />
 
-	// useEffect(() => {
-	// 	getWeights();
-	// }, []);
-
-	// 2. CREATE: Send new weight to Supabase
-	// async function handleSubmit(e: React.FormEvent) {
-	// 	e.preventDefault();
-	// 	const numWeight = parseFloat(inputValue);
-	// 	if (isNaN(numWeight)) return;
-	//
-	// 	const { error } = await supabase
-	// 		.from('weight_logs')
-	// 		.insert([{ weight: numWeight }]);
-	//
-	// 	if (!error) {
-	// 		setInputValue('');
-	// 		getWeights(); // Refresh the list
-	// 	}
-	// }
-
-	// 3. DELETE: Remove a row by its ID
-	// async function deleteEntry(id: number) {
-	// 	await supabase.from('weight_logs').delete().eq('id', id);
-	// 	getWeights();
-	// }
+	if (!user) return <Login onLogin={login} />
 
 	return (
-		<div className="app-container">
-			<Swiper
-				className="swiper-container"
-				slidesPerView={1}
-				threshold={10}
-				onSlideChange={(e) => setCurrentPage(e.activeIndex)}
-				allowSlidePrev={currentPage !== 0}
-				modules={[Pagination]}
-				pagination={{ dynamicBullets: true }}
-				style={{ position: "relative" }}
+		<DataProvider>
+			<DataReadyGatekeeper />
+		</DataProvider>
+	)
+}
+
+const DataReadyGatekeeper = () => {
+	const { showSettings } = useSession()
+	const { exercises, sets, weightLogs } = useData()
+
+	const [page, setPage] = useState<number>(0)
+
+	const isLoading = exercises.isLoading || sets.isLoading || weightLogs.isLoading
+
+	if (isLoading) return <LoadingScreen message="Syncing your logs..." />
+
+	return (
+		<div
+			className="app-container"
+		>
+			<motion.div
+				className="app-container-inner"
+				animate={showSettings ? { opacity: 0, y: "35%" } : { opacity: 1, y: 0 }}
+				transition={{ ease: "easeInOut" }}
 			>
-				<SwiperSlide
-					key="slide-1"
-					className="swiper-slide"
+				<Swiper
+					className="swiper-container"
+					slidesPerView={1}
+					threshold={10}
+					onSlideChange={(e) => setPage(e.activeIndex)}
+					allowSlidePrev={page !== 0}
 				>
-					<WeightComponent />
-				</SwiperSlide>
-				<SwiperSlide
-					key="slide-2"
-					className="swiper-slide"
-				>
-					<div
-						className="card blur"
+					<SwiperSlide
+						key="slide-1"
+						className="swiper-slide"
 					>
-						Slide 2
-					</div>
-				</SwiperSlide>
-			</Swiper>
-			{/* <h1>Weight Tracker</h1> */}
-			{/**/}
-			{/* <form onSubmit={handleSubmit} style={{ marginBottom: '20px' }}> */}
-			{/* 	<input */}
-			{/* 		type="number" */}
-			{/* 		step="0.1" */}
-			{/* 		value={inputValue} */}
-			{/* 		onChange={(e) => setInputValue(e.target.value)} */}
-			{/* 		placeholder="Weight (kg/lbs)" */}
-			{/* 	/> */}
-			{/* 	<button type="submit">Log It</button> */}
-			{/* </form> */}
-			{/**/}
-			{/* <WheelPicker /> */}
-			{/* <ul> */}
-			{/* 	{logs.map((log) => ( */}
-			{/* 		<li key={log.id} style={{ marginBottom: '10px' }}> */}
-			{/* 			{log.weight} - {new Date(log.created_at).toLocaleDateString()} */}
-			{/* 			<button onClick={() => deleteEntry(log.id)} style={{ marginLeft: '10px' }}>×</button> */}
-			{/* 		</li> */}
-			{/* 	))} */}
-			{/* </ul> */}
-			<div className="paginator-display blur">
-			</div>
+						<WeightComponent />
+					</SwiperSlide>
+					<SwiperSlide
+						key="slide-2"
+						className="swiper-slide"
+					>
+						<Card
+							header="Card 1"
+							subHeader="This is my very special card"
+							settings={<span>This is the settings for Card 1</span>}
+						>
+							<span>ree</span>
+						</Card>
+						<Card
+							header="Card 2"
+							subHeader="This is my very special card"
+							settings={<span>This is the settings for Card 2</span>}
+						>
+							<span>ree</span>
+						</Card>
+					</SwiperSlide>
+				</Swiper>
+				<div className="paginator-display">
+				</div>
+			</motion.div>
 		</div>
-	);
+	)
+}
+
+function App() {
+	return (
+		<SessionProvider>
+			<AppContent />
+		</SessionProvider>
+	)
 }
 
 export default App;
