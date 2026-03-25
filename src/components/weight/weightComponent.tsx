@@ -1,11 +1,12 @@
-import { useData } from "../dataContext"
+import { useData, type WeightLog } from "../dataContext"
 import { D3Chart } from "../chart/chart"
 import "./weighComponent.css"
 import { useState, type MouseEvent } from "react";
-import { WheelPickerWrapper, WheelPicker } from "../wheelPicker/wheelPicker.tsx"
+import { WheelPickerWrapper, WheelPicker } from "../wheelPicker.tsx"
 import { VscListFilter } from "react-icons/vsc";
 import { parseISO, isToday } from 'date-fns';
 import { Card } from "../generics.tsx";
+import { MdDeleteOutline } from "react-icons/md";
 
 export const WeightComponent = () => {
 	return (
@@ -22,10 +23,53 @@ const WeightAnalytics = () => {
 		<Card
 			header="Weight Analytics"
 			subHeader="Analyse the progression of your weight"
-			settings={<span>REE</span>}
+			settings={<WeightAnalyticsSettings />}
 		>
 			<D3Chart data={weightLogs.values} yAccessor="weight" />
 		</Card>
+	)
+}
+
+const WeightAnalyticsSettings = () => {
+	const { weightLogs } = useData()
+
+	const deleteLog = (id: string) => {
+		weightLogs.manager.delete(id)
+	}
+
+	return (
+		<>
+			<h3>History</h3>
+			{
+				weightLogs.values.map((log) => (
+					<WeightLogItem key={`weight-log-${log.id}`} item={log} onClick={deleteLog} />
+				))
+			}
+
+
+		</>
+	)
+}
+
+const WeightLogItem = (props: { item: WeightLog, onClick: (val: string) => void }) => {
+	return (
+		<div
+			className="weight-log-item"
+		>
+			<span>{props.item.created_at.split("T")[0]}</span>
+			<span>{props.item.weight}</span>
+			<div
+				className="delete-weight-log-item"
+				onClick={(e) => {
+					e.preventDefault()
+					e.stopPropagation()
+					props.onClick(props.item.id)
+				}}
+			>
+				<MdDeleteOutline />
+			</div>
+
+		</div>
 	)
 }
 

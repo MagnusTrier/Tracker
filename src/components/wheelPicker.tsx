@@ -3,7 +3,7 @@ import "@ncdai/react-wheel-picker/style.css"
 import * as WheelPickerPrimitive from "@ncdai/react-wheel-picker"
 import type { ComponentProps } from "react"
 
-import { cn } from "../../lib/utils"
+import { cn } from "../lib/utils"
 
 type WheelPickerValue = WheelPickerPrimitive.WheelPickerValue
 

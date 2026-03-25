@@ -11,6 +11,7 @@ interface CardProps {
 	children: React.ReactNode;
 	settings?: React.ReactNode;
 	contentStyle?: React.CSSProperties;
+	hideSettings?: boolean;
 }
 
 export const Card = (props: CardProps) => {
@@ -46,13 +47,17 @@ export const Card = (props: CardProps) => {
 					{props.header}
 				</h1>
 
-				<div
-					className="settings-icon"
-					style={isSettingsCard ? { backgroundColor: "#0008", borderColor: "var(--color-primary)", boxShadow: "0 0 2px 0 var(--color-primary)" } : {}}
-					onClick={toggleSettings}
-				>
-					<VscSettings />
-				</div>
+				{
+					!props.hideSettings &&
+
+					<div
+						className="settings-icon"
+						style={isSettingsCard ? { backgroundColor: "#0008", borderColor: "var(--color-primary)", boxShadow: "0 0 2px 0 var(--color-primary)" } : {}}
+						onClick={toggleSettings}
+					>
+						<VscSettings />
+					</div>
+				}
 			</div>
 			<h2>
 				{props.subHeader}
@@ -72,9 +77,9 @@ export const Card = (props: CardProps) => {
 								<motion.div
 									key="settings-tray"
 									className="settings-container"
-									initial={{ opacity: 0, y: "-35%" }}
+									initial={{ opacity: 0, y: "-100%" }}
 									animate={{ opacity: 1, y: 0 }}
-									exit={{ opacity: 0, y: "-35%" }}
+									exit={{ opacity: 0, y: "-100%" }}
 									transition={{ ease: "easeInOut" }}
 								>
 									<div

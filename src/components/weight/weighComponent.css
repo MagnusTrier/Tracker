@@ -1,21 +1,3 @@
-.weight-container {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	z-index: 1;
-
-}
-
-.weight-display {
-	display: flex;
-	flex-direction: column;
-	gap: 5px;
-}
-
-.chart-container {
-	z-index: 0;
-}
-
 .weight-wheelpicker {
 	display: flex;
 	align-items: center;
@@ -58,4 +40,28 @@
 	border-radius: 0 !important;
 	box-shadow: none !important;
 	color: transparent;
+}
+
+.weight-log-item {
+	border: 1px solid var(--color-border);
+	display: flex;
+	align-items: center;
+	height: 50px;
+	padding-left: 10px;
+	flex-shrink: 0;
+	border-radius: 4px;
+	background-color: var(--color-dark);
+	justify-content: space-between;
+}
+
+.delete-weight-log-item {
+	height: 100%;
+	aspect-ratio: 1;
+	border: 1px solid var(--color-error);
+	color: var(--color-error);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 28px;
+	border-radius: 10px;
 }

@@ -8,12 +8,12 @@ interface Data<T extends { id?: string }> {
 	manager: DataManager<T>;
 }
 
-interface Exercise {
+export interface Exercise {
 	id: string;
 	name: string;
 }
 
-interface ExerciseSet {
+export interface ExerciseSet {
 	id: string;
 	created_at: string;
 	weight: number;
@@ -23,7 +23,7 @@ interface ExerciseSet {
 	session_id: string;
 }
 
-interface WeightLog {
+export interface WeightLog {
 	id: string;
 	created_at: string;
 	weight: number;
