@@ -76,7 +76,7 @@ const DataReadyGatekeeper = () => {
 				>
 					<motion.div
 						key="app-content"
-						initial={{ opacity: 0, scale: 0.98, y: 10 }}
+						initial={{ opacity: 0, y: 10 }}
 						animate={showSettings ? { opacity: 0, y: "50%" } : { opacity: 1, y: 0 }}
 						transition={{ ease: "easeInOut" }}
 						className="app-container-inner"
@@ -99,19 +99,15 @@ const DataReadyGatekeeper = () => {
 								className="swiper-slide"
 							>
 								<Card
+									key="card 1"
 									header="Card 1"
 									subHeader="This is my very special card"
 									settings={<span>This is the settings for Card 1</span>}
 								>
 									<span>ree</span>
 								</Card>
-								<Card
-									header="Card 2"
-									subHeader="This is my very special card"
-									settings={<span>This is the settings for Card 2</span>}
-								>
-									<span>ree</span>
-								</Card>
+
+
 							</SwiperSlide>
 						</Swiper>
 

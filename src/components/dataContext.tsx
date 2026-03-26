@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { supabase } from "../lib/supabase";
 import { useUser } from "./sessionContext.tsx"
+import { parseISO } from "date-fns";
 
 interface Data<T extends { id?: string }> {
 	values: T[];
@@ -15,18 +16,20 @@ export interface Exercise {
 
 export interface ExerciseSet {
 	id: string;
-	created_at: string;
+	created_at: Date;
 	weight: number;
 	reps: number;
 	set_number: number;
 	exercise_id: string;
 	session_id: string;
+	date: Date;
 }
 
 export interface WeightLog {
 	id: string;
-	created_at: string;
+	created_at: Date;
 	weight: number;
+	date: Date;
 }
 
 
@@ -52,8 +55,8 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
 
 	const managers = useMemo(() => ({
 		exercises: new DataManager<Exercise>("exercises", user.id, setExercises, setExersicesLoading),
-		sets: new DataManager<ExerciseSet>("exercise_sets", user.id, setSets, setSetsLoading),
-		weightLogs: new DataManager<WeightLog>("weight_logs", user.id, setWeightLogs, setWheightLogsLoading)
+		sets: new DataManager<ExerciseSet>("exercise_sets", user.id, setSets, setSetsLoading, ["created_at", "date"], "date"),
+		weightLogs: new DataManager<WeightLog>("weight_logs", user.id, setWeightLogs, setWheightLogsLoading, ["created_at", "date"], "date")
 	}), [user.id])
 
 	useEffect(() => {
@@ -96,6 +99,7 @@ export const useData = () => {
 interface ManagerOptions<T> {
 	onSuccess?: (data: T | T[]) => void;
 	onError?: (error: any) => void;
+	minTime?: number;
 }
 
 class DataManager<T extends { id?: string }> {
@@ -105,12 +109,16 @@ class DataManager<T extends { id?: string }> {
 	private userId: string
 	private setter: (data: T[]) => void
 	private setLoading: (val: boolean) => void
+	private dateKeys: string[]
+	private column: keyof T | "created_at"
 
-	constructor(table: string, userId: string, setter: (data: T[]) => void, setLoading: (val: boolean) => void) {
+	constructor(table: string, userId: string, setter: (data: T[]) => void, setLoading: (val: boolean) => void, dateKeys: string[] = ["created_at"], column: keyof T | "created_at" = "created_at") {
 		this.table = table
 		this.userId = userId
 		this.setter = setter
 		this.setLoading = setLoading
+		this.dateKeys = dateKeys
+		this.column = column
 	}
 
 	private updateLocalData(newData: T[]) {
@@ -122,32 +130,65 @@ class DataManager<T extends { id?: string }> {
 	private async runSafe(
 		action: () => Promise<any>,
 		options?: ManagerOptions<T>,
+		fetchOnSuccess?: boolean,
 	) {
+		const MIN_DELAY = options?.minTime ?? 0
+		const startTime = Date.now()
+
 		try {
-			const result = await action()
-			if (options?.onSuccess) options.onSuccess(result)
+			const result = await action();
+
+			if (options?.minTime) {
+				const elapsed = Date.now() - startTime;
+				const remaining = Math.max(0, MIN_DELAY - elapsed);
+				if (remaining > 0) await new Promise(resolve => setTimeout(resolve, remaining))
+			}
+
+			if (fetchOnSuccess) this.fetch()
+			if (options?.onSuccess) options.onSuccess(result);
 		} catch (error) {
-			console.error(`Error in ${this.table}:`, error)
+			console.error(`Error in ${this.table}:`, error);
+
+			if (options?.minTime) {
+				const elapsed = Date.now() - startTime;
+				const remaining = Math.max(0, MIN_DELAY - elapsed);
+				if (remaining > 0) await new Promise(resolve => setTimeout(resolve, remaining))
+			}
+
 			if (options?.onError) {
-				options.onError(error)
+				options.onError(error);
 			} else {
-				alert(`Database error`)
+				alert(`Database error`);
 			}
 		} finally {
-			this.setLoading(false)
+			this.setLoading(false);
 		}
 	}
 
-	async fetch(options?: ManagerOptions<T>, column: keyof T | "created_at" = "created_at", ascending: boolean = false) {
+	async fetch(options?: ManagerOptions<T>) {
 		await this.runSafe(async () => {
 			const { data, error } = await supabase
 				.from(this.table)
 				.select("*")
-				.order(column as string, { ascending })
-			if (error) throw error
-			this.updateLocalData(data || [])
-			return data
-		}, options)
+				.order(this.column as string, { ascending: false })
+
+			if (error) throw error;
+
+			const transformedData = (data || []).map((item) => {
+				const newItem = { ...item }
+
+				this.dateKeys.forEach((key) => {
+					newItem[key] = parseISO(newItem[key])
+				})
+
+				return newItem
+
+			})
+
+			this.updateLocalData(transformedData)
+
+			return transformedData;
+		}, options);
 	}
 
 	async post(item: Partial<T>, options?: ManagerOptions<T>) {
@@ -160,9 +201,8 @@ class DataManager<T extends { id?: string }> {
 			if (error) throw error
 
 			const newItem = data[0]
-			this.updateLocalData([newItem, ...this.data])
 			return newItem
-		}, options)
+		}, options, true)
 	}
 
 	async delete(id: string, options?: ManagerOptions<T>) {
@@ -173,7 +213,6 @@ class DataManager<T extends { id?: string }> {
 				.eq("id", id)
 
 			if (error) throw error
-			this.updateLocalData(this.data.filter(item => item.id !== id))
-		}, options)
+		}, options, true)
 	}
 }

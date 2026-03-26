@@ -1,7 +1,7 @@
 import "./chart.css"
 import { useMemo, useState, useRef, useEffect } from "react";
 import * as d3 from "d3";
-import { format, parseISO, subDays } from 'date-fns';
+import { format, subDays, startOfDay } from 'date-fns';
 import { motion } from 'framer-motion';
 
 export function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: string }) {
@@ -25,8 +25,8 @@ export function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: stri
 		const { width, height } = dimensions;
 
 		const pts = data.map(d => ({
-			x: typeof d.created_at === 'string' ? parseISO(d.created_at) : d.created_at,
-			y: Number(d[yAccessor]),
+			x: startOfDay(d.date),
+			y: d[yAccessor],
 		})).sort((a, b) => a.x.getTime() - b.x.getTime());
 
 		const activeData = pts.length > 0;
@@ -91,13 +91,13 @@ export function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: stri
 		container: { width: '100%', height: '100%', minHeight: '200px', position: 'relative' as const },
 		svg: { display: 'block', overflow: 'visible' }, // Changed to visible so edge labels aren't cut
 		gridLine: { stroke: 'rgba(40, 40, 48, 1)', opacity: 0.5 },
-		axisText: { fill: 'rgba(180, 180, 200, 0.7)', fontSize: '10px', fontFamily: 'sans-serif' }
+		axisText: { fill: 'var(--text-dim)', fontSize: '10px', fontFamily: 'sans-serif' }
 	};
 
 	return (
 		<div ref={containerRef} className="chart" style={styles.container}>
 			{dimensions.width > 0 && (
-				<svg width={dimensions.width} height={dimensions.height} style={styles.svg}>
+				<svg key={JSON.stringify(data)} width={dimensions.width} height={dimensions.height} style={styles.svg}>
 					{/* Explicit Y Ticks */}
 					{yTicks.map((tick, i) => (
 						<g key={i} transform={`translate(0, ${yScale(tick)})`}>
@@ -127,17 +127,21 @@ export function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: stri
 							<motion.path
 								initial={{ pathLength: 0 }}
 								animate={{ pathLength: 1 }}
+								transition={{ duration: 1.5, delay: .3 }}
 								d={linePath || ""}
 								fill="none"
 								stroke="var(--color-primary)"
 								strokeWidth="1.5"
 							/>
 							{points.map((p, i) => (
-								<circle
+								<motion.circle
+									initial={{ scale: 0, opacity: 0 }}
+									animate={{ scale: 1, opacity: 1 }}
+									transition={{ duration: .2, delay: (1.5 / points.length) * i - .15 }}
 									key={i}
+									r='3'
 									cx={xScale(p.x)}
 									cy={yScale(p.y)}
-									r="3"
 									fill="var(--bg-color, #000)"
 									stroke="var(--color-primary)"
 									strokeWidth="1.5"
@@ -148,7 +152,7 @@ export function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: stri
 				</svg>
 			)}
 			{!hasData && (
-				<div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
+				<div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)' }}>
 					No data available
 				</div>
 			)}

@@ -19,7 +19,7 @@ const SessionContext = createContext<SessionContextType | undefined>(undefined)
 export const SessionProvider = ({ children }: { children: React.ReactNode }) => {
 	const [user, setUser] = useState<User | null>(null)
 	const [session, setSession] = useState<Session | null>(null)
-	const [isLoading, setIsLoading] = useState<boolean>(false)
+	const [isLoading, setIsLoading] = useState<boolean>(true)
 	const [error, setError] = useState<string | null>(null)
 	const [showSettings, setShowSettings] = useState<boolean>(false)
 

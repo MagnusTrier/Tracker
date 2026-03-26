@@ -11,6 +11,7 @@ interface CardProps {
 	children: React.ReactNode;
 	settings?: React.ReactNode;
 	contentStyle?: React.CSSProperties;
+	settingsStyle?: React.CSSProperties;
 	hideSettings?: boolean;
 }
 
@@ -88,6 +89,7 @@ export const Card = (props: CardProps) => {
 										<Card
 											header="Settings"
 											subHeader={<span>Additional settings for <span style={{ color: "var(--color-primary)" }}>{props.header.toLowerCase()}</span></span>}
+											contentStyle={props.settingsStyle}
 										>
 											{props.settings}
 										</Card>

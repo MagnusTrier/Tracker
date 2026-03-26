@@ -42,26 +42,277 @@
 	color: transparent;
 }
 
-.weight-log-item {
-	border: 1px solid var(--color-border);
-	display: flex;
-	align-items: center;
-	height: 50px;
-	padding-left: 10px;
-	flex-shrink: 0;
-	border-radius: 4px;
-	background-color: var(--color-dark);
-	justify-content: space-between;
+.weight-log-item-container {
+	--br: 10px;
+
+	position: relative;
+
+	display: block;
+	font-weight: 400;
+	overflow-y: auto;
+	overflow-x: hidden;
+	border-radius: var(--br);
 }
 
-.delete-weight-log-item {
+.weight-log-item {
+	border-radius: var(--br);
+	display: grid;
+	grid-template-columns: 1fr 80px 60px;
+	height: 60px;
+	position: relative;
+
+	background-color: var(--color-dark);
+}
+
+.weight-log-item:not(:last-child) {
+	margin-bottom: 7px;
+}
+
+.weight-log-item>span,
+.weight-log-item>div {
 	height: 100%;
-	aspect-ratio: 1;
-	border: 1px solid var(--color-error);
+}
+
+.weight-log-item>div {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 10px;
+}
+
+
+.weight-log-item-container .date-container {
+	position: relative;
+	border-radius: var(--br) 0 0 var(--br);
+	align-items: start;
+	font-size: 14px;
+}
+
+.weight-log-item-container .date-container::before {
+	content: '';
+	position: absolute;
+	height: 80%;
+	bottom: 10%;
+	width: 1px;
+	left: 0px;
+	background: linear-gradient(transparent,
+			color-mix(in srgb, var(--color-primary), transparent 50%), transparent);
+}
+
+.weight-log-item-container .date-container span:first-child {
+	color: var(--color-primary);
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.05;
+}
+
+.weight-log-item-container .delete {
+	border-radius: 0 var(--br) var(--br) 0;
+	width: 100%;
+}
+
+.weight-log-item-container .delete div {
+	border-radius: 50%;
+	background-color: color-mix(in srgb, var(--color-error), transparent 95%);
+	border: 1px solid color-mix(in srgb, var(--color-error), transparent 95%);
+	height: 100%;
+	width: 100%;
 	color: var(--color-error);
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 28px;
-	border-radius: 10px;
+	font-size: 18px;
+}
+
+.weight-log-item-container .weight {
+	flex-direction: row;
+	justify-content: start;
+	gap: 5px;
+	font-size: 18px;
+	font-weight: 600;
+}
+
+.weight-log-item-container .weight span {
+	font-size: 13px;
+	color: var(--text-dim);
+	margin-top: 5px;
+}
+
+.weight-log-item-container .confirm-delete {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	backdrop-filter: blur(3.5px);
+	-webkit-backdrop-filter: blur(3.5px);
+	background-color: rgba(12, 12, 18, 0.95);
+	border-radius: var(--br);
+
+	display: flex;
+	flex-direction: row;
+	justify-content: space-evenly;
+
+
+	z-index: 10;
+}
+
+.weight-log-item-container .confirm-delete>div {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 60px;
+
+	border-radius: 50%;
+	background-color: color-mix(in srgb, var(--color), transparent 95%);
+	border: 1px solid color-mix(in srgb, var(--color), transparent 95%);
+	height: 100%;
+	aspect-ratio: 1;
+	color: var(--color);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 18px;
+}
+
+
+
+.log-weight-settings {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 5px;
+}
+
+.my-custom-input {
+	font-size: 16px;
+	color: var(--color-text);
+	background-color: rgba(0, 0, 0, 0.3);
+	border-radius: 8px;
+	width: 100%;
+	border: 1px solid var(--color-border);
+	padding: 5px 10px;
+
+}
+
+.my-custom-calendar {
+	--border: rgba(100, 100, 130, 0.25);
+	background-color: rgba(12, 12, 14, 1) !important;
+	border: 1px solid var(--border) !important;
+	box-shadow: var(--box-shadow);
+	color: var(--color-text);
+	border-radius: 20px !important;
+}
+
+.react-datepicker-wrapper {
+	width: 100%;
+}
+
+.react-datepicker__header {
+	color: var(--color-text);
+	border: 1px solid var(--border);
+	border-radius: 20px !important;
+}
+
+.react-datepicker__current-month {
+	color: var(--color-text);
+}
+
+.react-datepicker__triangle {
+	display: none;
+}
+
+.react-datepicker__day {
+	color: var(--color-text);
+}
+
+.react-datepicker__day--disabled {
+	color: var(--text-dim) !important;
+	text-decoration: line-through;
+	cursor: not-allowed;
+	background-color: rgba(195, 195, 255, 0.035);
+	border-radius: 4px;
+
+	font-weight: 300 !important;
+	font-size: 15px !important;
+}
+
+.react-datepicker-popper {
+	z-index: 9999 !important;
+}
+
+.react-datepicker__day--selected {
+	background-color: var(--color-primary) !important;
+	border-radius: 4px !important;
+	color: #000 !important;
+	font-weight: 500 !important;
+	font-size: 15px !important;
+}
+
+.react-datepicker__header {
+	background-color: rgba(12, 12, 14, 1) !important;
+	border: none !important;
+}
+
+.react-datepicker__day-names {
+	background-color: none !important;
+	border-bottom: 1px solid var(--border) !important;
+	margin-bottom: 2px !important;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name {
+	color: var(--color-text) !important;
+	font-weight: 300 !important;
+	font-size: 15px !important;
+}
+
+/* This targets all days that are NOT disabled and NOT selected */
+.react-datepicker__day:not(.react-datepicker__day--selected):not(.react-datepicker__day--disabled) {
+	background-color: var(--border);
+	color: var(--color-text);
+	border-radius: 4px;
+	transition: all 0.2s ease;
+
+	font-weight: 300 !important;
+	font-size: 15px !important;
+}
+
+.react-datepicker__day:focus,
+.react-datepicker__day:hover:not(.react-datepicker__day--disabled) {
+	background-color: inherit !important;
+	color: #000 !important;
+	border-radius: 50%;
+}
+
+.datepicker-input:focus,
+.datepicker-input {
+	border: none;
+	box-shadow: none;
+	caret-color: transparent;
+	user-select: none;
+}
+
+.react-datepicker__portal {
+	background-color: transparent !important;
+	background-color: #0d0d0ebb !important;
+}
+
+.react-datepicker__portal {
+	animation: calendar-fade-in 0.2s ease-out forwards;
+	transform-origin: top left;
+}
+
+@keyframes calendar-fade-in {
+	from {
+		opacity: 0;
+		transform: scale(0.95);
+	}
+
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
 }

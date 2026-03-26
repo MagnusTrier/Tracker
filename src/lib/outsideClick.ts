@@ -8,14 +8,18 @@ export const useOutsideClick = <T extends HTMLElement>(
 
 	useEffect(() => {
 		const handleClick = (event: MouseEvent | TouchEvent) => {
-			const target = event.target as Node;
+			const target = event.target as HTMLElement;
 
 			const clickedInsideModal = ref.current?.contains(target);
 
 			const clickedExclude = excludeRef?.current?.contains(target);
 
 			if (ref.current && !clickedInsideModal && !clickedExclude) {
-				callback();
+				const isCalendarClick = target.closest('#datepicker-portal');
+
+				if (!isCalendarClick) {
+					callback();
+				}
 			}
 		};
 
