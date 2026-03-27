@@ -179,12 +179,12 @@ export const HeaderIcon = ({ style }: HeaderIconProps) => {
 const RANGE_MIN = 70
 const RANGE_MAX = 100
 const TICK_SPACING = 20
-const INITIAL_VALUE = 82.5
 
 const TOTAL_TICKS = (RANGE_MAX - RANGE_MIN) * 10
-const INITIAL_OFFSET = (INITIAL_VALUE - RANGE_MIN) * 10 * -TICK_SPACING
 
 export const RulerPicker = (props: { displayValue: number, setDisplayValue: (val: number) => void, date: Date | null }) => {
+
+	const INITIAL_OFFSET = (props.displayValue - RANGE_MIN) * 10 * -TICK_SPACING
 	const offset = useMotionValue(INITIAL_OFFSET)
 
 	const springOffset = useSpring(offset, {

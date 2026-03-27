@@ -5,5 +5,12 @@
 	position: relative;
 	background-color: rgba(0, 0, 0, 0.3);
 	border-radius: 10px;
-	padding-bottom: 12px;
+	padding-bottom: 2px;
+}
+
+.tick {
+	font-size: 11px;
+	text-anchor: "middle";
+	fill: color-mix(in srgb, var(--color-text), transparent 30%);
+	font-weight: 600;
 }

@@ -150,7 +150,7 @@
 }
 
 .current-weight {
-	font-size: 32px;
+	font-size: 28px;
 	font-weight: 800;
 }
 
@@ -164,7 +164,9 @@
 	font-size: 16px;
 	font-weight: 600;
 	background-color: color-mix(in srgb, var(--color-yellow), transparent 95%);
-	color: color-mix(in srgb, var(--color-yellow), transparent 0%);
+	border: 1px solid color-mix(in srgb, var(--color-yellow), transparent 95%);
+	color: var(--color-yellow);
+	box-shadow: 0 0 20px color-mix(in srgb, var(--color-yellow), transparent 95%);
 	padding: 5px 8px;
 	border-radius: 50px;
 	display: flex;
@@ -180,10 +182,11 @@
 	align-items: center;
 	touch-action: none;
 	width: 100%;
+	margin-top: 2px;
 }
 
 .value-display {
-	font-size: 32px;
+	font-size: 28px;
 	width: 70px;
 	text-align: center;
 	font-weight: 800;
@@ -191,8 +194,7 @@
 	text-shadow: 0 0 30px color-mix(in srgb, var(--color-primary), transparent 60%);
 	user-select: none;
 	position: relative;
-	margin-bottom: 20px;
-	margin-top: -3px;
+	margin-bottom: 15px;
 }
 
 .value-display>span {
@@ -219,7 +221,7 @@
 	background-color: color-mix(in srgb, var(--color-primary), transparent 95%);
 	border: 1px solid color-mix(in srgb, var(--color-primary), transparent 90%);
 	color: var(--color-primary);
-	padding: 8px;
+	padding: 6px;
 	font-size: 12px;
 	font-weight: 600;
 	white-space: nowrap;
@@ -241,7 +243,7 @@
 .center-indicator {
 	position: absolute;
 	z-index: 10;
-	height: 20px;
+	height: 15px;
 	width: 3px;
 	bottom: calc(100% + 5px);
 

@@ -1,12 +1,13 @@
 import "./App.css"
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { Swiper, SwiperSlide } from "swiper/react"
-import { WeightComponent } from "./components/weight/weightComponent"
 import { SessionProvider, useSession } from "./components/sessionContext"
 import { DataProvider, useData } from "./components/dataContext"
 import { motion, AnimatePresence } from "motion/react"
 import { Card } from "./components/generics.tsx"
 import { PropagateLoader } from "react-spinners"
+
+const WeightComponent = lazy(() => import("./components/weight/weightComponent"))
 
 const AppContent = () => {
 	const { user, isLoading: authLoading, login } = useSession()
@@ -92,7 +93,9 @@ const DataReadyGatekeeper = () => {
 								key="slide-1"
 								className="swiper-slide"
 							>
-								<WeightComponent />
+								<Suspense fallback={<div>Loading Chart...</div>}>
+									<WeightComponent />
+								</Suspense>
 							</SwiperSlide>
 							<SwiperSlide
 								key="slide-2"
@@ -106,8 +109,6 @@ const DataReadyGatekeeper = () => {
 								>
 									<span>ree</span>
 								</Card>
-
-
 							</SwiperSlide>
 						</Swiper>
 

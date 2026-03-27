@@ -1,7 +1,7 @@
 import { useData, type WeightLog } from "../dataContext"
 import { D3Chart } from "../chart/chart"
 import "./weighComponent.css"
-import { useEffect, useState, type MouseEvent } from "react"
+import { useMemo, useEffect, useState, type MouseEvent } from "react"
 import { Card, CustomButton, RulerPicker } from "../generics.tsx"
 import { useOutsideClick } from "../../lib/outsideClick.ts"
 import "react-datepicker/dist/react-datepicker.css"
@@ -13,7 +13,7 @@ import { IoIosTrendingDown, IoIosTrendingUp } from "react-icons/io"
 import { createPortal } from "react-dom"
 import { Datepicker } from "../datepicker/datepicker.tsx"
 
-export const WeightComponent = () => {
+const WeightComponent = () => {
 	return (
 		<>
 			<CurrentWeight />
@@ -30,7 +30,9 @@ const CurrentWeight = () => {
 	return (
 		<Card
 			hideSettings
-			header={<span style={{ color: "var(--color-primary)" }}>CURRENT WEIGHT</span>}
+			header={<span style={{ color: "var(--color-primary)", textShadow: "0 0 15px color-mix(in srgb, var(--color-primary), transparent 50%)" }}>CURRENT WEIGHT</span>}
+			contentStyle={{ marginBottom: -4 }}
+
 		>
 			<div className="current-weight-container">
 				<span className="current-weight">
@@ -38,8 +40,6 @@ const CurrentWeight = () => {
 					<span> KG</span>
 				</span>
 				<span className="stats">{Number(stats.diff) > 0 ? <IoIosTrendingUp style={{ fontSize: 24 }} /> : <IoIosTrendingDown style={{ fontSize: 24 }} />}{stats.diff}</span>
-				{/* <span> VS LAST WEEK</span> */}
-
 			</div>
 
 		</Card>
@@ -47,19 +47,6 @@ const CurrentWeight = () => {
 	)
 }
 
-const WeightAnalytics = () => {
-	const { weightLogs } = useData()
-
-	return (
-		<Card
-			header="WEIGHT ANALYTICS"
-			settings={<WeightAnalyticsSettings />}
-			settingsStyle={{ overflow: "hidden" }}
-		>
-			<D3Chart data={weightLogs.values} yAccessor="weight" />
-		</Card>
-	)
-}
 const calculateAverages = (data: WeightLog[]) => {
 	const getAvg = (arr: any[]) =>
 		arr.length ? arr.reduce((sum, item) => sum + item.weight, 0) / arr.length : 0;
@@ -67,7 +54,6 @@ const calculateAverages = (data: WeightLog[]) => {
 	const lastSevenEntries = data.slice(0, 7);
 	const previousSevenEntries = data.slice(7, 14);
 
-	// 3. Calculate results
 	const currentAvg = getAvg(lastSevenEntries);
 	const previousAvg = getAvg(previousSevenEntries);
 
@@ -77,6 +63,108 @@ const calculateAverages = (data: WeightLog[]) => {
 		diff: (currentAvg - previousAvg).toFixed(2)
 	};
 };
+
+import { subDays, isAfter, startOfDay } from 'date-fns'
+
+const modes = ["7D", "14D", "30D", "ALL"]
+
+const WeightAnalytics = () => {
+	const { weightLogs } = useData()
+	const [mode, setMode] = useState<string>("7D")
+
+	const filteredData = useMemo(() => {
+		const now = new Date()
+		if (mode === "ALL") return weightLogs.values
+		let daysToSub = 7
+		if (mode === "14D") daysToSub = 14
+		if (mode === "30D") daysToSub = 30
+		const cutoff = startOfDay(subDays(now, daysToSub))
+		return weightLogs.values.filter(item => {
+			return isAfter(item.date, cutoff)
+		})
+	}, [mode, weightLogs])
+
+	return (
+		<Card
+			header="WEIGHT ANALYTICS"
+			settings={<WeightAnalyticsSettings />}
+			settingsStyle={{ overflow: "hidden" }}
+		>
+			<div style={navWrapper}>
+				<ul style={tabsList}>
+					{modes.map((item) => {
+						const isActive = mode === item
+						return (
+							<li
+								key={item}
+								onClick={() => setMode(item)}
+								style={{
+									...tabItem,
+									color: isActive ? "var(--color-primary)" : "var(--text-dim)"
+								}}
+							>
+								<span style={{ zIndex: 2 }}>{item}</span>
+
+								{isActive && (
+									<motion.div
+										layoutId="active-pill"
+										style={activeIndicator}
+										transition={{
+											type: "spring",
+											bounce: 0.2,
+											duration: 0.6
+										}}
+									/>
+								)}
+							</li>
+						)
+					})}
+				</ul>
+			</div>
+			<D3Chart data={filteredData} yAccessor="weight" />
+		</Card>
+	)
+}
+
+
+const navWrapper: React.CSSProperties = {
+	background: "var(--color-dark)",
+	borderRadius: "7px",
+	marginBlock: 3,
+}
+
+const tabsList: React.CSSProperties = {
+	display: "flex",
+	listStyle: "none",
+	margin: 0,
+	position: "relative",
+	padding: "6px",
+}
+
+const tabItem: React.CSSProperties = {
+	flex: 1,
+	padding: "5px 0",
+	fontSize: "12px",
+	fontWeight: 600,
+	textAlign: "center",
+	cursor: "pointer",
+	position: "relative",
+	display: "flex",
+	justifyContent: "center",
+	alignItems: "center",
+	transition: "color 0.2s ease",
+	WebkitTapHighlightColor: "transparent",
+}
+
+const activeIndicator: React.CSSProperties = {
+	position: "absolute",
+	inset: 0,
+	background: "color-mix(in srgb, var(--color-primary), transparent 90%)",
+	borderRadius: "5px",
+	border: "1px solid color-mix(in srgb, var(--color-primary), transparent 80%)",
+	zIndex: 1,
+	boxShadow: "0 0 4px color-mix(in srgb, var(--color-primary), transparent 80%)",
+}
 
 
 const WeightAnalyticsSettings = () => {
@@ -266,3 +354,5 @@ const LogWeight = () => {
 		</Card>
 	)
 }
+
+export default WeightComponent
