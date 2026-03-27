@@ -1,6 +1,8 @@
 import "./chart.css";
 import { useMemo, useState, useRef, useEffect } from "react";
-import * as d3 from "d3";
+import { scaleTime, scaleLinear } from "d3-scale"
+import { extent } from "d3-array"
+import { line, area, curveCatmullRom } from "d3-shape"
 import { format, subDays, startOfDay } from 'date-fns';
 import { motion } from 'framer-motion';
 
@@ -38,14 +40,14 @@ export function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: stri
 		const activeData = pts.length > 0;
 
 		const xDomain = activeData
-			? (d3.extent(pts, d => d.x) as [Date, Date])
+			? (extent(pts, d => d.x) as [Date, Date])
 			: [subDays(new Date(), 7), new Date()];
 
 		let yTicksValues: number[] = [];
 		let yDomain: [number, number] = [0, 100];
 
 		if (activeData) {
-			const [rawMin, rawMax] = d3.extent(pts, d => d.y) as [number, number];
+			const [rawMin, rawMax] = extent(pts, d => d.y) as [number, number];
 
 			const padding = 0.0075 / 2;
 			const nTicks = 4;
@@ -65,9 +67,9 @@ export function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: stri
 		const xRange = [margin.left, width - margin.right];
 		const yRange = [height - margin.bottom, margin.top];
 
-		const x = d3.scaleTime().domain(xDomain).range(xRange);
+		const x = scaleTime().domain(xDomain).range(xRange);
 
-		const y = d3.scaleLinear().domain(yDomain).range(yRange);
+		const y = scaleLinear().domain(yDomain).range(yRange);
 		let xTicksValues: Date[] = [];
 		if (activeData) {
 			const xStart = xDomain[0].getTime();
@@ -77,14 +79,14 @@ export function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: stri
 			xTicksValues = x.ticks(3);
 		}
 
-		const curveFunc = d3.curveCatmullRom.alpha(0.5);
+		const curveFunc = curveCatmullRom.alpha(0.5);
 
-		const line = d3.line<any>()
+		const l = line<any>()
 			.x(d => x(d.x))
 			.y(d => y(d.y))
 			.curve(curveFunc);
 
-		const area = d3.area<any>()
+		const a = area<any>()
 			.x(d => x(d.x))
 			.y0(height - margin.bottom)
 			.y1(d => y(d.y))
@@ -96,8 +98,8 @@ export function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: stri
 			yScale: y,
 			xTicks: xTicksValues,
 			yTicks: yTicksValues,
-			linePath: line(pts),
-			areaPath: area(pts),
+			linePath: l(pts),
+			areaPath: a(pts),
 			hasData: activeData,
 			xRangePadded: xRange
 		};
