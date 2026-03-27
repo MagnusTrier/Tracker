@@ -77,8 +77,8 @@ const DataReadyGatekeeper = () => {
 					<motion.div
 						key="app-content"
 						initial={{ opacity: 0, y: 10 }}
-						animate={showSettings ? { opacity: 0, y: "50%" } : { opacity: 1, y: 0 }}
-						transition={{ ease: "easeInOut" }}
+						animate={!showSettings ? { opacity: 1, y: 0, visibility: "visible" } : { opacity: 0, y: "100%", visibility: "hidden" }}
+						transition={{ ease: "easeInOut", duration: 0.5 }}
 						className="app-container-inner"
 					>
 						<Swiper

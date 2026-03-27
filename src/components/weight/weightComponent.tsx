@@ -1,39 +1,61 @@
 import { useData, type WeightLog } from "../dataContext"
 import { D3Chart } from "../chart/chart"
 import "./weighComponent.css"
-import { useEffect, useRef, useState, type MouseEvent } from "react"
-import { WheelPickerWrapper, WheelPicker } from "../wheelPicker.tsx"
-import { VscListFilter } from "react-icons/vsc"
-import { isToday } from 'date-fns'
-import { Card } from "../generics.tsx"
-import DatePicker from "react-datepicker"
+import { useEffect, useState, type MouseEvent } from "react"
+import { Card, CustomButton, RulerPicker } from "../generics.tsx"
+import { useOutsideClick } from "../../lib/outsideClick.ts"
 import "react-datepicker/dist/react-datepicker.css"
-import { format } from "date-fns"
+import { format, isSameDay } from "date-fns"
 import { RiDeleteBin5Line, RiCloseLine } from "react-icons/ri";
 import { motion, AnimatePresence } from "motion/react"
 import { ScaleLoader } from "react-spinners"
+import { IoIosTrendingDown, IoIosTrendingUp } from "react-icons/io"
+import { createPortal } from "react-dom"
+import { Datepicker } from "../datepicker/datepicker.tsx"
 
 export const WeightComponent = () => {
 	return (
 		<>
+			<CurrentWeight />
 			<WeightAnalytics />
 			<LogWeight />
 		</>
 	)
 }
 
+const CurrentWeight = () => {
+	const { weightLogs } = useData()
+	const stats = calculateAverages(weightLogs.values);
+
+	return (
+		<Card
+			hideSettings
+			header={<span style={{ color: "var(--color-primary)" }}>CURRENT WEIGHT</span>}
+		>
+			<div className="current-weight-container">
+				<span className="current-weight">
+					{stats.currentAvg}
+					<span> KG</span>
+				</span>
+				<span className="stats">{Number(stats.diff) > 0 ? <IoIosTrendingUp style={{ fontSize: 24 }} /> : <IoIosTrendingDown style={{ fontSize: 24 }} />}{stats.diff}</span>
+				{/* <span> VS LAST WEEK</span> */}
+
+			</div>
+
+		</Card>
+
+	)
+}
+
 const WeightAnalytics = () => {
 	const { weightLogs } = useData()
 
-	const stats = calculateAverages(weightLogs.values);
 	return (
 		<Card
-			header="Weight Analytics"
-			subHeader="Analyse the progression of your weight"
+			header="WEIGHT ANALYTICS"
 			settings={<WeightAnalyticsSettings />}
 			settingsStyle={{ overflow: "hidden" }}
 		>
-			<h3>Weight: {stats.currentAvg} ({stats.diff})</h3>
 			<D3Chart data={weightLogs.values} yAccessor="weight" />
 		</Card>
 	)
@@ -128,7 +150,6 @@ const WeightLogItem = (props: { item: WeightLog, onClick: (val: string) => void 
 					onClick={(e) => {
 						e.preventDefault()
 						e.stopPropagation()
-						// props.onClick(props.item.id)
 						setShowPrompt(true)
 					}}
 				>
@@ -178,151 +199,70 @@ const WeightLogItem = (props: { item: WeightLog, onClick: (val: string) => void 
 	)
 }
 
-const optionsInt = Array.from({ length: 100 }, (_, i) => ({ label: `${i}`, value: i }));
-const optionsDecimal = Array.from({ length: 10 }, (_, i) => ({ label: `${i}`, value: i }));
-
 const LogWeight = () => {
 	const { weightLogs } = useData()
 	const latestWeight = weightLogs.values[0]?.weight ?? 0;
 
-	const [weightInt, setWeightInt] = useState<number>(Math.trunc(latestWeight));
-	const [weightDecimal, setWeightDecimal] = useState<number>(Math.round((latestWeight - Math.trunc(latestWeight)) * 10));
+	const [logValue, setLogValue] = useState<number>(latestWeight)
+	const [showDatePicker, setShowDatePicker] = useState<boolean>(false)
 
-	const hasEnteredWeightToday = weightLogs.values.length
-		? isToday(weightLogs.values[0].date)
+
+	const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
+
+	const isDateAlreadyLogged = selectedDate
+		? weightLogs.values.some(log => isSameDay(log.date, selectedDate))
 		: false;
 
 	const handlePostWeight = async (e: MouseEvent) => {
 		e.preventDefault()
 		e.stopPropagation()
-		if (hasEnteredWeightToday) return
 
-		weightLogs.manager.post({ weight: weightInt + weightDecimal / 10 })
+		if (selectedDate) {
+			weightLogs.manager.post({ weight: logValue, date: selectedDate })
+		}
+
 	}
+
+	const ref = useOutsideClick<HTMLDivElement>(() => setShowDatePicker(false))
 
 	return (
 		<Card
-			header="Log Weight"
-			subHeader="Scroll to register today's value"
-			settings={<LogWeightSettings />}
+			header="LOG WEIGHT"
+			subHeader="SLIDE TO ADJUST YOUR DAILY ENTRY"
 			contentStyle={{
-				alignItems: "center"
+				alignItems: "center",
+				overflow: "visible"
 			}}
+			onSettingsClick={() => setShowDatePicker((prev) => !prev)}
+			settings=""
 		>
-			<div className="weight-wheelpicker">
-				<WheelPickerWrapper className="www" >
-					<WheelPicker
-						options={optionsInt}
-						value={weightInt}
-						onValueChange={setWeightInt}
-						infinite
-					/>
-				</WheelPickerWrapper>
-				<WheelPickerWrapper className="www">
-					<WheelPicker
-						options={optionsDecimal}
-						value={weightDecimal}
-						onValueChange={setWeightDecimal}
-						infinite
-						dragSensitivity={5}
-					/>
-				</WheelPickerWrapper>
-				<div className="highlight">
-					<VscListFilter style={{ rotate: "-90deg" }} />
-					<span style={{ fontSize: 24, color: "var(--color-text)", paddingBottom: 8 }}>.</span>
-					<VscListFilter style={{ rotate: "90deg" }} />
-				</div>
-			</div>
-			<button
-				className={!hasEnteredWeightToday ? "active" : ""}
-				onClick={handlePostWeight}>
-				<span style={hasEnteredWeightToday ? { fontWeight: 300 } : {}}>{hasEnteredWeightToday ? "Already logged today" : "SAVE ENTRY"}</span>
-			</button>
+			<RulerPicker displayValue={logValue} setDisplayValue={setLogValue} date={selectedDate} />
+			<CustomButton
+				text={{
+					default: "SAVE ENTRY",
+					disabled: "ALREADY LOGGED"
+				}}
+				disabled={isDateAlreadyLogged}
+				onClick={handlePostWeight}
+			/>
+			{
+				createPortal(
+					<motion.div
+						className="datepicker-container"
+						animate={showDatePicker ? { opacity: 1, visibility: "visible" } : { opacity: 0, visibility: "hidden" }}
+						transition={{ duration: 0.3, ease: "easeInOut" }}
+					>
+						<Datepicker
+							ref={ref}
+							selectedDate={selectedDate}
+							onSelect={(d) => { setSelectedDate(d); }}
+							excludeDates={weightLogs.values.map(val => val.date)}
+							visible={showDatePicker}
+						/>
+					</motion.div>
+					, document.body
+				)
+			}
 		</Card>
 	)
 }
-
-const LogWeightSettings = () => {
-	const { weightLogs } = useData()
-	const latestWeight = weightLogs.values[0]?.weight ?? 0
-
-	const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-	const [weightInt, setWeightInt] = useState<number>(Math.trunc(latestWeight))
-	const [weightDecimal, setWeightDecimal] = useState<number>(Math.round((latestWeight - Math.trunc(latestWeight)) * 10))
-
-	const handlePostWeight = async (e: MouseEvent) => {
-		e.preventDefault()
-		e.stopPropagation()
-		if (!selectedDate) return
-
-		weightLogs.manager.post({ weight: weightInt + weightDecimal / 10, date: selectedDate }, { onSuccess: () => { setSelectedDate(null) } })
-	}
-	return (
-		<>
-			<h3>Log Weight for a different day</h3>
-			<div
-				className="log-weight-settings"
-			>
-				<MyDatePicker selectedDate={selectedDate} setSelectedDate={setSelectedDate} excluded={weightLogs.values.map(log => log.date)} />
-				<div className="weight-wheelpicker">
-					<WheelPickerWrapper className="www" >
-						<WheelPicker
-							options={optionsInt}
-							value={weightInt}
-							onValueChange={setWeightInt}
-							infinite
-						/>
-					</WheelPickerWrapper>
-					<WheelPickerWrapper className="www">
-						<WheelPicker
-							options={optionsDecimal}
-							value={weightDecimal}
-							onValueChange={setWeightDecimal}
-							infinite
-							dragSensitivity={5}
-						/>
-					</WheelPickerWrapper>
-					<div className="highlight">
-						<VscListFilter style={{ rotate: "-90deg" }} />
-						<span style={{ fontSize: 24, color: "var(--color-text)", paddingBottom: 8 }}>.</span>
-						<VscListFilter style={{ rotate: "90deg" }} />
-					</div>
-				</div>
-				<button
-					className={selectedDate ? "active" : ""}
-					onClick={handlePostWeight}>
-					<span style={!selectedDate ? { fontWeight: 300 } : {}}>{!selectedDate ? "Please select date" : "SAVE ENTRY"}</span>
-				</button>
-			</div>
-		</>
-	)
-}
-
-const MyDatePicker = (props: { selectedDate: Date | null, setSelectedDate: (val: Date | null) => void, excluded: Date[] }) => {
-
-	const datePickerRef = useRef<DatePicker>(null);
-
-	const handleDateChange = (date: Date | null) => {
-		props.setSelectedDate(date);
-		if (datePickerRef.current) {
-			datePickerRef.current.setOpen(false);
-		}
-	};
-
-	return (
-		<DatePicker
-			ref={datePickerRef}
-			selected={props.selectedDate}
-			onChange={handleDateChange}
-			excludeDates={props.excluded}
-			className="my-custom-input"
-			calendarClassName="my-custom-calendar"
-			placeholderText="Click to select date"
-			dateFormat="MMMM d, yyyy"
-			customInput={<input inputMode="none" className="datepicker-input" />}
-			portalId="datepicker-portal"
-			withPortal
-		/>
-	);
-};
-

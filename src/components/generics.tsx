@@ -1,18 +1,24 @@
-import { VscSettings } from "react-icons/vsc"
-import { useOutsideClick } from "../lib/outsideClick";
+import { useOutsideClick } from "../lib/outsideClick"
 import { useState, useEffect } from "react"
 import { useSession } from "./sessionContext"
-import { AnimatePresence, motion } from "motion/react";
-import { createPortal } from "react-dom";
+import { createPortal } from "react-dom"
+import { HiOutlineDotsHorizontal } from "react-icons/hi"
+import { IoCalendarClearOutline } from "react-icons/io5"
+import { useMotionValue, useSpring, useTransform, useMotionValueEvent, motion } from "framer-motion"
+import { useDrag } from "@use-gesture/react"
+import { format } from "date-fns"
 
 interface CardProps {
-	header: string;
-	subHeader: string | React.ReactNode;
-	children: React.ReactNode;
-	settings?: React.ReactNode;
-	contentStyle?: React.CSSProperties;
-	settingsStyle?: React.CSSProperties;
-	hideSettings?: boolean;
+	header?: string | React.ReactNode
+	subHeader?: React.ReactNode
+	children: React.ReactNode
+	settings?: React.ReactNode
+	contentStyle?: React.CSSProperties
+	settingsStyle?: React.CSSProperties
+	hideSettings?: boolean
+	ref?: React.RefObject<HTMLDivElement | null>
+	id?: string
+	onSettingsClick?: () => void
 }
 
 export const Card = (props: CardProps) => {
@@ -24,7 +30,6 @@ export const Card = (props: CardProps) => {
 
 	useEffect(() => {
 		!showSettings && setVisible(false)
-		console.log(props.settings, isSettingsCard)
 	}, [showSettings])
 
 	const toggleSettings = (e?: React.MouseEvent) => {
@@ -37,77 +42,90 @@ export const Card = (props: CardProps) => {
 	const ref = useOutsideClick<HTMLDivElement>(() => setShowSettings(false))
 
 	return (
-		<div
-			className="blur card"
-		>
+		<>
 			<div
-				className="header-row"
+				id={props.id}
+				ref={props.ref}
+				className="blur card"
 			>
-				<h1>
-					<HeaderIcon />
-					{props.header}
-				</h1>
+				<div
+					className="header-row"
+				>
+					{
 
+						props.header &&
+						<h1>
+							<HeaderIcon />
+							{props.header}
+
+							{
+								!props.hideSettings &&
+
+								<div
+									className="settings-icon"
+									style={isSettingsCard ? {
+										color: "var(--color-text)",
+										borderColor: "var(--color-primary)",
+										boxShadow: "0 0 14px color-mix(in srgb, var(--color-primary), transparent 70%)"
+									} : {}}
+									onClick={props.onSettingsClick ?? toggleSettings}
+								>
+									<HiOutlineDotsHorizontal />
+								</div>
+							}
+						</h1>
+
+					}
+				</div>
 				{
-					!props.hideSettings &&
-
-					<div
-						className="settings-icon"
-						style={isSettingsCard ? { backgroundColor: "#0008", borderColor: "var(--color-primary)", boxShadow: "0 0 2px 0 var(--color-primary)" } : {}}
-						onClick={toggleSettings}
-					>
-						<VscSettings />
-					</div>
+					props.subHeader &&
+					<h2>
+						{props.subHeader}
+					</h2>
 				}
-			</div>
-			<h2>
-				{props.subHeader}
-			</h2>
-			<div
-				className="card-content"
-				style={props.contentStyle}
-			>
-				{props.children}
+				<div
+					className="card-content"
+					style={props.contentStyle}
+				>
+					{props.children}
+				</div>
 			</div>
 			{
 				!isSettingsCard &&
-				<AnimatePresence>
-					{visible && (
-						<div key="portal-wrapper">
-							{createPortal(
-								<motion.div
-									key="settings-tray"
-									className="settings-container"
-									initial={{ opacity: 0, y: "-100%" }}
-									animate={{ opacity: 1, y: 0 }}
-									exit={{ opacity: 0, y: "-100%" }}
-									transition={{ ease: "easeInOut" }}
-								>
-									<div
-										ref={ref}
-									>
-										<Card
-											header="Settings"
-											subHeader={<span>Additional settings for <span style={{ color: "var(--color-primary)" }}>{props.header.toLowerCase()}</span></span>}
-											contentStyle={props.settingsStyle}
-										>
-											{props.settings}
-										</Card>
+				createPortal(
+					<motion.div
+						key="settings-tray"
+						className="settings-container"
+						initial={{ opacity: 0, visibility: "hidden" }}
+						animate={visible ? { opacity: 1, y: 0, visibility: "visible", } : { opacity: 0, y: "-100%", visibility: "hidden" }}
+						transition={{ ease: "easeInOut", duration: 0.5 }}
+					>
+						<Card
+							id="datepicker-portal"
+							ref={ref}
+							header="SETTINGS"
+							subHeader={
+								<span>
+									SETTINGS FOR <span style={{ color: "var(--color-primary)" }}>
+										{props.header}
+									</span>
 
-									</div>
-								</motion.div>,
-								document.body
-							)}
-						</div>
-					)}
-				</AnimatePresence>
+								</span>
+							}
+							contentStyle={props.settingsStyle}
+						>
+							{props.settings}
+						</Card>
+					</motion.div>,
+					document.body
+				)
 			}
-		</div>
+		</>
 	)
 }
 
 interface HeaderIconProps {
-	style?: React.CSSProperties;
+	style?: React.CSSProperties
 }
 
 export const HeaderIcon = ({ style }: HeaderIconProps) => {
@@ -155,5 +173,111 @@ export const HeaderIcon = ({ style }: HeaderIconProps) => {
 				</filter>
 			</defs>
 		</svg>
+	)
+}
+
+const RANGE_MIN = 70
+const RANGE_MAX = 100
+const TICK_SPACING = 20
+const INITIAL_VALUE = 82.5
+
+const TOTAL_TICKS = (RANGE_MAX - RANGE_MIN) * 10
+const INITIAL_OFFSET = (INITIAL_VALUE - RANGE_MIN) * 10 * -TICK_SPACING
+
+export const RulerPicker = (props: { displayValue: number, setDisplayValue: (val: number) => void, date: Date | null }) => {
+	const offset = useMotionValue(INITIAL_OFFSET)
+
+	const springOffset = useSpring(offset, {
+		stiffness: 150,
+		damping: 25,
+		mass: 0.8
+	})
+
+	const numericValue = useTransform(
+		springOffset,
+		[0, -TOTAL_TICKS * TICK_SPACING],
+		[RANGE_MIN, RANGE_MAX]
+	)
+
+	useMotionValueEvent(numericValue, "change", (latest) => {
+		props.setDisplayValue(Math.round(latest * 10) / 10)
+	})
+
+	const bind = useDrag(({ offset: [x], last, memo }) => {
+		const minScroll = -TOTAL_TICKS * TICK_SPACING
+		const maxScroll = 0
+
+		if (last) {
+			const snappedValue = Math.round(x / TICK_SPACING) * TICK_SPACING
+			offset.set(Math.max(minScroll, Math.min(maxScroll, snappedValue)))
+		} else {
+			offset.set(Math.max(minScroll, Math.min(maxScroll, x)))
+		}
+
+		return memo
+	}, {
+		from: () => [offset.get(), 0],
+		rubberband: true,
+	})
+
+	return (
+		<div className="slider-slide-container">
+
+			{
+				props.date &&
+				<div className="date">
+					<IoCalendarClearOutline fontSize={15} />
+					{format(props.date, "MMM d").toUpperCase()}
+				</div>
+			}
+			<div className="value-display">
+				{props.displayValue.toFixed(1)}
+				<span>KG</span>
+			</div>
+			<div className="scroller-wrapper">
+				<div className="center-indicator" />
+				<div {...bind()} className="touch-area swiper-no-swiping">
+					<motion.div
+						className="ruler-track"
+						style={{ x: springOffset }}
+					>
+						{[...Array(TOTAL_TICKS + 1)].map((_, i) => {
+							const val = RANGE_MIN + i / 10
+							const isMajor = i % 10 === 0
+							return (
+								<div key={i} className="tick-item" style={{ width: TICK_SPACING }}>
+									<div className={`tick-line ${isMajor ? 'major' : 'minor'}`} />
+									{isMajor && (
+										<span className="tick-label">{val.toFixed(0)}</span>
+									)}
+								</div>
+							)
+						})}
+					</motion.div>
+				</div>
+			</div>
+		</div>
+	)
+}
+
+interface CustomButtonProps {
+	text: {
+		default: string,
+		disabled: string,
+	}
+	disabled: boolean
+	onClick: (e: React.MouseEvent) => void
+	style?: React.CSSProperties
+}
+
+export const CustomButton = (props: CustomButtonProps) => {
+	return (
+		<div
+			className={`custom-button ${props.disabled ? "" : "active"}`}
+			style={props.style}
+			onClick={props.onClick}
+		>
+			<span>{props.disabled ? props.text.disabled : props.text.default}</span>
+		</div>
 	)
 }
