@@ -1,25 +1,34 @@
 import "./App.css"
-import { useState, useEffect, lazy, Suspense } from 'react'
-import { Swiper, SwiperSlide } from "swiper/react"
+import { lazy, Suspense } from 'react'
 import { SessionProvider, useSession } from "./components/sessionContext"
-import { DataProvider, useData } from "./components/dataContext"
-import { motion, AnimatePresence } from "motion/react"
-import { Card } from "./components/generics.tsx"
-import { PropagateLoader } from "react-spinners"
+import { DataProvider } from "./components/dataContext"
 
-const WeightComponent = lazy(() => import("./components/weight/weightComponent"))
+const Card = lazy(() =>
+	import("./components/generics").then(module => ({ default: module.Card }))
+)
+
+const DataReadyGatekeeper = lazy(() => import("./components/dataReadyGatekeeper"))
+const LoadingScreen = lazy(() => import("./components/loading"))
+
 
 const AppContent = () => {
 	const { user, isLoading: authLoading, login } = useSession()
 
-	if (authLoading) return <LoadingScreen message="Checking session..." />
+	if (authLoading) return (
+		<Suspense fallback={<div>Loading...</div>}>
+			<LoadingScreen message="Checking session..." />
+		</Suspense>
+	)
+
 
 	if (!user) return <Login onLogin={login} />
 
 	return (
 		<DataProvider>
-			<DataReadyGatekeeper />
-		</DataProvider>
+			<Suspense fallback={<div>Loading DataReadyGatekeeper...</div>}>
+				<DataReadyGatekeeper />
+			</Suspense>
+		</DataProvider >
 	)
 }
 
@@ -28,110 +37,21 @@ const Login = (props: { onLogin: () => void }) => {
 		<div
 			className="login"
 		>
-			<Card
-				header="Welcome to Tracker"
-				subHeader="Since you're new here you need to log in"
-				contentStyle={{ alignItems: "center" }}
-				hideSettings
-			>
-				<button
-					className="active"
-					onClick={props.onLogin}
+			<Suspense fallback={<div>Loading card...</div>}>
+				<Card
+					header="Welcome to Tracker"
+					subHeader="Since you're new here you need to log in"
+					contentStyle={{ alignItems: "center" }}
+					hideSettings
 				>
-					<span>LOG IN</span>
-				</button>
-			</Card>
-		</div>
-	)
-}
-
-const DataReadyGatekeeper = () => {
-	const { showSettings } = useSession()
-	const { exercises, sets, weightLogs } = useData()
-	const [gracePeriodFinished, setGracePeriodFinished] = useState(false)
-
-	const [page, setPage] = useState<number>(0)
-
-	useEffect(() => {
-		const timer = setTimeout(() => setGracePeriodFinished(true), 1000)
-		return () => clearTimeout(timer)
-	}, [])
-
-	const isDataLoading = exercises.isLoading || sets.isLoading || weightLogs.isLoading
-	const showLoader = isDataLoading || !gracePeriodFinished
-
-	return (
-		<AnimatePresence >
-			{showLoader ? (
-				<motion.div
-					key="loader"
-					initial={{ opacity: 1 }}
-					exit={{ opacity: 0 }}
-					transition={{ ease: "easeInOut" }}
-				>
-					<LoadingScreen message="Syncing your logs..." />
-				</motion.div>
-			) : (
-				<div
-					className="app-container"
-				>
-					<motion.div
-						key="app-content"
-						initial={{ opacity: 0, y: 10 }}
-						animate={!showSettings ? { opacity: 1, y: 0, visibility: "visible" } : { opacity: 0, y: "100%", visibility: "hidden" }}
-						transition={{ ease: "easeInOut", duration: 0.5 }}
-						className="app-container-inner"
+					<button
+						className="active"
+						onClick={props.onLogin}
 					>
-						<Swiper
-							className="swiper-container"
-							slidesPerView={1}
-							threshold={10}
-							onSlideChange={(e) => setPage(e.activeIndex)}
-							allowSlidePrev={page !== 0}
-						>
-							<SwiperSlide
-								key="slide-1"
-								className="swiper-slide"
-							>
-								<Suspense fallback={<div>Loading Chart...</div>}>
-									<WeightComponent />
-								</Suspense>
-							</SwiperSlide>
-							<SwiperSlide
-								key="slide-2"
-								className="swiper-slide"
-							>
-								<Card
-									key="card 1"
-									header="Card 1"
-									subHeader="This is my very special card"
-									settings={<span>This is the settings for Card 1</span>}
-								>
-									<span>ree</span>
-								</Card>
-							</SwiperSlide>
-						</Swiper>
-
-						<div className="paginator-display">
-						</div>
-					</motion.div>
-				</div>
-			)}
-		</AnimatePresence>
-	)
-}
-
-const LoadingScreen = (props: { message: string }) => {
-	return (
-		<div
-			className="loading-screen"
-		>
-			<PropagateLoader
-				size={20}
-				color="var(--color-primary)"
-				className="loading-screen-spinner"
-			/>
-			<span>{props.message}</span>
+						<span>LOG IN</span>
+					</button>
+				</Card>
+			</Suspense>
 		</div>
 	)
 }
