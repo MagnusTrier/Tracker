@@ -8,26 +8,26 @@
 	overflow-y: auto;
 	overflow-x: hidden;
 	border-radius: var(--br);
+
+	margin-top: 5px;
 }
 
 .weight-log-item {
 	border-radius: var(--br);
 	display: grid;
-	grid-template-columns: 1fr 80px 60px;
-	height: 60px;
+	grid-template-columns: 1fr 100px 70px;
+	height: 70px;
 	position: relative;
-
 	background-color: var(--color-dark);
+
+	contain: layout paint;
+	transform: translateZ(0);
 }
 
 .weight-log-item:not(:last-child) {
 	margin-bottom: 7px;
 }
 
-.weight-log-item>span,
-.weight-log-item>div {
-	height: 100%;
-}
 
 .weight-log-item>div {
 	display: flex;
@@ -43,6 +43,7 @@
 	border-radius: var(--br) 0 0 var(--br);
 	align-items: start;
 	font-size: 14px;
+	font-weight: 600;
 }
 
 .weight-log-item-container .date-container::before {
@@ -59,7 +60,7 @@
 .weight-log-item-container .date-container span:first-child {
 	color: var(--color-primary);
 	font-size: 12px;
-	font-weight: 600;
+	font-weight: 700;
 	letter-spacing: 0.05;
 }
 
@@ -72,8 +73,8 @@
 	border-radius: 50%;
 	background-color: color-mix(in srgb, var(--color-error), transparent 95%);
 	border: 1px solid color-mix(in srgb, var(--color-error), transparent 95%);
-	height: 100%;
-	width: 100%;
+	height: 90%;
+	aspect-ratio: 1;
 	color: var(--color-error);
 	display: flex;
 	align-items: center;
@@ -85,14 +86,14 @@
 	flex-direction: row;
 	justify-content: start;
 	gap: 5px;
-	font-size: 18px;
-	font-weight: 600;
+	font-size: 22px;
+	font-weight: 700;
 }
 
 .weight-log-item-container .weight span {
-	font-size: 13px;
+	font-size: 16px;
 	color: var(--text-dim);
-	margin-top: 5px;
+	margin-top: 4px;
 }
 
 .weight-log-item-container .confirm-delete {
@@ -114,16 +115,20 @@
 	z-index: 10;
 }
 
+.current-weight-container,
+.weight-log-item {
+	will-change: transform, opacity;
+}
+
 .weight-log-item-container .confirm-delete>div {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	height: 60px;
 
 	border-radius: 50%;
 	background-color: color-mix(in srgb, var(--color), transparent 95%);
 	border: 1px solid color-mix(in srgb, var(--color), transparent 95%);
-	height: 100%;
+	height: 90%;
 	aspect-ratio: 1;
 	color: var(--color);
 	display: flex;
@@ -168,7 +173,7 @@
 	color: var(--color-yellow);
 	box-shadow: 0 0 20px color-mix(in srgb, var(--color-yellow), transparent 95%);
 	padding: 5px 8px;
-	border-radius: 50px;
+	border-radius: 10px;
 	display: flex;
 	align-items: center;
 	height: 34px;

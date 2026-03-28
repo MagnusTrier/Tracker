@@ -2,35 +2,47 @@ import { useOutsideClick } from "../lib/outsideClick"
 import { useState, useEffect } from "react"
 import { useSession } from "./sessionContext"
 import { createPortal } from "react-dom"
-import { HiOutlineDotsHorizontal } from "react-icons/hi"
+import { HiOutlineDotsHorizontal, HiX } from "react-icons/hi"
 import { IoCalendarClearOutline } from "react-icons/io5"
 import { useMotionValue, useSpring, useTransform, useMotionValueEvent, motion } from "framer-motion"
 import { useDrag } from "@use-gesture/react"
 import { format } from "date-fns"
+import { ScaleLoader } from "react-spinners"
 
 interface CardProps {
 	header?: string | React.ReactNode
 	subHeader?: React.ReactNode
 	children: React.ReactNode
-	settings?: React.ReactNode
+	settings?: React.ReactNode | ((val: boolean) => React.ReactNode | null)
 	contentStyle?: React.CSSProperties
 	settingsStyle?: React.CSSProperties
 	hideSettings?: boolean
 	ref?: React.RefObject<HTMLDivElement | null>
 	id?: string
 	onSettingsClick?: () => void
+	settingsSubheader?: string
 }
 
 export const Card = (props: CardProps) => {
 	const { showSettings, setShowSettings } = useSession()
 
 	const [visible, setVisible] = useState<boolean>(false)
+	const [showConditionalSettings, setShowConditionalSettings] = useState<boolean>(false)
 	const isSettingsCard = props.settings === undefined
 
 
 	useEffect(() => {
 		!showSettings && setVisible(false)
 	}, [showSettings])
+
+	useEffect(() => {
+		if (visible) {
+			setShowConditionalSettings(true)
+		} else {
+			const timer = setTimeout(() => setShowConditionalSettings(false), 500)
+			return () => clearTimeout(timer)
+		}
+	}, [visible])
 
 	const toggleSettings = (e?: React.MouseEvent) => {
 		e?.stopPropagation()
@@ -64,13 +76,18 @@ export const Card = (props: CardProps) => {
 								<div
 									className="settings-icon"
 									style={isSettingsCard ? {
-										color: "var(--color-text)",
-										borderColor: "var(--color-primary)",
-										boxShadow: "0 0 14px color-mix(in srgb, var(--color-primary), transparent 70%)"
+										fontSize: 18
 									} : {}}
 									onClick={props.onSettingsClick ?? toggleSettings}
 								>
-									<HiOutlineDotsHorizontal />
+
+									{
+										isSettingsCard
+											?
+											<HiX />
+											:
+											<HiOutlineDotsHorizontal />
+									}
 								</div>
 							}
 						</h1>
@@ -97,7 +114,7 @@ export const Card = (props: CardProps) => {
 						key="settings-tray"
 						className="settings-container"
 						initial={{ opacity: 0, visibility: "hidden" }}
-						animate={visible ? { opacity: 1, y: 0, visibility: "visible", } : { opacity: 0, y: "-100%", visibility: "hidden" }}
+						animate={visible ? { opacity: 1, y: 0, visibility: "visible", } : { opacity: 0, y: "-100vh", visibility: "hidden" }}
 						transition={{ ease: "easeInOut", duration: 0.5 }}
 					>
 						<Card
@@ -105,6 +122,8 @@ export const Card = (props: CardProps) => {
 							ref={ref}
 							header="SETTINGS"
 							subHeader={
+								props.settingsSubheader
+								??
 								<span>
 									SETTINGS FOR <span style={{ color: "var(--color-primary)" }}>
 										{props.header}
@@ -114,7 +133,7 @@ export const Card = (props: CardProps) => {
 							}
 							contentStyle={props.settingsStyle}
 						>
-							{props.settings}
+							{typeof props.settings === "function" ? props.settings(showConditionalSettings) : props.settings}
 						</Card>
 					</motion.div>,
 					document.body
@@ -266,18 +285,40 @@ interface CustomButtonProps {
 		disabled: string,
 	}
 	disabled: boolean
-	onClick: (e: React.MouseEvent) => void
+	onClick: (e: React.MouseEvent, setLoading: (val: boolean) => void) => void
 	style?: React.CSSProperties
 }
 
 export const CustomButton = (props: CustomButtonProps) => {
+	const [loading, setLoading] = useState<boolean>(false)
+
+	useEffect(() => {
+		if (props.disabled) {
+			setLoading(false)
+		}
+	}, [props.disabled])
+
 	return (
 		<div
 			className={`custom-button ${props.disabled ? "" : "active"}`}
 			style={props.style}
-			onClick={props.onClick}
+			onClick={(e) => props.onClick(e, setLoading)}
 		>
-			<span>{props.disabled ? props.text.disabled : props.text.default}</span>
+			{
+				props.disabled
+					?
+					<span>
+						{props.text.disabled}
+					</span>
+					:
+					loading ?
+						<ScaleLoader
+							height={18.5}
+							radius={2}
+							color="#000"
+						/> :
+						<span>{props.text.default}</span>
+			}
 		</div>
 	)
 }

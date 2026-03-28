@@ -1,5 +1,5 @@
 import "./chart.css";
-import { useMemo, useState, useRef, useEffect } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import { scaleTime, scaleLinear } from "d3-scale"
 import { extent } from "d3-array"
 import { line, area, curveCatmullRom } from "d3-shape"
@@ -12,7 +12,7 @@ const GRID_COLOR = "rgba(40, 40, 48, 1)";
 const TEXT_COLOR = "var(--text-dim)";
 const BG_COLOR = "#16161e";
 
-export function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: string }) {
+function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: string }) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
@@ -114,7 +114,7 @@ export function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: stri
 	const TOTAL_DURATION = 1.6;
 
 	return (
-		<div ref={containerRef} className="chart" style={styles.container}>
+		<div ref={containerRef} style={styles.container}>
 			{dimensions.width > 0 && (
 				<svg key={JSON.stringify(data)} width={dimensions.width} height={dimensions.height} style={styles.svg}>
 					<defs>
@@ -203,3 +203,5 @@ export function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: stri
 		</div>
 	);
 }
+
+export default React.memo(D3Chart)

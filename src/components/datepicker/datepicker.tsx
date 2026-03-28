@@ -18,10 +18,9 @@ interface Props {
 	onSelect: (date: Date) => void;
 	excludeDates?: Date[];
 	ref?: React.RefObject<HTMLDivElement | null>;
-	visible: boolean;
 }
 
-export const Datepicker = ({ selectedDate, onSelect, excludeDates = [], ref, visible }: Props) => {
+export const Datepicker = ({ selectedDate, onSelect, excludeDates = [], ref }: Props) => {
 	const [viewDate, setViewDate] = useState(new Date());
 
 	const monthStart = startOfMonth(viewDate);
@@ -59,8 +58,9 @@ export const Datepicker = ({ selectedDate, onSelect, excludeDates = [], ref, vis
 		<motion.div
 			ref={ref}
 			className="custom-calendar card blur"
-			initial={{ y: "100%", opacity: 0 }}
-			animate={visible ? { y: 0, opacity: 1 } : { y: "100%", opacity: 0 }}
+			initial={{ opacity: 0, y: "100%" }}
+			animate={{ opacity: 1, y: 0 }}
+			exit={{ opacity: 0, y: "100%" }}
 			transition={{ ease: "easeInOut", duration: 0.3 }}
 		>
 			<div className="calendar-header">
@@ -74,8 +74,8 @@ export const Datepicker = ({ selectedDate, onSelect, excludeDates = [], ref, vis
 			</div>
 
 			<div className="weekdays-grid">
-				{['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
-					<div key={d} className="weekday">{d}</div>
+				{['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+					<div key={`${d}-${i}`} className="weekday">{d}</div>
 				))}
 			</div>
 

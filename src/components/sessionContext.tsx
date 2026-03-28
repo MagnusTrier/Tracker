@@ -63,10 +63,6 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
 		return () => subscription.unsubscribe()
 	}, [])
 
-	useEffect(() => {
-		console.log(user)
-	}, [user])
-
 	const login = async () => {
 		const { error } = await supabase.auth.signInWithOAuth({
 			provider: "google",

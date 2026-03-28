@@ -1,7 +1,6 @@
 import { useData, type WeightLog } from "../dataContext"
-import { D3Chart } from "../chart/chart"
 import "./weighComponent.css"
-import { useMemo, useEffect, useState, type MouseEvent } from "react"
+import React, { useEffect, useMemo, useState, type MouseEvent, lazy } from "react"
 import { Card, CustomButton, RulerPicker } from "../generics.tsx"
 import { useOutsideClick } from "../../lib/outsideClick.ts"
 import "react-datepicker/dist/react-datepicker.css"
@@ -12,6 +11,8 @@ import { ScaleLoader } from "react-spinners"
 import { IoIosTrendingDown, IoIosTrendingUp } from "react-icons/io"
 import { createPortal } from "react-dom"
 import { Datepicker } from "../datepicker/datepicker.tsx"
+
+const D3Chart = lazy(() => import("../chart/chart"))
 
 const WeightComponent = () => {
 	return (
@@ -25,14 +26,16 @@ const WeightComponent = () => {
 
 const CurrentWeight = () => {
 	const { weightLogs } = useData()
-	const stats = calculateAverages(weightLogs.values);
+	const stats = useMemo(() =>
+		calculateAverages(weightLogs.values),
+		[weightLogs.values]
+	)
 
 	return (
 		<Card
 			hideSettings
 			header={<span style={{ color: "var(--color-primary)", textShadow: "0 0 15px color-mix(in srgb, var(--color-primary), transparent 50%)" }}>CURRENT WEIGHT</span>}
 			contentStyle={{ marginBottom: -4 }}
-
 		>
 			<div className="current-weight-container">
 				<span className="current-weight">
@@ -71,6 +74,12 @@ const modes = ["7D", "14D", "30D", "ALL"]
 const WeightAnalytics = () => {
 	const { weightLogs } = useData()
 	const [mode, setMode] = useState<string>("7D")
+	const [isReady, setIsReady] = useState<boolean>(false)
+
+	useEffect(() => {
+		const timer = setTimeout(() => setIsReady(true), 400)
+		return () => clearTimeout(timer)
+	}, [])
 
 	const filteredData = useMemo(() => {
 		const now = new Date()
@@ -82,13 +91,14 @@ const WeightAnalytics = () => {
 		return weightLogs.values.filter(item => {
 			return isAfter(item.date, cutoff)
 		})
-	}, [mode, weightLogs])
+	}, [mode, weightLogs.values])
 
 	return (
 		<Card
 			header="WEIGHT ANALYTICS"
-			settings={<WeightAnalyticsSettings />}
+			settings={(isOpen) => isOpen ? <WeightAnalyticsSettings /> : null}
 			settingsStyle={{ overflow: "hidden" }}
+			settingsSubheader="YOUR WEIGHT LOG HISTORY"
 		>
 			<div style={navWrapper}>
 				<ul style={tabsList}>
@@ -112,7 +122,7 @@ const WeightAnalytics = () => {
 										transition={{
 											type: "spring",
 											bounce: 0.2,
-											duration: 0.6
+											duration: 0.5
 										}}
 									/>
 								)}
@@ -121,7 +131,12 @@ const WeightAnalytics = () => {
 					})}
 				</ul>
 			</div>
-			<D3Chart data={filteredData} yAccessor="weight" />
+			<div className="chart">
+				{
+					isReady &&
+					<D3Chart data={filteredData} yAccessor="weight" />
+				}
+			</div>
 		</Card>
 	)
 }
@@ -129,8 +144,8 @@ const WeightAnalytics = () => {
 
 const navWrapper: React.CSSProperties = {
 	background: "var(--color-dark)",
-	borderRadius: "7px",
-	marginBlock: 3,
+	borderRadius: "10px",
+	marginTop: 6,
 }
 
 const tabsList: React.CSSProperties = {
@@ -160,7 +175,7 @@ const activeIndicator: React.CSSProperties = {
 	position: "absolute",
 	inset: 0,
 	background: "color-mix(in srgb, var(--color-primary), transparent 90%)",
-	borderRadius: "5px",
+	borderRadius: "10px",
 	border: "1px solid color-mix(in srgb, var(--color-primary), transparent 80%)",
 	zIndex: 1,
 	boxShadow: "0 0 4px color-mix(in srgb, var(--color-primary), transparent 80%)",
@@ -174,41 +189,40 @@ const WeightAnalyticsSettings = () => {
 		weightLogs.manager.delete(id, { minTime: 1000 })
 	}
 
+	const logList = useMemo(() => {
+		return weightLogs.values.map((log) => (
+			<WeightLogItem
+				key={log.id}
+				item={log}
+				onClick={deleteLog}
+			/>
+		))
+	}, [weightLogs.values])
+
+	if (!weightLogs.values.length) return (
+		<div
+			className="date-container"
+			style={{
+				display: "flex",
+				alignItems: "center",
+				paddingLeft: 10,
+				height: 60,
+				backgroundColor: "var(--color-dark)",
+				color: "var(--text-dim)"
+			}}
+		>
+			You have not logged any weight yet
+		</div>
+	)
+
 	return (
-		<>
-			<h3>History</h3>
-			<div
-				className="weight-log-item-container"
-			>
-				<AnimatePresence mode="popLayout">
-					{
-						weightLogs.values.length
-							?
-							weightLogs.values.map((log) => (
-								<WeightLogItem
-									key={log.id}
-									item={log}
-									onClick={deleteLog}
-								/>
-							))
-							:
-							<div
-								className="date-container"
-								style={{
-									display: "flex",
-									alignItems: "center",
-									paddingLeft: 10,
-									height: 60,
-									backgroundColor: "var(--color-dark)",
-									color: "var(--text-dim)"
-								}}
-							>
-								You have not logged any weight yet
-							</div>
-					}
-				</AnimatePresence>
-			</div>
-		</>
+		<div
+			className="weight-log-item-container"
+		>
+			<AnimatePresence mode="popLayout">
+				{logList}
+			</AnimatePresence>
+		</div>
 	)
 }
 
@@ -216,9 +230,6 @@ const WeightLogItem = (props: { item: WeightLog, onClick: (val: string) => void 
 	const [showPrompt, setShowPrompt] = useState<boolean>(false)
 	const [loading, setLoading] = useState<boolean>(false)
 
-	useEffect(() => {
-		console.log(loading, Date.now())
-	}, [loading])
 	return (
 		<motion.div
 			className="weight-log-item"
@@ -230,9 +241,9 @@ const WeightLogItem = (props: { item: WeightLog, onClick: (val: string) => void 
 		>
 			<div className="date-container">
 				<span>{format(props.item.date, "EEEE").toUpperCase()}</span>
-				<span>{format(props.item.date, "PP")}</span>
+				<span>{format(props.item.date, "PP").toUpperCase()}</span>
 			</div>
-			<div className="weight">{props.item.weight}<span>KG</span></div>
+			<div className="weight">{props.item.weight.toFixed(1)}<span>KG</span></div>
 			<div className="delete">
 				<div
 					onClick={(e) => {
@@ -301,12 +312,17 @@ const LogWeight = () => {
 		? weightLogs.values.some(log => isSameDay(log.date, selectedDate))
 		: false;
 
-	const handlePostWeight = async (e: MouseEvent) => {
+	const handlePostWeight = async (e: MouseEvent, setLoading: (val: boolean) => void) => {
 		e.preventDefault()
 		e.stopPropagation()
 
 		if (selectedDate) {
-			weightLogs.manager.post({ weight: logValue, date: selectedDate })
+			setLoading(true)
+			weightLogs.manager.post(
+				{ weight: logValue, date: selectedDate },
+				{
+					minTime: 1000
+				})
 		}
 
 	}
@@ -335,24 +351,33 @@ const LogWeight = () => {
 			/>
 			{
 				createPortal(
-					<motion.div
-						className="datepicker-container"
-						animate={showDatePicker ? { opacity: 1, visibility: "visible" } : { opacity: 0, visibility: "hidden" }}
-						transition={{ duration: 0.3, ease: "easeInOut" }}
-					>
-						<Datepicker
-							ref={ref}
-							selectedDate={selectedDate}
-							onSelect={(d) => { setSelectedDate(d); }}
-							excludeDates={weightLogs.values.map(val => val.date)}
-							visible={showDatePicker}
-						/>
-					</motion.div>
-					, document.body
+					<AnimatePresence>
+						{
+
+							showDatePicker &&
+							<motion.div
+								key="datepicker-modal"
+								className="datepicker-container"
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+								exit={{ opacity: 0 }}
+								transition={{ duration: 0.3, ease: "easeInOut" }}
+							>
+								<Datepicker
+									key="datepicker"
+									ref={ref}
+									selectedDate={selectedDate}
+									onSelect={(d) => { setSelectedDate(d); }}
+									excludeDates={weightLogs.values.map(val => val.date)}
+								/>
+							</motion.div>
+						}
+					</AnimatePresence>
+					, document.getElementById("datepicker-root")!
 				)
 			}
-		</Card>
+		</Card >
 	)
 }
 
-export default WeightComponent
+export default React.memo(WeightComponent)
