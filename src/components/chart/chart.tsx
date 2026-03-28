@@ -6,7 +6,6 @@ import { line, area, curveCatmullRom } from "d3-shape"
 import { format, subDays, startOfDay } from 'date-fns';
 import { motion } from 'framer-motion';
 
-// CONFIGURATION
 const PRIMARY_COLOR = "var(--color-primary)";
 const GRID_COLOR = "rgba(40, 40, 48, 1)";
 const TEXT_COLOR = "var(--text-dim)";
@@ -107,7 +106,7 @@ function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: string }) {
 
 	const styles = {
 		container: { width: '100%', height: '100%', minHeight: '200px', position: 'relative' as const },
-		svg: { display: 'block', overflow: 'visible' },
+		svg: { display: 'block', overflow: 'visible', },
 		gridLine: { stroke: GRID_COLOR, opacity: 0.5 },
 	};
 

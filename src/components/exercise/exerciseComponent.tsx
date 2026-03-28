@@ -1,5 +1,5 @@
 import type { Exercise } from "../dataContext"
-import { Card } from "../generics"
+import Card from "../card"
 
 interface ExerciseComponentProps {
 	exercise: Exercise

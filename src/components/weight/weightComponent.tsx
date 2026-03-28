@@ -1,7 +1,7 @@
 import { useData, type WeightLog } from "../dataContext"
 import "./weighComponent.css"
-import React, { useEffect, useMemo, useState, type MouseEvent, lazy } from "react"
-import { Card, CustomButton, RulerPicker } from "../generics.tsx"
+import React, { useEffect, useMemo, useState, type MouseEvent } from "react"
+import { CustomButton, RulerPicker } from "../generics.tsx"
 import { useOutsideClick } from "../../lib/outsideClick.ts"
 import "react-datepicker/dist/react-datepicker.css"
 import { format, isSameDay } from "date-fns"
@@ -11,8 +11,9 @@ import { ScaleLoader } from "react-spinners"
 import { IoIosTrendingDown, IoIosTrendingUp } from "react-icons/io"
 import { createPortal } from "react-dom"
 import { Datepicker } from "../datepicker/datepicker.tsx"
+import Card from "../card"
+import D3Chart from "../chart/chart"
 
-const D3Chart = lazy(() => import("../chart/chart"))
 
 const WeightComponent = () => {
 	return (
@@ -74,7 +75,7 @@ const modes = ["7D", "14D", "30D", "ALL"]
 const WeightAnalytics = () => {
 	const { weightLogs } = useData()
 	const [mode, setMode] = useState<string>("7D")
-	const [isReady, setIsReady] = useState<boolean>(false)
+	const [isReady, setIsReady] = useState<boolean>(true)
 
 	useEffect(() => {
 		const timer = setTimeout(() => setIsReady(true), 400)
@@ -373,7 +374,7 @@ const LogWeight = () => {
 							</motion.div>
 						}
 					</AnimatePresence>
-					, document.getElementById("datepicker-root")!
+					, document.getElementById("portal-root")!
 				)
 			}
 		</Card >

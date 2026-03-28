@@ -4,9 +4,9 @@ import { useData, type Exercise } from "./dataContext"
 import { AnimatePresence, motion } from "motion/react"
 import { Swiper, SwiperSlide } from "swiper/react"
 import { Virtual } from "swiper/modules"
+import LoadingScreen from "./loading"
 
 const WeightComponent = lazy(() => import("./weight/weightComponent"))
-const LoadingScreen = lazy(() => import("./loading"))
 const ExerciseComponent = lazy(() => import("./exercise/exerciseComponent"))
 
 const DataReadyGatekeeper = () => {
@@ -58,9 +58,7 @@ const DataReadyGatekeeper = () => {
 					exit={{ opacity: 0 }}
 					transition={{ ease: "easeInOut" }}
 				>
-					<Suspense fallback={<div>Loading...</div>}>
-						<LoadingScreen message="Syncing your logs..." />
-					</Suspense>
+					<LoadingScreen message="Syncing your logs..." />
 				</motion.div>
 			) : (
 				<div
