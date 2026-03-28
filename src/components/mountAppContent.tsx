@@ -7,6 +7,7 @@ import { Swiper, SwiperSlide } from "swiper/react"
 
 const WeightComponent = lazy(() => import("./weight/weightComponent"))
 const ExerciseComponent = lazy(() => import("./exercise/exerciseComponent"))
+const SettingsComponent = lazy(() => import("./settings/settings"))
 
 const MountAppContent = () => {
 	const { showSettings } = useSession()
@@ -17,8 +18,19 @@ const MountAppContent = () => {
 
 
 	const slides = useMemo(() => {
-		return ["weight-component", ...exercises.values]
+		return ["weight", ...exercises.values, "settings"]
 	}, [exercises.values])
+
+	const getComponent = (val: string) => {
+		switch (val) {
+			case "weight":
+				return <WeightComponent />
+			case "settings":
+				return <SettingsComponent />
+			default:
+				return <span>INVALID COMPONENT NAME</span>
+		}
+	}
 
 	return (
 		<AnimatePresence >
@@ -50,9 +62,9 @@ const MountAppContent = () => {
 								>
 									<DelayedMount isVisible={Math.abs(i - mountPage) <= 1} index={i}>
 										{
-											typeof s === "string" && s === "weight-component"
+											typeof s === "string"
 												?
-												<WeightComponent />
+												getComponent(s)
 												:
 												<ExerciseComponent exercise={s as Exercise} />
 										}
@@ -116,7 +128,7 @@ const Paginator = (props: { page: number, numPages: number }) => {
 						?
 						sliderStyle.active
 						:
-						props.page === 1
+						props.page !== props.numPages - 1
 							?
 							sliderStyle.isNext
 							:
@@ -143,7 +155,7 @@ const Paginator = (props: { page: number, numPages: number }) => {
 						?
 						sliderStyle.active
 						:
-						props.page === props.numPages - 2
+						props.page !== 0
 							?
 							sliderStyle.isNext
 							:

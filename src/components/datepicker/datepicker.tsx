@@ -1,5 +1,4 @@
-import { motion } from "motion/react"
-import { useState } from 'react';
+import { useState } from 'react'
 import { GoTriangleLeft, GoTriangleRight } from "react-icons/go"
 import {
 	format,
@@ -10,35 +9,35 @@ import {
 	getDay,
 	isSameDay,
 	isToday
-} from 'date-fns';
-import './datepicker.css';
+} from 'date-fns'
+import './datepicker.css'
 
 interface Props {
-	selectedDate: Date | null;
-	onSelect: (date: Date) => void;
-	excludeDates?: Date[];
-	ref?: React.RefObject<HTMLDivElement | null>;
+	selectedDate: Date | null
+	onSelect: (date: Date) => void
+	excludeDates?: Date[]
+	ref?: React.RefObject<HTMLDivElement | null>
 }
 
-export const Datepicker = ({ selectedDate, onSelect, excludeDates = [], ref }: Props) => {
-	const [viewDate, setViewDate] = useState(new Date());
+export const Datepicker = ({ selectedDate, onSelect, excludeDates = [] }: Props) => {
+	const [viewDate, setViewDate] = useState(new Date())
 
-	const monthStart = startOfMonth(viewDate);
-	const daysInMonth = getDaysInMonth(viewDate);
-	const startDayOfWeek = getDay(monthStart);
+	const monthStart = startOfMonth(viewDate)
+	const daysInMonth = getDaysInMonth(viewDate)
+	const startDayOfWeek = getDay(monthStart)
 
-	const handlePrevMonth = () => setViewDate(subMonths(viewDate, 1));
-	const handleNextMonth = () => setViewDate(addMonths(viewDate, 1));
+	const handlePrevMonth = () => setViewDate(subMonths(viewDate, 1))
+	const handleNextMonth = () => setViewDate(addMonths(viewDate, 1))
 
-	const days = [];
-	for (let i = 0; i < startDayOfWeek; i++) {
-		days.push(<div key={`empty-${i}`} className="day empty" />);
+	const days = []
+	for (let i = 0; i < startDayOfWeek; ++i) {
+		days.push(<div key={`empty-${i}`} className="day empty" />)
 	}
 
-	for (let d = 1; d <= daysInMonth; d++) {
-		const date = new Date(viewDate.getFullYear(), viewDate.getMonth(), d);
-		const isExcluded = excludeDates.some(ex => isSameDay(ex, date));
-		const isSelected = selectedDate && isSameDay(date, selectedDate);
+	for (let d = 1; d <= daysInMonth; ++d) {
+		const date = new Date(viewDate.getFullYear(), viewDate.getMonth(), d)
+		const isExcluded = excludeDates.some(ex => isSameDay(ex, date))
+		const isSelected = selectedDate && isSameDay(date, selectedDate)
 
 		const dateKey = format(date, "yyyy-MM-dd")
 
@@ -50,18 +49,13 @@ export const Datepicker = ({ selectedDate, onSelect, excludeDates = [], ref }: P
 			>
 				{d}
 			</div>
-		);
+		)
 	}
 
 
 	return (
-		<motion.div
-			ref={ref}
-			className="custom-calendar card blur"
-			initial={{ opacity: 0, y: "100%" }}
-			animate={{ opacity: 1, y: 0 }}
-			exit={{ opacity: 0, y: "100%" }}
-			transition={{ ease: "easeInOut", duration: 0.3 }}
+		<div
+			className="custom-calendar"
 		>
 			<div className="calendar-header">
 				<div onClick={handlePrevMonth}>
@@ -89,6 +83,6 @@ export const Datepicker = ({ selectedDate, onSelect, excludeDates = [], ref }: P
 				<span className="available">AVAILABLE</span>
 				<span className="disabled">ALREADY LOGGED</span>
 			</div>
-		</motion.div>
-	);
-};
+		</div>
+	)
+}

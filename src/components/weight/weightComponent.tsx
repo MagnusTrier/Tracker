@@ -2,17 +2,16 @@ import { useData, type WeightLog } from "../dataContext"
 import "./weighComponent.css"
 import React, { useMemo, useState, type MouseEvent } from "react"
 import { CustomButton, RulerPicker } from "../generics.tsx"
-import { useOutsideClick } from "../../lib/outsideClick.ts"
 import "react-datepicker/dist/react-datepicker.css"
 import { format, isSameDay } from "date-fns"
 import { RiDeleteBin5Line, RiCloseLine } from "react-icons/ri";
 import { motion, AnimatePresence } from "motion/react"
 import { ScaleLoader } from "react-spinners"
 import { IoIosTrendingDown, IoIosTrendingUp } from "react-icons/io"
-import { createPortal } from "react-dom"
 import { Datepicker } from "../datepicker/datepicker.tsx"
 import Card from "../card"
 import D3Chart from "../chart/chart"
+import { HiX } from "react-icons/hi"
 
 const WeightComponent = () => {
 	return (
@@ -68,12 +67,14 @@ const calculateAverages = (data: WeightLog[]) => {
 };
 
 import { subDays, isAfter, startOfDay } from 'date-fns'
+import Modal from "../modal.tsx"
 
 const modes = ["7 D", "14 D", "30 D", "ALL"]
 
 const WeightAnalytics = () => {
 	const { weightLogs } = useData()
 	const [mode, setMode] = useState<string>("7 D")
+	const [showHistory, setShowHistory] = useState<boolean>(false)
 
 	const filteredData = useMemo(() => {
 		const now = new Date()
@@ -89,10 +90,8 @@ const WeightAnalytics = () => {
 
 	return (
 		<Card
-			header="WEIGHT ANALYTICS"
-			settings={(isOpen) => isOpen ? <WeightAnalyticsSettings /> : null}
-			settingsStyle={{ overflow: "hidden" }}
-			settingsSubheader="YOUR WEIGHT LOG HISTORY"
+			header="WEIGHT TREND"
+			onSettingsClick={() => setShowHistory(true)}
 		>
 			<div style={navWrapper}>
 				<ul style={tabsList}>
@@ -126,6 +125,20 @@ const WeightAnalytics = () => {
 				</ul>
 			</div>
 			<D3Chart data={filteredData} yAccessor="weight" />
+			<Modal
+				visible={showHistory}
+				setVisible={setShowHistory}
+			>
+				<Card
+					header="HISTORY"
+					subHeader="BROWSE YOUR LOGGING HISTORY"
+					settingsLogo={<HiX fontSize={20} />}
+					onSettingsClick={() => setShowHistory(false)}
+					contentStyle={{ overflowY: "auto", overflowX: "hidden" }}
+				>
+					<WeightAnalyticsSettings />
+				</Card>
+			</Modal>
 		</Card>
 	)
 }
@@ -249,7 +262,6 @@ const WeightLogItem = (props: { item: WeightLog, onClick: (val: string) => void 
 				animate={{ opacity: showPrompt ? 1 : 0, visibility: showPrompt ? "visible" : "hidden" }}
 			>
 				{
-
 					loading
 						?
 						<ScaleLoader
@@ -313,10 +325,7 @@ const LogWeight = () => {
 					minTime: 1000
 				})
 		}
-
 	}
-
-	const ref = useOutsideClick<HTMLDivElement>(() => setShowDatePicker(false))
 
 	return (
 		<Card
@@ -326,8 +335,7 @@ const LogWeight = () => {
 				alignItems: "center",
 				overflow: "visible"
 			}}
-			onSettingsClick={() => setShowDatePicker((prev) => !prev)}
-			settings=""
+			onSettingsClick={() => setShowDatePicker(true)}
 		>
 			<RulerPicker displayValue={logValue} setDisplayValue={setLogValue} date={selectedDate} />
 			<CustomButton
@@ -338,33 +346,24 @@ const LogWeight = () => {
 				disabled={isDateAlreadyLogged}
 				onClick={handlePostWeight}
 			/>
-			{
-				createPortal(
-					<AnimatePresence>
-						{
-
-							showDatePicker &&
-							<motion.div
-								key="datepicker-modal"
-								className="datepicker-container"
-								initial={{ opacity: 0 }}
-								animate={{ opacity: 1 }}
-								exit={{ opacity: 0 }}
-								transition={{ duration: 0.3, ease: "easeInOut" }}
-							>
-								<Datepicker
-									key="datepicker"
-									ref={ref}
-									selectedDate={selectedDate}
-									onSelect={(d) => { setSelectedDate(d); }}
-									excludeDates={weightLogs.values.map(val => val.date)}
-								/>
-							</motion.div>
-						}
-					</AnimatePresence>
-					, document.getElementById("portal-root")!
-				)
-			}
+			<Modal
+				visible={showDatePicker}
+				setVisible={setShowDatePicker}
+			>
+				<Card
+					header="CALENDAR"
+					subHeader="SELECT THE DATE YOU WANT TO LOG"
+					settingsLogo={<HiX fontSize={20} />}
+					onSettingsClick={() => setShowDatePicker(false)}
+				>
+					<Datepicker
+						key="datepicker"
+						selectedDate={selectedDate}
+						onSelect={(d) => { setSelectedDate(d); }}
+						excludeDates={weightLogs.values.map(val => val.date)}
+					/>
+				</Card>
+			</Modal>
 		</Card >
 	)
 }

@@ -1,141 +1,52 @@
-import { useOutsideClick } from "../lib/outsideClick"
-import { useSession } from "./sessionContext"
-import { createPortal } from "react-dom"
-import { HiOutlineDotsHorizontal, HiX } from "react-icons/hi"
-import { useState, useEffect } from "react"
-import { motion } from "motion/react"
+import { HiOutlineDotsHorizontal } from "react-icons/hi"
 
 interface CardProps {
-	header?: string | React.ReactNode
+	header: string | React.ReactNode
 	subHeader?: React.ReactNode
 	children: React.ReactNode
-	settings?: React.ReactNode | ((val: boolean) => React.ReactNode | null)
-	contentStyle?: React.CSSProperties
-	settingsStyle?: React.CSSProperties
-	hideSettings?: boolean
-	ref?: React.RefObject<HTMLDivElement | null>
-	id?: string
 	onSettingsClick?: () => void
-	settingsSubheader?: string
+	hideSettings?: boolean
+	contentStyle?: React.CSSProperties
+	settingsLogo?: React.ReactNode
+	style?: React.CSSProperties
 }
 
 const Card = (props: CardProps) => {
-	const { showSettings, setShowSettings } = useSession()
-
-	const [visible, setVisible] = useState<boolean>(false)
-	const [showConditionalSettings, setShowConditionalSettings] = useState<boolean>(false)
-	const isSettingsCard = props.settings === undefined
-
-
-	useEffect(() => {
-		!showSettings && setVisible(false)
-	}, [showSettings])
-
-	useEffect(() => {
-		if (visible) {
-			setShowConditionalSettings(true)
-		} else {
-			const timer = setTimeout(() => setShowConditionalSettings(false), 500)
-			return () => clearTimeout(timer)
-		}
-	}, [visible])
-
-	const toggleSettings = (e?: React.MouseEvent) => {
-		e?.stopPropagation()
-		e?.preventDefault()
-		setVisible(!isSettingsCard)
-		setShowSettings(!isSettingsCard)
-	}
-
-	const ref = useOutsideClick<HTMLDivElement>(() => setShowSettings(false))
-
 	return (
-		<>
+		<div
+			className="blur card"
+			style={props.style}
+		>
 			<div
-				id={props.id}
-				ref={props.ref}
-				className="blur card"
+				className="header-row"
 			>
-				<div
-					className="header-row"
-				>
+				<h1>
+					<HeaderIcon />
+					{props.header}
 					{
-
-						props.header &&
-						<h1>
-							<HeaderIcon />
-							{props.header}
-
-							{
-								!props.hideSettings &&
-
-								<div
-									className="settings-icon"
-									style={isSettingsCard ? {
-										fontSize: 18
-									} : {}}
-									onClick={props.onSettingsClick ?? toggleSettings}
-								>
-
-									{
-										isSettingsCard
-											?
-											<HiX />
-											:
-											<HiOutlineDotsHorizontal />
-									}
-								</div>
-							}
-						</h1>
-
+						!props.hideSettings &&
+						<div
+							className="settings-icon"
+							onClick={props.onSettingsClick}
+						>
+							{props.settingsLogo ?? <HiOutlineDotsHorizontal />}
+						</div>
 					}
-				</div>
-				{
-					props.subHeader &&
-					<h2>
-						{props.subHeader}
-					</h2>
-				}
-				<div
-					className="card-content"
-					style={props.contentStyle}
-				>
-					{props.children}
-				</div>
+				</h1>
 			</div>
 			{
-				!isSettingsCard &&
-				createPortal(
-					<motion.div
-						key="settings-tray"
-						className="settings-container"
-						initial={{ opacity: 0, visibility: "hidden" }}
-						animate={visible ? { opacity: 1, y: 0, visibility: "visible", } : { opacity: 0, y: "-100vh", visibility: "hidden" }}
-						transition={{ ease: "easeInOut", duration: 0.5 }}
-					>
-						<Card
-							id="datepicker-portal"
-							ref={ref}
-							header="SETTINGS"
-							subHeader={
-								props.settingsSubheader
-								??
-								<span>
-									SETTINGS FOR <span style={{ color: "var(--color-primary)" }}>
-										{props.header}
-									</span>
-
-								</span>
-							}
-							contentStyle={props.settingsStyle}
-						>
-							{typeof props.settings === "function" ? props.settings(showConditionalSettings) : props.settings}
-						</Card>
-					</motion.div>,
-					document.body
-				)
+				props.subHeader &&
+				<h2>
+					{props.subHeader}
+				</h2>
 			}
-		</>
+			<div
+				className="card-content"
+				style={props.contentStyle}
+			>
+				{props.children}
+			</div>
+		</div>
 	)
 }
 

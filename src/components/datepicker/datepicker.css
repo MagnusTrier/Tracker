@@ -1,19 +1,5 @@
-.datepicker-container {
-	position: fixed;
-	top: 0;
-	left: 0;
-	height: 100vh;
-	width: 100vw;
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
-	background-color: color-mix(in srgb, var(--color-bg), transparent 60%);
-	padding: 20px;
-}
-
 .custom-calendar {
-	padding: 20px;
-	width: 100%;
-	background-color: rgba(22, 22, 26, 0.60);
+	margin-top: -5px;
 }
 
 .calendar-header {
@@ -21,6 +7,7 @@
 	justify-content: space-between;
 	align-items: center;
 	height: 40px;
+	margin-bottom: 5px;
 }
 
 .calendar-header>div {
@@ -29,11 +16,11 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 30px;
+	font-size: 24px;
 }
 
 .calendar-header h2 {
-	font-size: 20px;
+	font-size: 14px;
 	letter-spacing: 0.1ch;
 	font-weight: 700;
 	color: var(--color-primary);
@@ -105,12 +92,13 @@
 }
 
 .calendar-legend {
-	margin-top: 30px;
-	font-size: 10px;
+	margin-top: 34px;
+	font-size: 9px;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	font-weight: 600;
+	letter-spacing: 0.05ch;
 
 }
 
@@ -123,13 +111,13 @@
 	content: "";
 	position: absolute;
 	left: 50%;
-	top: -8px;
-	height: 10px;
-	aspect-ratio: 1;
+	top: -12px;
+	height: 12px;
+	width: 12px;
 	transform: translate(-50%, -50%);
 	background-color: var(--item-primary);
-	outline: 1px solid var(--item-secondary);
-	border-radius: 1px;
+	border: 1px solid var(--item-secondary);
+	border-radius: 3px;
 }
 
 .calendar-legend .selected {
