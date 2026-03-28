@@ -1,121 +1,128 @@
-import "./chart.css";
-import React, { useMemo, useState, useRef, useEffect } from "react";
+import "./chart.css"
+import React, { useMemo, useState, useRef, useEffect } from "react"
 import { scaleTime, scaleLinear } from "d3-scale"
 import { extent } from "d3-array"
 import { line, area, curveCatmullRom } from "d3-shape"
-import { format, subDays, startOfDay } from 'date-fns';
-import { motion } from 'framer-motion';
+import { format, subDays, startOfDay } from 'date-fns'
+import { motion } from 'framer-motion'
 
-const PRIMARY_COLOR = "var(--color-primary)";
-const GRID_COLOR = "rgba(40, 40, 48, 1)";
-const TEXT_COLOR = "var(--text-dim)";
-const BG_COLOR = "#16161e";
+const PRIMARY_COLOR = "var(--color-primary)"
+const GRID_COLOR = "rgba(40, 40, 48, 0.25)"
+const TEXT_COLOR = "var(--text-dim)"
+const BG_COLOR = "#16161e"
+const TOTAL_DURATION = 1.6
+const MARGIN = { top: 20, right: 30, bottom: 30, left: 45 }
+
+const ChartDecor = React.memo(({ yTicks, yScale, xTicks, xScale, width, height, xRangePadded }: any) => (
+	<g>
+		{yTicks.map((tick: number, i: number) => (
+			<g key={i} transform={`translate(0, ${yScale(tick)})`}>
+				<line x1={xRangePadded[0] - 5} x2={width - MARGIN.right + 5} style={{ stroke: GRID_COLOR }} />
+				<text x={xRangePadded[0] - 10} className="tick" textAnchor="end" alignmentBaseline="middle">
+					{tick % 1 === 0 ? tick : tick.toFixed(1)}
+				</text>
+			</g>
+		))}
+		{xTicks.map((date: Date, i: number) => (
+			<text key={i} x={xScale(date)} y={height - 10} className="tick" style={{ textAnchor: "middle" }}>
+				{format(date, 'MMM d').toUpperCase()}
+			</text>
+		))}
+	</g>
+))
 
 function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: string }) {
-	const containerRef = useRef<HTMLDivElement>(null);
-	const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+	const containerRef = useRef<HTMLDivElement>(null)
+	const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
 
 	useEffect(() => {
-		if (!containerRef.current) return;
-		const resizeObserver = new ResizeObserver((entries) => {
-			for (let entry of entries) {
-				const { width, height } = entry.contentRect;
-				setDimensions({ width, height: height || 300 });
-			}
-		});
-		resizeObserver.observe(containerRef.current);
-		return () => resizeObserver.disconnect();
-	}, []);
+		if (!containerRef.current) return
+		const observer = new ResizeObserver((entries) => {
+			window.requestAnimationFrame(() => {
+				if (!entries[0]) return
+				const { width, height } = entries[0].contentRect
+				setDimensions({ width, height: height || 300 })
+			})
+		})
 
-	const { points, xScale, yScale, linePath, areaPath, hasData, xTicks, yTicks, xRangePadded } = useMemo(() => {
-		const margin = { top: 20, right: 30, bottom: 30, left: 50 };
-		const { width, height } = dimensions;
+		observer.observe(containerRef.current)
+		return () => {
+			observer.disconnect()
+		}
+	}, [])
 
-		const pts = data.map(d => ({
-			x: startOfDay(new Date(d.date)),
-			y: d[yAccessor],
-		})).sort((a, b) => a.x.getTime() - b.x.getTime());
+	const chartCalculations = useMemo(() => {
+		const { width, height } = dimensions
+		if (width === 0) return null
 
-		const activeData = pts.length > 0;
+		const points = data.map(d => ({
+			x: startOfDay(d.date),
+			y: d[yAccessor]
+		})).sort((a, b) => a.x.getTime() - b.x.getTime())
 
-		const xDomain = activeData
-			? (extent(pts, d => d.x) as [Date, Date])
-			: [subDays(new Date(), 7), new Date()];
+		const activeData = points.length > 0
+		const xDomain = activeData ? (extent(points, d => d.x) as [Date, Date]) : [subDays(new Date(), 7), new Date()]
 
-		let yTicksValues: number[] = [];
-		let yDomain: [number, number] = [0, 100];
+		let yTicksValues: number[] = []
+		let yDomain: [number, number] = [0, 100]
 
 		if (activeData) {
-			const [rawMin, rawMax] = extent(pts, d => d.y) as [number, number];
+			const [rawMin, rawMax] = extent(points, d => d.y) as [number, number]
 
-			const padding = 0.0075 / 2;
-			const nTicks = 4;
+			const padding = 0.00375
 
-			const minTick = rawMin * (1 - padding);
-			const maxTick = rawMax * (1 + padding);
+			const minTick = rawMin * (1 - padding)
+			const maxTick = rawMax * (1 + padding)
 
-			const range = maxTick - minTick;
-			const step = range / (nTicks - 1);
+			const range = maxTick - minTick
+			const step = range / 3
 
-			yTicksValues = Array.from({ length: nTicks }, (_, i) => {
-				return minTick + (step * i);
-			});
-			yDomain = [minTick, maxTick];
+			yTicksValues = Array.from({ length: 4 }, (_, i) => {
+				return minTick + (step * i)
+			})
+			yDomain = [minTick, maxTick]
 		}
 
-		const xRange = [margin.left, width - margin.right];
-		const yRange = [height - margin.bottom, margin.top];
+		const xRange = [MARGIN.left, width - MARGIN.right]
+		const yRange = [height - MARGIN.bottom, MARGIN.top]
 
-		const x = scaleTime().domain(xDomain).range(xRange);
+		const xScale = scaleTime().domain(xDomain).range(xRange)
+		const yScale = scaleLinear().domain(yDomain).range(yRange)
 
-		const y = scaleLinear().domain(yDomain).range(yRange);
-		let xTicksValues: Date[] = [];
-		if (activeData) {
-			const xStart = xDomain[0].getTime();
-			const xEnd = xDomain[1].getTime();
-			xTicksValues = [new Date(xStart), new Date((xStart + xEnd) / 2), new Date(xEnd)];
-		} else {
-			xTicksValues = x.ticks(3);
-		}
+		const xTicksValues = activeData ? [xDomain[0], new Date((xDomain[0].getTime() + xDomain[1].getTime()) / 2), xDomain[1]] : xScale.ticks(3)
 
-		const curveFunc = curveCatmullRom.alpha(0.5);
+		const curveFunc = curveCatmullRom.alpha(0.5)
 
 		const l = line<any>()
-			.x(d => x(d.x))
-			.y(d => y(d.y))
-			.curve(curveFunc);
+			.x(d => xScale(d.x))
+			.y(d => yScale(d.y))
+			.curve(curveFunc)
 
 		const a = area<any>()
-			.x(d => x(d.x))
-			.y0(height - margin.bottom)
-			.y1(d => y(d.y))
-			.curve(curveFunc);
+			.x(d => xScale(d.x))
+			.y0(height - MARGIN.bottom)
+			.y1(d => yScale(d.y))
+			.curve(curveFunc)
 
 		return {
-			points: pts,
-			xScale: x,
-			yScale: y,
+			points,
+			xScale,
+			yScale,
 			xTicks: xTicksValues,
 			yTicks: yTicksValues,
-			linePath: l(pts),
-			areaPath: a(pts),
+			linePath: l(points),
+			areaPath: a(points),
 			hasData: activeData,
 			xRangePadded: xRange
-		};
-	}, [data, yAccessor, dimensions]);
+		}
+	}, [data, yAccessor, dimensions])
 
-	const styles = {
-		container: { width: '100%', height: '100%', minHeight: '200px', position: 'relative' as const },
-		svg: { display: 'block', overflow: 'visible', },
-		gridLine: { stroke: GRID_COLOR, opacity: 0.5 },
-	};
-
-	const TOTAL_DURATION = 1.6;
 
 	return (
-		<div ref={containerRef} style={styles.container}>
-			{dimensions.width > 0 && (
-				<svg key={JSON.stringify(data)} width={dimensions.width} height={dimensions.height} style={styles.svg}>
+		<div ref={containerRef} className="chart" >
+			{dimensions.width > 0 && chartCalculations
+				?
+				<svg key={chartCalculations.points.length} width={dimensions.width} height={dimensions.height}>
 					<defs>
 						<linearGradient id="chart-gradient" x1="0" y1="0" x2="0" y2="1">
 							<stop offset="0%" stopColor={PRIMARY_COLOR} stopOpacity="0.2" />
@@ -124,7 +131,7 @@ function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: string }) {
 						<filter id="line-glow" x="-50%" y="-50%" width="200%" height="200%">
 							<feFlood floodColor="var(--color-primary)" floodOpacity="0.7" result="glow-color" />
 							<feComposite in="glow-color" in2="SourceGraphic" operator="in" result="glow-onsource" />
-							<feGaussianBlur stdDeviation="3.5" result="blurred-glow" />
+							<feGaussianBlur stdDeviation="1.5" result="blurred-glow" />
 							<feMerge>
 								<feMergeNode in="blurred-glow" />
 								<feMergeNode in="SourceGraphic" />
@@ -133,74 +140,64 @@ function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: string }) {
 						<mask id="gradient-mask">
 							<rect x="0" y="0" width={dimensions.width} height={dimensions.height} fill="black" />
 							<motion.rect
-								initial={{ opacity: 0, width: xRangePadded[1] }}
+								initial={{ opacity: 0 }}
 								animate={{ opacity: 1 }}
 								transition={{ duration: 0.8, ease: "easeInOut", delay: TOTAL_DURATION }}
-								y="0" height={dimensions.height} fill="white"
+								width={dimensions.width}
+								height={dimensions.height}
+								fill="white"
 							/>
 						</mask>
 					</defs>
-					{yTicks.map((tick, i) => (
-						<g key={i} transform={`translate(0, ${yScale(tick)})`}>
-							<line x1={xRangePadded[0] - 10} x2={dimensions.width - 20} style={styles.gridLine} />
-							<text x={xRangePadded[0] - 15} className="tick" textAnchor="end" alignmentBaseline="middle">
-								{tick % 1 === 0 ? tick : tick.toFixed(1)}
-							</text>
-						</g>
-					))}
-					{xTicks.map((date, i) => (
-						<text key={i} x={xScale(date)} y={dimensions.height - 10} className="tick" style={{ textAnchor: "middle" }}>
-							{format(date, 'MMM d').toUpperCase()}
-						</text>
-					))}
-
-					{hasData && (
+					<ChartDecor
+						{
+						...chartCalculations
+						}
+						width={dimensions.width}
+						height={dimensions.height}
+					/>
+					{
+						chartCalculations.hasData &&
 						<>
 							<motion.path
-								d={areaPath || ""}
+								d={chartCalculations.areaPath || ""}
 								fill="url(#chart-gradient)"
 								mask="url(#gradient-mask)"
 								stroke="none"
 							/>
-
 							<motion.path
 								initial={{ pathLength: 0 }}
 								animate={{ pathLength: 1 }}
 								transition={{ duration: TOTAL_DURATION, ease: "easeInOut", delay: 0.2 }}
-								d={linePath || ""}
+								d={chartCalculations.linePath || ""}
 								fill="none"
 								stroke={PRIMARY_COLOR}
 								strokeWidth="2"
-								strokeLinecap="round"
-								strokeLinejoin="round"
 								filter="url(#line-glow)"
 							/>
-
-							{points.map((p, i) => (
+							{chartCalculations.points.map((p, i) => (
 								<motion.circle
 									initial={{ scale: 0, opacity: 0 }}
 									animate={{ scale: 1, opacity: 1 }}
-									transition={{ duration: 0.25, delay: 0.2 + (TOTAL_DURATION / points.length) * i }}
+									transition={{ duration: 0.25, delay: 0.2 + (TOTAL_DURATION / chartCalculations.points.length) * i }}
 									key={i}
 									r='2.5'
-									cx={xScale(p.x)}
-									cy={yScale(p.y)}
+									cx={chartCalculations.xScale(p.x)}
+									cy={chartCalculations.yScale(p.y)}
 									fill={BG_COLOR}
 									stroke={PRIMARY_COLOR}
 									strokeWidth="1"
 								/>
 							))}
 						</>
-					)}
+					}
 				</svg>
-			)}
-			{!hasData && (
+				:
 				<div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT_COLOR }}>
 					NO RECORDS YET
 				</div>
-			)}
+			}
 		</div>
-	);
+	)
 }
-
 export default React.memo(D3Chart)

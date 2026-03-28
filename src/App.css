@@ -97,6 +97,21 @@ h3 {
 	font-weight: 400;
 }
 
+.splash-screen {
+	position: fixed;
+	inset: 0;
+	z-index: 100;
+
+	color: var(--color-primary);
+	font-family: var(--font-main);
+	font-size: 30px;
+	font-weight: 800;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-shadow: 0 0 20px color-mix(in srgb, var(--color-primary), transparent 50%);
+}
+
 .custom-button {
 	--bg-active: radial-gradient(circle at 0% 0%, #acacff, var(--color-primary) 30%, #7070ff 100%);
 
@@ -184,7 +199,6 @@ h3 {
 	align-items: center;
 	justify-content: center;
 	gap: 15px;
-	padding-bottom: 30px;
 }
 
 .swiper-wrapper {

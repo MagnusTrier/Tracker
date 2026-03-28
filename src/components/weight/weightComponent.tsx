@@ -1,6 +1,6 @@
 import { useData, type WeightLog } from "../dataContext"
 import "./weighComponent.css"
-import React, { useEffect, useMemo, useState, type MouseEvent } from "react"
+import React, { useMemo, useState, type MouseEvent } from "react"
 import { CustomButton, RulerPicker } from "../generics.tsx"
 import { useOutsideClick } from "../../lib/outsideClick.ts"
 import "react-datepicker/dist/react-datepicker.css"
@@ -13,7 +13,6 @@ import { createPortal } from "react-dom"
 import { Datepicker } from "../datepicker/datepicker.tsx"
 import Card from "../card"
 import D3Chart from "../chart/chart"
-
 
 const WeightComponent = () => {
 	return (
@@ -70,24 +69,18 @@ const calculateAverages = (data: WeightLog[]) => {
 
 import { subDays, isAfter, startOfDay } from 'date-fns'
 
-const modes = ["7D", "14D", "30D", "ALL"]
+const modes = ["7 D", "14 D", "30 D", "ALL"]
 
 const WeightAnalytics = () => {
 	const { weightLogs } = useData()
-	const [mode, setMode] = useState<string>("7D")
-	const [isReady, setIsReady] = useState<boolean>(true)
-
-	useEffect(() => {
-		const timer = setTimeout(() => setIsReady(true), 400)
-		return () => clearTimeout(timer)
-	}, [])
+	const [mode, setMode] = useState<string>("7 D")
 
 	const filteredData = useMemo(() => {
 		const now = new Date()
 		if (mode === "ALL") return weightLogs.values
 		let daysToSub = 7
-		if (mode === "14D") daysToSub = 14
-		if (mode === "30D") daysToSub = 30
+		if (mode === "14 D") daysToSub = 14
+		if (mode === "30 D") daysToSub = 30
 		const cutoff = startOfDay(subDays(now, daysToSub))
 		return weightLogs.values.filter(item => {
 			return isAfter(item.date, cutoff)
@@ -132,12 +125,7 @@ const WeightAnalytics = () => {
 					})}
 				</ul>
 			</div>
-			<div className="chart">
-				{
-					isReady &&
-					<D3Chart data={filteredData} yAccessor="weight" />
-				}
-			</div>
+			<D3Chart data={filteredData} yAccessor="weight" />
 		</Card>
 	)
 }
@@ -187,7 +175,7 @@ const WeightAnalyticsSettings = () => {
 	const { weightLogs } = useData()
 
 	const deleteLog = (id: string) => {
-		weightLogs.manager.delete(id, { minTime: 1000 })
+		weightLogs.manager?.delete(id, { minTime: 1000 })
 	}
 
 	const logList = useMemo(() => {
@@ -319,7 +307,7 @@ const LogWeight = () => {
 
 		if (selectedDate) {
 			setLoading(true)
-			weightLogs.manager.post(
+			weightLogs.manager?.post(
 				{ weight: logValue, date: selectedDate },
 				{
 					minTime: 1000

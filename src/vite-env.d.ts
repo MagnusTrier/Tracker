@@ -7,4 +7,4 @@ interface ImportMeta {
 	readonly env: ImportMetaEnv
 }
 
-declare module "@fontsource-variable/manrope"
+declare module "@fontsource-variable/manrope/wght"

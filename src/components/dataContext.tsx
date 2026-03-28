@@ -1,12 +1,12 @@
 import { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { supabase } from "../lib/supabase";
-import { useUser } from "./sessionContext.tsx"
+import { useSession } from "./sessionContext.tsx"
 import { parseISO } from "date-fns";
 
 interface Data<T extends { id?: string }> {
 	values: T[];
 	isLoading: boolean;
-	manager: DataManager<T>;
+	manager: DataManager<T> | undefined;
 }
 
 export interface Exercise {
@@ -42,7 +42,7 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined)
 
 export const DataProvider = ({ children }: { children: React.ReactNode }) => {
-	const user = useUser()
+	const { user } = useSession()
 
 	const [exercises, setExercises] = useState<Exercise[]>([])
 	const [exercisesLoading, setExersicesLoading] = useState<boolean>(true)
@@ -53,16 +53,16 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
 	const [weightLogs, setWeightLogs] = useState<WeightLog[]>([])
 	const [weightLogsLoading, setWheightLogsLoading] = useState<boolean>(true)
 
-	const managers = useMemo(() => ({
+	const managers = useMemo(() => (user ? {
 		exercises: new DataManager<Exercise>("exercises", user.id, setExercises, setExersicesLoading),
 		sets: new DataManager<ExerciseSet>("exercise_sets", user.id, setSets, setSetsLoading, ["created_at", "date"], "date"),
 		weightLogs: new DataManager<WeightLog>("weight_logs", user.id, setWeightLogs, setWheightLogsLoading, ["created_at", "date"], "date")
-	}), [user.id])
+	} : null), [user?.id])
 
 	useEffect(() => {
-		managers.exercises.fetch()
-		managers.sets.fetch()
-		managers.weightLogs.fetch()
+		managers?.exercises.fetch()
+		managers?.sets.fetch()
+		managers?.weightLogs.fetch()
 	}, [managers])
 
 	return (
@@ -70,17 +70,17 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
 			exercises: {
 				values: exercises,
 				isLoading: exercisesLoading,
-				manager: managers.exercises
+				manager: managers?.exercises
 			},
 			sets: {
 				values: sets,
 				isLoading: setsLoading,
-				manager: managers.sets
+				manager: managers?.sets
 			},
 			weightLogs: {
 				values: weightLogs,
 				isLoading: weightLogsLoading,
-				manager: managers.weightLogs
+				manager: managers?.weightLogs
 			}
 		}}>
 			{children}

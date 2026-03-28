@@ -8,6 +8,11 @@
 	padding-bottom: 2px;
 }
 
+.chart svg {
+	display: block;
+	overflow: visible !important;
+}
+
 .tick {
 	font-size: 11px;
 	text-anchor: "middle";
