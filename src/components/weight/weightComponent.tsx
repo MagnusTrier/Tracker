@@ -1,5 +1,5 @@
 import { useData, type WeightLog } from "../dataContext"
-import "./weighComponent.css"
+import "./weightComponent.css"
 import React, { useMemo, useState, type MouseEvent } from "react"
 import { CustomButton, RulerPicker, SegmentedControl } from "../generics.tsx"
 import "react-datepicker/dist/react-datepicker.css"
@@ -74,7 +74,6 @@ const modes = ["7 D", "14 D", "30 D", "ALL"]
 const WeightAnalytics = () => {
 	const { weightLogs } = useData()
 	const [mode, setMode] = useState<string>("7 D")
-	const [filter, setFilter] = useState<string>("7 D")
 	const [showHistory, setShowHistory] = useState<boolean>(false)
 
 	const filteredData = useMemo(() => {
@@ -88,8 +87,6 @@ const WeightAnalytics = () => {
 			return isAfter(item.date, cutoff)
 		})
 	}, [mode, weightLogs.values])
-
-	const timer = (val: string) => setTimeout(() => setFilter(val), 500)
 
 	return (
 		<Card

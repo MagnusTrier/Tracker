@@ -102,21 +102,19 @@ const Paginator = (props: { page: number, numPages: number }) => {
 	const sliderStyle = {
 		active: {
 			backgroundColor: "color-mix(in srgb, var(--color-primary), transparent 0%)",
-			width: 40,
-			height: 5,
-			boxShadow: "0px 0px 10px color-mix(in srgb, var(--color-primary), transparent 50%)"
+			boxShadow: "0px 0px 10px color-mix(in srgb, var(--color-primary), transparent 50%)",
+			scaleY: 1.30,
+
 		},
 		isNext: {
-			backgroundColor: "color-mix(in srgb, var(--color-primary), transparent 60%)",
-			width: 30,
-			height: 4,
-			boxShadow: "0px 0px 10px color-mix(in srgb, var(--color-primary), transparent 80%)"
+			backgroundColor: "color-mix(in srgb, var(--color-primary), transparent 50%)",
+			boxShadow: "0px 0px 10px color-mix(in srgb, var(--color-primary), transparent 80%)",
+			scaleY: 1
 		},
 		inactive: {
-			backgroundColor: "var(--color-border)",
-			width: 30,
-			height: 4,
-			boxShadow: "0px 0px 8px transparent"
+			backgroundColor: "var(--color-border-strong)",
+			boxShadow: "0px 0px 8px transparent",
+			scaleY: 1
 		}
 	}
 	return (

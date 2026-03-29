@@ -36,7 +36,9 @@ const SplashScreen = () => {
 						transition={{ duration: 0.4, ease: "easeInOut", delay: 0.3 }}
 						className="splash-screen"
 					>
-						TRACKER
+						<div>
+							TRACKER
+						</div>
 					</motion.div>
 				) : (
 					<motion.div
