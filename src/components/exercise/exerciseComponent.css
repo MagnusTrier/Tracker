@@ -1,0 +1,72 @@
+.exercise-toggle-container {
+	border-radius: 16px;
+	background-color: var(--color-dark);
+	margin-top: 4px;
+	width: 85%;
+}
+
+.exercise-toggle-container .tab-list {
+	display: flex;
+	list-style: none;
+	margin: 0;
+	position: relative;
+	padding: 6px;
+}
+
+.exercise-toggle-container .tab-item {
+	flex: 1;
+	height: 50px;
+	font-size: 16px;
+	font-weight: 600;
+	text-align: center;
+	cursor: pointer;
+	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	color: var(--text-dim);
+	font-weight: 700;
+	font-size: 16px;
+	letter-spacing: 0.075ch;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.exercise-toggle-container .tab-item.active {
+	transition: color 0.3s ease;
+	color: #000;
+}
+
+.exercise-toggle-container .active-indicator {
+	position: absolute;
+	inset: 0;
+	border-radius: 10px;
+	z-index: 1;
+
+	background: radial-gradient(circle at 0% 0%, #acacff, var(--color-primary) 30%, #7070ff 100%);
+	box-shadow: 0 0 4px color-mix(in srgb, var(--color-primary), transparent 70%);
+}
+
+.exercise-variable-content-container {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	width: 100%;
+	position: relative;
+}
+
+.exercise-variable-content-container>div {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.sets-container {
+	flex: 0 1 auto;
+	overflow-y: auto;
+	min-height: 0;
+	width: 100%;
+	margin-block: 5px;
+}

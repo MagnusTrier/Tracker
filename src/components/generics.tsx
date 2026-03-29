@@ -91,8 +91,8 @@ export const RulerPicker = (props: { displayValue: number, setDisplayValue: (val
 
 interface CustomButtonProps {
 	text: {
-		default: string,
-		disabled: string,
+		default: string | React.ReactNode,
+		disabled: string | React.ReactNode,
 	}
 	disabled: boolean
 	onClick: (e: React.MouseEvent, setLoading: (val: boolean) => void) => void
@@ -132,3 +132,48 @@ export const CustomButton = (props: CustomButtonProps) => {
 		</div>
 	)
 }
+
+interface SegmentedControlProps {
+	options: any[]
+	onChange: (val: any) => void
+	id: string | number
+	containerClass?: string
+	tabListClass?: string
+	tabItemClass?: string
+	activeIndicatorClass?: string
+}
+
+export const SegmentedControl = (props: SegmentedControlProps) => {
+	const [activeTab, setActiveTab] = useState(props.options[0]);
+	return (
+		<div
+			key={props.id}
+			className={props.containerClass ?? "segmented-control-container"}
+		>
+			<div
+				className={props.tabListClass ?? "segmented-control-tab-list"}
+			>
+				{props.options.map((tab) => (
+					<div
+						key={tab}
+						className={props.tabItemClass ?? `segmented-control-tab-item ${activeTab === tab && "active"}`}
+						onClick={() => { setActiveTab(tab) }}
+					>
+						<span style={{ zIndex: 2, position: "relative" }}>{tab}</span>
+
+						{activeTab === tab && (
+							<motion.div
+								layoutId={`active-pill-${props.id}`}
+								transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+								className="segmented-control-active-indicator"
+								onLayoutAnimationComplete={() => {
+									props.onChange(tab)
+								}}
+							/>
+						)}
+					</div>
+				))}
+			</div>
+		</div>
+	);
+};

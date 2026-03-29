@@ -1,7 +1,7 @@
 import { useData, type WeightLog } from "../dataContext"
 import "./weighComponent.css"
 import React, { useMemo, useState, type MouseEvent } from "react"
-import { CustomButton, RulerPicker } from "../generics.tsx"
+import { CustomButton, RulerPicker, SegmentedControl } from "../generics.tsx"
 import "react-datepicker/dist/react-datepicker.css"
 import { format, isSameDay } from "date-fns"
 import { RiDeleteBin5Line, RiCloseLine } from "react-icons/ri";
@@ -74,6 +74,7 @@ const modes = ["7 D", "14 D", "30 D", "ALL"]
 const WeightAnalytics = () => {
 	const { weightLogs } = useData()
 	const [mode, setMode] = useState<string>("7 D")
+	const [filter, setFilter] = useState<string>("7 D")
 	const [showHistory, setShowHistory] = useState<boolean>(false)
 
 	const filteredData = useMemo(() => {
@@ -88,42 +89,14 @@ const WeightAnalytics = () => {
 		})
 	}, [mode, weightLogs.values])
 
+	const timer = (val: string) => setTimeout(() => setFilter(val), 500)
+
 	return (
 		<Card
 			header="WEIGHT TREND"
 			onSettingsClick={() => setShowHistory(true)}
 		>
-			<div style={navWrapper}>
-				<ul style={tabsList}>
-					{modes.map((item) => {
-						const isActive = mode === item
-						return (
-							<li
-								key={item}
-								onClick={() => setMode(item)}
-								style={{
-									...tabItem,
-									color: isActive ? "var(--color-primary)" : "var(--text-dim)"
-								}}
-							>
-								<span style={{ zIndex: 2 }}>{item}</span>
-
-								{isActive && (
-									<motion.div
-										layoutId="active-pill"
-										style={activeIndicator}
-										transition={{
-											type: "spring",
-											bounce: 0.2,
-											duration: 0.5
-										}}
-									/>
-								)}
-							</li>
-						)
-					})}
-				</ul>
-			</div>
+			<SegmentedControl id="weight" options={modes} onChange={setMode} />
 			<D3Chart data={filteredData} yAccessor="weight" />
 			<Modal
 				visible={showHistory}
@@ -144,44 +117,6 @@ const WeightAnalytics = () => {
 }
 
 
-const navWrapper: React.CSSProperties = {
-	background: "var(--color-dark)",
-	borderRadius: "10px",
-	marginTop: 6,
-}
-
-const tabsList: React.CSSProperties = {
-	display: "flex",
-	listStyle: "none",
-	margin: 0,
-	position: "relative",
-	padding: "6px",
-}
-
-const tabItem: React.CSSProperties = {
-	flex: 1,
-	padding: "5px 0",
-	fontSize: "12px",
-	fontWeight: 600,
-	textAlign: "center",
-	cursor: "pointer",
-	position: "relative",
-	display: "flex",
-	justifyContent: "center",
-	alignItems: "center",
-	transition: "color 0.2s ease",
-	WebkitTapHighlightColor: "transparent",
-}
-
-const activeIndicator: React.CSSProperties = {
-	position: "absolute",
-	inset: 0,
-	background: "color-mix(in srgb, var(--color-primary), transparent 90%)",
-	borderRadius: "10px",
-	border: "1px solid color-mix(in srgb, var(--color-primary), transparent 80%)",
-	zIndex: 1,
-	boxShadow: "0 0 4px color-mix(in srgb, var(--color-primary), transparent 80%)",
-}
 
 
 const WeightAnalyticsSettings = () => {

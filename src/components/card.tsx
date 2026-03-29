@@ -3,7 +3,7 @@ import { HiOutlineDotsHorizontal } from "react-icons/hi"
 interface CardProps {
 	header: string | React.ReactNode
 	subHeader?: React.ReactNode
-	children: React.ReactNode
+	children?: React.ReactNode
 	onSettingsClick?: () => void
 	hideSettings?: boolean
 	contentStyle?: React.CSSProperties
