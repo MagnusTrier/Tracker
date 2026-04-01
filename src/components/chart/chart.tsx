@@ -1,10 +1,10 @@
 import "./chart.css"
-import React, { useMemo, useState, useRef, useEffect } from "react"
+import React, { useMemo } from "react"
 import { scaleTime, scaleLinear } from "d3-scale"
 import { extent } from "d3-array"
 import { line, area, curveCatmullRom } from "d3-shape"
-import { format, subDays, startOfDay } from 'date-fns'
-import { motion } from 'framer-motion'
+import { format, subDays, startOfDay } from "date-fns"
+import { motion } from "framer-motion"
 
 const PRIMARY_COLOR = "var(--color-primary)"
 const GRID_COLOR = "rgba(40, 40, 48, 0.25)"
@@ -25,36 +25,17 @@ const ChartDecor = React.memo(({ yTicks, yScale, xTicks, xScale, width, height, 
 		))}
 		{xTicks.map((date: Date, i: number) => (
 			<text key={i} x={xScale(date)} y={height - 10} className="tick" style={{ textAnchor: "middle" }}>
-				{format(date, 'MMM d').toUpperCase()}
+				{format(date, "MMM d").toUpperCase()}
 			</text>
 		))}
 	</g>
 ))
 
-function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: string }) {
-	const containerRef = useRef<HTMLDivElement>(null)
-	const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
-
-	useEffect(() => {
-		if (!containerRef.current) return
-		const observer = new ResizeObserver((entries) => {
-			window.requestAnimationFrame(() => {
-				if (!entries[0]) return
-				const { width, height } = entries[0].contentRect
-				setDimensions({ width, height: height || 300 })
-			})
-		})
-
-		observer.observe(containerRef.current)
-		return () => {
-			observer.disconnect()
-		}
-	}, [])
+function D3Chart({ data = [], yAccessor, isOnScreen }: { data: any[], yAccessor: string, isOnScreen: boolean }) {
+	const width = 310
+	const height = 210
 
 	const chartCalculations = useMemo(() => {
-		const { width, height } = dimensions
-		if (width === 0) return null
-
 		const points = data.map(d => ({
 			x: startOfDay(d.date),
 			y: d[yAccessor]
@@ -115,56 +96,56 @@ function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: string }) {
 			hasData: activeData,
 			xRangePadded: xRange
 		}
-	}, [data, yAccessor, dimensions])
+	}, [data, yAccessor])
 
 
 	return (
-		<div ref={containerRef} className="chart" >
-			{dimensions.width > 0 && chartCalculations
+		<div className="chart" style={{ width: "100%", height: "100%", position: "relative" }}>
+			{chartCalculations && isOnScreen
 				?
-				<svg key={chartCalculations.points.length} width={dimensions.width} height={dimensions.height}>
+				<svg
+					key={chartCalculations.points.length}
+					viewBox={`0 0 ${width} ${height}`}
+					preserveAspectRatio="none"
+					style={{ width: "100%", height: "100%", display: "block" }}
+				>
 					<defs>
 						<linearGradient id="chart-gradient" x1="0" y1="0" x2="0" y2="1">
-							<stop offset="0%" stopColor={PRIMARY_COLOR} stopOpacity="0.2" />
+							<stop offset="0%" stopColor={PRIMARY_COLOR} stopOpacity="0.12" />
 							<stop offset="100%" stopColor={PRIMARY_COLOR} stopOpacity="0.0" />
 						</linearGradient>
-						<filter id="line-glow" x="-50%" y="-50%" width="200%" height="200%">
-							<feFlood floodColor="var(--color-primary)" floodOpacity="0.7" result="glow-color" />
-							<feComposite in="glow-color" in2="SourceGraphic" operator="in" result="glow-onsource" />
-							<feGaussianBlur stdDeviation="1.5" result="blurred-glow" />
+						<filter
+							id="line-glow"
+							x="-10%"
+							y="-10%"
+							width="120%"
+							height="120%"
+						>
+							<feColorMatrix
+								type="matrix"
+								values="
+								0 0 0 0 0.56
+								0 0 0 0 0.59
+								0 0 0 0 1.00
+								0 0 0 0.6 0
+								"
+								result="glowColor"
+							/>
+							<feGaussianBlur stdDeviation="1.5" in="glowColor" result="blurredGlow" />
 							<feMerge>
-								<feMergeNode in="blurred-glow" />
+								<feMergeNode in="blurredGlow" />
 								<feMergeNode in="SourceGraphic" />
 							</feMerge>
 						</filter>
-						<mask id="gradient-mask">
-							<rect x="0" y="0" width={dimensions.width} height={dimensions.height} fill="black" />
-							<motion.rect
-								initial={{ opacity: 0 }}
-								animate={{ opacity: 1 }}
-								transition={{ duration: 0.8, ease: "easeInOut", delay: TOTAL_DURATION }}
-								width={dimensions.width}
-								height={dimensions.height}
-								fill="white"
-							/>
-						</mask>
 					</defs>
 					<ChartDecor
-						{
-						...chartCalculations
-						}
-						width={dimensions.width}
-						height={dimensions.height}
+						{...chartCalculations}
+						width={width}
+						height={height}
 					/>
 					{
 						chartCalculations.hasData &&
 						<>
-							<motion.path
-								d={chartCalculations.areaPath || ""}
-								fill="url(#chart-gradient)"
-								mask="url(#gradient-mask)"
-								stroke="none"
-							/>
 							<motion.path
 								initial={{ pathLength: 0 }}
 								animate={{ pathLength: 1 }}
@@ -173,29 +154,52 @@ function D3Chart({ data = [], yAccessor }: { data: any[], yAccessor: string }) {
 								fill="none"
 								stroke={PRIMARY_COLOR}
 								strokeWidth="2"
-								filter="url(#line-glow)"
+								style={{ transform: "translate3d(0,0,0)", WebkitTransform: "translate3d(0,0,0)", willChange: "transform" }}
 							/>
-							{chartCalculations.points.map((p, i) => (
-								<motion.circle
-									initial={{ scale: 0, opacity: 0 }}
-									animate={{ scale: 1, opacity: 1 }}
-									transition={{ duration: 0.25, delay: 0.2 + (TOTAL_DURATION / chartCalculations.points.length) * i }}
-									key={i}
-									r='2.5'
-									cx={chartCalculations.xScale(p.x)}
-									cy={chartCalculations.yScale(p.y)}
-									fill={BG_COLOR}
-									stroke={PRIMARY_COLOR}
-									strokeWidth="1"
+							<motion.g
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1, transition: { delay: TOTAL_DURATION, duration: 0.35 } }}
+								style={{
+									isolation: "isolate",
+									pointerEvents: "none"
+								}}
+							>
+								<path
+									d={chartCalculations.areaPath || ""}
+									fill="url(#chart-gradient)"
+									stroke="none"
+									style={{ transform: "translate3d(0,0,0)", WebkitTransform: "translate3d(0,0,0)", willChange: "transform", pointerEvents: "none" }}
 								/>
-							))}
+								<path
+									d={chartCalculations.linePath || ""}
+									fill="none"
+									stroke={PRIMARY_COLOR}
+									strokeWidth="2"
+									filter="url(#line-glow)"
+									style={{ transform: "translate3d(0,0,0)", WebkitTransform: "translate3d(0,0,0)", willChange: "transform", pointerEvents: "none" }}
+								/>
+								{chartCalculations.points.map((p, i) => (
+									<circle
+										key={i}
+										r="2.5"
+										cx={chartCalculations.xScale(p.x)}
+										cy={chartCalculations.yScale(p.y)}
+										fill={BG_COLOR}
+										stroke={PRIMARY_COLOR}
+										strokeWidth="1"
+									/>
+								))}
+							</motion.g>
 						</>
 					}
 				</svg>
 				:
-				<div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT_COLOR }}>
+				<motion.div
+					animate={{ opacity: isOnScreen ? 1 : 0, transition: { delay: 0.2 } }}
+					style={{ opacity: 0, position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: TEXT_COLOR }}
+				>
 					NO RECORDS YET
-				</div>
+				</motion.div>
 			}
 		</div>
 	)

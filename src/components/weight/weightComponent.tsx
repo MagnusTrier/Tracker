@@ -12,12 +12,15 @@ import { Datepicker } from "../datepicker/datepicker.tsx"
 import Card from "../card"
 import D3Chart from "../chart/chart"
 import { HiX } from "react-icons/hi"
+import { subDays, isAfter, startOfDay } from 'date-fns'
+import Modal from "../modal.tsx"
 
-const WeightComponent = () => {
+
+const WeightComponent = (props: { isOnScreen: boolean }) => {
 	return (
 		<>
 			<CurrentWeight />
-			<WeightAnalytics />
+			<WeightAnalytics isOnScreen={props.isOnScreen} />
 			<LogWeight />
 		</>
 	)
@@ -66,12 +69,9 @@ const calculateAverages = (data: WeightLog[]) => {
 	};
 };
 
-import { subDays, isAfter, startOfDay } from 'date-fns'
-import Modal from "../modal.tsx"
-
 const modes = ["7 D", "14 D", "30 D", "ALL"]
 
-const WeightAnalytics = () => {
+const WeightAnalytics = (props: { isOnScreen: boolean }) => {
 	const { weightLogs } = useData()
 	const [mode, setMode] = useState<string>("7 D")
 	const [showHistory, setShowHistory] = useState<boolean>(false)
@@ -94,7 +94,7 @@ const WeightAnalytics = () => {
 			onSettingsClick={() => setShowHistory(true)}
 		>
 			<SegmentedControl id="weight" options={modes} onChange={setMode} />
-			<D3Chart data={filteredData} yAccessor="weight" />
+			<D3Chart data={filteredData} yAccessor="weight" isOnScreen={props.isOnScreen} />
 			<Modal
 				visible={showHistory}
 				setVisible={setShowHistory}
@@ -254,7 +254,7 @@ const LogWeight = () => {
 			weightLogs.manager?.post(
 				{ weight: logValue, date: selectedDate },
 				{
-					minTime: 1000
+					minTime: 1000,
 				})
 		}
 	}

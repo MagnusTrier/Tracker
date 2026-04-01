@@ -1,9 +1,9 @@
-import { useEffect, useState, lazy, useMemo, startTransition } from "react"
+import { useState, lazy, useMemo, startTransition } from "react"
 import { useSession } from "./sessionContext"
 import { useData, type Exercise } from "./dataContext"
 import { AnimatePresence, motion } from "motion/react"
 import { Swiper, SwiperSlide } from "swiper/react"
-
+import { Virtual } from "swiper/modules"
 
 const WeightComponent = lazy(() => import("./weight/weightComponent"))
 const ExerciseComponent = lazy(() => import("./exercise/exerciseComponent"))
@@ -14,17 +14,15 @@ const MountAppContent = () => {
 	const { exercises } = useData()
 
 	const [page, setPage] = useState<number>(0)
-	const [mountPage, setMountPage] = useState<number>(0)
-
 
 	const slides = useMemo(() => {
 		return ["weight", ...exercises.values, "settings"]
 	}, [exercises.values])
 
-	const getComponent = (val: string) => {
+	const getComponent = (val: string, index: number) => {
 		switch (val) {
 			case "weight":
-				return <WeightComponent />
+				return <WeightComponent isOnScreen={index === page} />
 			case "settings":
 				return <SettingsComponent />
 			default:
@@ -45,30 +43,29 @@ const MountAppContent = () => {
 					className="app-container-inner"
 				>
 					<Swiper
-						className="swiper-container"
+						modules={[Virtual]}
 						slidesPerView={1}
 						threshold={10}
 						onSlideChange={(e) => startTransition(() => { setPage(e.activeIndex) })}
 						allowSlidePrev={page !== 0}
 						allowSlideNext={page !== slides.length - 1}
-						onSlideChangeTransitionEnd={(e) => { startTransition(() => { setMountPage(e.activeIndex) }) }}
 						touchStartPreventDefault={false}
+						virtual className="swiper-container"
 					>
 						{
 							slides.map((s, i) => (
 								<SwiperSlide
 									key={`slide-${i}`}
+									virtualIndex={i}
 									className="swiper-slide"
 								>
-									<DelayedMount isVisible={Math.abs(i - mountPage) <= 1} index={i}>
-										{
-											typeof s === "string"
-												?
-												getComponent(s)
-												:
-												<ExerciseComponent exercise={s as Exercise} />
-										}
-									</DelayedMount>
+									{
+										typeof s === "string"
+											?
+											getComponent(s, i)
+											:
+											<ExerciseComponent exercise={s as Exercise} />
+									}
 								</SwiperSlide>
 							))
 						}
@@ -78,24 +75,6 @@ const MountAppContent = () => {
 			</div>
 		</AnimatePresence >
 	)
-}
-
-const DelayedMount = (props: { isVisible: boolean, children: React.ReactNode, index?: number }) => {
-	const [shouldRender, setShouldRender] = useState(false)
-
-	useEffect(() => {
-		let timer: any
-
-		if (props.isVisible) {
-			timer = setTimeout(() => setShouldRender(true), 0)
-		} else {
-			timer = setTimeout(() => setShouldRender(false), 0)
-		}
-
-		return () => clearTimeout(timer)
-	}, [props.isVisible])
-
-	return shouldRender ? props.children : <div className="skeleton-loader" />
 }
 
 const Paginator = (props: { page: number, numPages: number }) => {

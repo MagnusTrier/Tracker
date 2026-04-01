@@ -2,13 +2,13 @@ import "./exerciseComponent.css"
 import { useData, type Exercise } from "../dataContext"
 import Card from "../card"
 import Modal from "../modal"
-import { useState } from "react"
+import React, { useState, useCallback } from "react"
 import { CustomButton, SegmentedControl } from "../generics"
 import { HiX } from "react-icons/hi"
 import { format } from "date-fns"
 import { AnimatePresence, motion } from "motion/react"
 import { v4 as uuidv4 } from "uuid"
-import { RiDeleteBin5Line } from "react-icons/ri";
+import { RiDeleteBin5Line } from "react-icons/ri"
 
 import D3Chart from "../chart/chart"
 
@@ -134,17 +134,17 @@ const Stats = (props: { exercise: Exercise }) => {
 				hideSettings
 			>
 				<SegmentedControl id={`${props.exercise.id}-trend`} options={["7 D", "14 D", "30 D", "ALL"]} onChange={() => { }} />
-				<D3Chart data={exerciseSets} yAccessor="reps" />
+				<D3Chart data={exerciseSets} yAccessor="reps" isOnScreen />
 			</Card>
 		</motion.div>
 	)
 }
 
 interface Set {
-	id: string;
-	setNumber: number;
-	weight: string;
-	reps: string;
+	id: string
+	setNumber: number
+	weight: string
+	reps: string
 }
 
 
@@ -152,7 +152,7 @@ const Workout = (props: { exercise: Exercise }) => {
 
 	const { sets } = useData()
 
-	const [activeSets, setActiveSets] = useState<Set[]>([{ id: uuidv4(), setNumber: 1, weight: "", reps: "" }]);
+	const [activeSets, setActiveSets] = useState<Set[]>([{ id: uuidv4(), setNumber: 1, weight: "", reps: "" }])
 
 	const addSet = () => {
 		const newSet: Set = {
@@ -160,26 +160,26 @@ const Workout = (props: { exercise: Exercise }) => {
 			setNumber: activeSets.length + 1,
 			weight: "",
 			reps: "",
-		};
-		setActiveSets([...activeSets, newSet]);
-	};
+		}
+		setActiveSets([...activeSets, newSet])
+	}
 
-	const updateSet = (id: string, field: 'weight' | 'reps', value: string) => {
+	const updateSet = useCallback((id: string, field: 'weight' | 'reps', value: string) => {
 		const regex = /^-?\d*\.?\d*$/
 
 		if (value === "" || regex.test(value)) {
 			setActiveSets(prev => prev.map(set =>
 				set.id === id ? { ...set, [field]: value } : set
-			));
+			))
 		}
-	};
+	}, [])
 
-	const removeSet = (id: string) => {
+	const removeSet = useCallback((id: string) => {
 		setActiveSets((prev) => {
-			const filtered = prev.filter((s) => s.id !== id);
-			return filtered.map((s, index) => ({ ...s, setNumber: index + 1 }));
-		});
-	};
+			const filtered = prev.filter((s) => s.id !== id)
+			return filtered.map((s, index) => ({ ...s, setNumber: index + 1 }))
+		})
+	}, [])
 
 	const postWorkout = () => {
 		const session_id = uuidv4()
@@ -235,19 +235,16 @@ const Workout = (props: { exercise: Exercise }) => {
 										opacity: 0,
 										y: -8,
 										scale: 0.98,
-										filter: 'blur(4px)',
 									}}
 									animate={{
 										opacity: 1,
 										y: 0,
 										scale: 1,
-										filter: 'blur(0px)',
 									}}
 									exit={{
 										opacity: 0,
 										x: "-100%",
 										scale: 0.98,
-										filter: 'blur(4px)',
 									}}
 									transition={{ duration: 0.3, ease: 'easeInOut' }}
 								>
@@ -275,10 +272,10 @@ const Workout = (props: { exercise: Exercise }) => {
 				/>
 			</Card>
 		</motion.div>
-	);
+	)
 }
 
-const SetDisplay = (props: { set: Set, removeSet: (id: string) => void, updateSet: (id: string, field: "weight" | "reps", val: string) => void }) => {
+const SetDisplay = React.memo((props: { set: Set, removeSet: (id: string) => void, updateSet: (id: string, field: "weight" | "reps", val: string) => void }) => {
 	return (
 		<div
 			className="set-container"
@@ -317,6 +314,6 @@ const SetDisplay = (props: { set: Set, removeSet: (id: string) => void, updateSe
 			</div>
 		</div>
 	)
-}
+})
 
 export default ExerciseComponent

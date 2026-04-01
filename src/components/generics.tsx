@@ -157,7 +157,7 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
 					<div
 						key={tab}
 						className={props.tabItemClass ?? `segmented-control-tab-item ${activeTab === tab && "active"}`}
-						onClick={() => { setActiveTab(tab) }}
+						onClick={() => { setActiveTab(tab); props.onChange(tab) }}
 					>
 						<span style={{ zIndex: 2, position: "relative" }}>{tab}</span>
 
@@ -166,9 +166,9 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
 								layoutId={`active-pill-${props.id}`}
 								transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
 								className="segmented-control-active-indicator"
-								onLayoutAnimationComplete={() => {
-									props.onChange(tab)
-								}}
+							// onLayoutAnimationComplete={() => {
+							// 	props.onChange(tab)
+							// }}
 							/>
 						)}
 					</div>
