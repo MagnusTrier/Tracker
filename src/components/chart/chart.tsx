@@ -1,207 +1,231 @@
-import "./chart.css"
-import React, { useMemo } from "react"
-import { scaleTime, scaleLinear } from "d3-scale"
-import { extent } from "d3-array"
-import { line, area, curveCatmullRom } from "d3-shape"
-import { format, subDays, startOfDay } from "date-fns"
-import { motion } from "framer-motion"
+import React, { useRef, useEffect, useMemo, useState } from "react";
+import { scaleTime, scaleLinear } from "d3-scale";
+import { extent } from "d3-array";
+import { line, area, curveCatmullRom } from "d3-shape";
+import { startOfDay, format } from "date-fns";
 
-const PRIMARY_COLOR = "var(--color-primary)"
-const GRID_COLOR = "rgba(40, 40, 48, 0.25)"
-const TEXT_COLOR = "var(--text-dim)"
-const BG_COLOR = "#16161e"
-const TOTAL_DURATION = 1.6
-const MARGIN = { top: 20, right: 30, bottom: 30, left: 45 }
+interface CanvasChartProps {
+	data: any[];
+	yAccessor: string;
+	isOnScreen: boolean;
+}
 
-const ChartDecor = React.memo(({ yTicks, yScale, xTicks, xScale, width, height, xRangePadded }: any) => (
-	<g>
-		{yTicks.map((tick: number, i: number) => (
-			<g key={i} transform={`translate(0, ${yScale(tick)})`}>
-				<line x1={xRangePadded[0] - 5} x2={width - MARGIN.right + 5} style={{ stroke: GRID_COLOR }} />
-				<text x={xRangePadded[0] - 10} className="tick" textAnchor="end" alignmentBaseline="middle">
-					{tick % 1 === 0 ? tick : tick.toFixed(1)}
-				</text>
-			</g>
-		))}
-		{xTicks.map((date: Date, i: number) => (
-			<text key={i} x={xScale(date)} y={height - 10} className="tick" style={{ textAnchor: "middle" }}>
-				{format(date, "MMM d").toUpperCase()}
-			</text>
-		))}
-	</g>
-))
+const PRIMARY_COLOR = "#9097ff";
+const GRID_COLOR = "rgba(255, 255, 255, 0.05)";
+const TEXT_COLOR = "rgba(90, 90, 100, 1)";
+const BG_COLOR = "#16161e";
+const ANIMATION_DURATION = 2400;
+const MARGIN = { top: 30, right: 80, bottom: 85, left: 120 };
 
-function D3Chart({ data = [], yAccessor, isOnScreen }: { data: any[], yAccessor: string, isOnScreen: boolean }) {
-	const width = 310
-	const height = 210
+const CanvasChart = ({ data = [], yAccessor, isOnScreen }: CanvasChartProps) => {
+	const canvasRef = useRef<HTMLCanvasElement>(null);
+	const requestRef = useRef<number | null>(null);
+	const startTimeRef = useRef<number | null>(null);
 
-	const chartCalculations = useMemo(() => {
-		const points = data.map(d => ({
-			x: startOfDay(d.date),
-			y: d[yAccessor]
-		})).sort((a, b) => a.x.getTime() - b.x.getTime())
+	const [isDone, setIsDone] = useState(false);
 
-		const activeData = points.length > 0
-		const xDomain = activeData ? (extent(points, d => d.x) as [Date, Date]) : [subDays(new Date(), 7), new Date()]
+	const dpr = 3;
+	const width = 340 * dpr;
+	const height = width * 9 / 16;
 
-		let yTicksValues: number[] = []
-		let yDomain: [number, number] = [0, 100]
+	const calculations = useMemo(() => {
+		setIsDone(false)
+		const points = data
+			.map((d) => ({
+				x: startOfDay(new Date(d.date)),
+				y: d[yAccessor],
+			}))
+			.sort((a, b) => a.x.getTime() - b.x.getTime());
 
-		if (activeData) {
-			const [rawMin, rawMax] = extent(points, d => d.y) as [number, number]
+		if (points.length < 2) return null;
 
-			const padding = 0.00375
+		const xDomain = extent(points, (d) => d.x) as [Date, Date];
+		const [rawMin, rawMax] = extent(points, (d) => d.y) as [number, number];
 
-			const minTick = rawMin * (1 - padding)
-			const maxTick = rawMax * (1 + padding)
+		const xScale = scaleTime().domain(xDomain).range([MARGIN.left, width - MARGIN.right]);
+		const yScale = scaleLinear().domain([rawMin, rawMax]).range([height - MARGIN.bottom, MARGIN.top]);
 
-			const range = maxTick - minTick
-			const step = range / 3
+		const range = rawMax - rawMin;
+		const step = range / 3;
+		const yTicksValues = Array.from({ length: 4 }, (_, i) => rawMin + step * i);
+		const xTicksValues = [xDomain[0], new Date((xDomain[0].getTime() + xDomain[1].getTime()) / 2), xDomain[1]];
 
-			yTicksValues = Array.from({ length: 4 }, (_, i) => {
-				return minTick + (step * i)
-			})
-			yDomain = [minTick, maxTick]
-		}
-
-		const xRange = [MARGIN.left, width - MARGIN.right]
-		const yRange = [height - MARGIN.bottom, MARGIN.top]
-
-		const xScale = scaleTime().domain(xDomain).range(xRange)
-		const yScale = scaleLinear().domain(yDomain).range(yRange)
-
-		const xTicksValues = activeData ? [xDomain[0], new Date((xDomain[0].getTime() + xDomain[1].getTime()) / 2), xDomain[1]] : xScale.ticks(3)
-
-		const curveFunc = curveCatmullRom.alpha(0.5)
-
-		const l = line<any>()
-			.x(d => xScale(d.x))
-			.y(d => yScale(d.y))
-			.curve(curveFunc)
-
-		const a = area<any>()
-			.x(d => xScale(d.x))
-			.y0(height - MARGIN.bottom)
-			.y1(d => yScale(d.y))
-			.curve(curveFunc)
+		const curveFunc = curveCatmullRom.alpha(0.5);
+		const lineGen = line<any>().x(d => xScale(d.x)).y(d => yScale(d.y)).curve(curveFunc);
+		const areaGen = area<any>().x(d => xScale(d.x)).y0(height - MARGIN.bottom).y1(d => yScale(d.y)).curve(curveFunc);
 
 		return {
 			points,
 			xScale,
 			yScale,
-			xTicks: xTicksValues,
+			fullPath: new Path2D(lineGen(points)!),
+			areaD: areaGen(points)!,
 			yTicks: yTicksValues,
-			linePath: l(points),
-			areaPath: a(points),
-			hasData: activeData,
-			xRangePadded: xRange
-		}
-	}, [data, yAccessor])
+			xTicks: xTicksValues
+		};
+	}, [data, yAccessor, width, height]);
 
+	useEffect(() => {
+		// 1. Instantly hide gradient whenever data or view changes
+		setIsDone(false);
+		startTimeRef.current = null;
+
+		if (!canvasRef.current || !calculations || !isOnScreen) return;
+
+		const ctx = canvasRef.current.getContext("2d");
+		if (!ctx) return;
+
+		const easeInOutQuad = (t: number) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+
+		const renderFrame = (progress: number) => {
+			ctx.clearRect(0, 0, width, height);
+			const { xScale, yScale, points, fullPath } = calculations;
+			const revealX = MARGIN.left + (width - MARGIN.left - MARGIN.right + 60) * progress;
+
+			ctx.save();
+			ctx.beginPath();
+			ctx.rect(0, 0, revealX, height);
+			ctx.clip();
+
+			ctx.shadowBlur = 15;
+			ctx.shadowColor = "rgba(144, 151, 255, 0.4)";
+			ctx.strokeStyle = PRIMARY_COLOR;
+			ctx.lineWidth = 5;
+			ctx.lineJoin = "round";
+			ctx.lineCap = "round";
+			ctx.stroke(fullPath);
+			ctx.restore();
+
+			points.forEach((point) => {
+				const dotX = xScale(point.x);
+				const dotY = yScale(point.y);
+				const distancePastDot = revealX - dotX;
+				const opacity = Math.max(0, Math.min(1, (distancePastDot + 10) / 40));
+
+				if (opacity > 0) {
+					ctx.save();
+					ctx.globalAlpha = opacity;
+					const s = 0.8 + (0.2 * opacity);
+					ctx.beginPath();
+					ctx.arc(dotX, dotY, 7 * s, 0, Math.PI * 2);
+					ctx.fillStyle = BG_COLOR;
+					ctx.fill();
+					ctx.strokeStyle = PRIMARY_COLOR;
+					ctx.lineWidth = 4;
+					ctx.stroke();
+					ctx.restore();
+				}
+			});
+		};
+
+		const animate = (time: number) => {
+			if (!startTimeRef.current) startTimeRef.current = time;
+			const p = Math.min((time - startTimeRef.current) / ANIMATION_DURATION, 1);
+			renderFrame(easeInOutQuad(p));
+
+			if (p < 1 - 0.1) {
+				requestRef.current = requestAnimationFrame(animate);
+			} else {
+				// 2. Trigger gradient bloom once line is complete
+				setIsDone(true);
+			}
+		};
+
+		requestRef.current = requestAnimationFrame(animate);
+
+		return () => {
+			if (requestRef.current) cancelAnimationFrame(requestRef.current);
+		};
+	}, [calculations, isOnScreen, width, height]);
+
+	if (!calculations) return null;
 
 	return (
-		<div className="chart" style={{ width: "100%", height: "100%", position: "relative" }}>
-			{chartCalculations && isOnScreen
-				?
-				<svg
-					key={chartCalculations.points.length}
-					viewBox={`0 0 ${width} ${height}`}
-					preserveAspectRatio="none"
-					style={{ width: "100%", height: "100%", display: "block" }}
-				>
-					<defs>
-						<linearGradient id="chart-gradient" x1="0" y1="0" x2="0" y2="1">
-							<stop offset="0%" stopColor={PRIMARY_COLOR} stopOpacity="0.12" />
-							<stop offset="100%" stopColor={PRIMARY_COLOR} stopOpacity="0.0" />
-						</linearGradient>
-						<filter
-							id="line-glow"
-							x="-10%"
-							y="-10%"
-							width="120%"
-							height="120%"
+		<div className="chart-container" style={{ position: "relative", width: "100%", aspectRatio: 16 / 9 }}>
+			{/* SVG LAYER: Static Grid & Dither-Free Gradient */}
+			<svg
+				viewBox={`0 0 ${width} ${height}`}
+				preserveAspectRatio="none"
+				style={{
+					position: "absolute",
+					top: 0, left: 0, width: "100%", height: "100%",
+					pointerEvents: "none", zIndex: 0
+				}}
+			>
+				<defs>
+					<linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+						<stop offset="0%" stopColor={PRIMARY_COLOR} stopOpacity="0.18" />
+						<stop offset="100%" stopColor={PRIMARY_COLOR} stopOpacity="0" />
+					</linearGradient>
+				</defs>
+
+				{/* Grid Lines */}
+				{calculations.yTicks.map((tick, i) => (
+					<g key={`${i}-${tick}`}>
+						<line
+							x1={MARGIN.left - 10}
+							x2={width - MARGIN.right + 10}
+							y1={calculations.yScale(tick)}
+							y2={calculations.yScale(tick)}
+							stroke={GRID_COLOR}
+							strokeWidth="2"
+						/>
+						<text
+							x={MARGIN.left - 25}
+							y={calculations.yScale(tick)}
+							fill={TEXT_COLOR}
+							fontSize="30"
+							fontWeight="700"
+							fontFamily="Manrope Variable, sans-serif"
+							textAnchor="end"
+							dominantBaseline="middle"
 						>
-							<feColorMatrix
-								type="matrix"
-								values="
-								0 0 0 0 0.56
-								0 0 0 0 0.59
-								0 0 0 0 1.00
-								0 0 0 0.6 0
-								"
-								result="glowColor"
-							/>
-							<feGaussianBlur stdDeviation="1.5" in="glowColor" result="blurredGlow" />
-							<feMerge>
-								<feMergeNode in="blurredGlow" />
-								<feMergeNode in="SourceGraphic" />
-							</feMerge>
-						</filter>
-					</defs>
-					<ChartDecor
-						{...chartCalculations}
-						width={width}
-						height={height}
-					/>
-					{
-						chartCalculations.hasData &&
-						<>
-							<motion.path
-								initial={{ pathLength: 0 }}
-								animate={{ pathLength: 1 }}
-								transition={{ duration: TOTAL_DURATION, ease: "easeInOut", delay: 0.2 }}
-								d={chartCalculations.linePath || ""}
-								fill="none"
-								stroke={PRIMARY_COLOR}
-								strokeWidth="2"
-								style={{ transform: "translate3d(0,0,0)", WebkitTransform: "translate3d(0,0,0)", willChange: "transform" }}
-							/>
-							<motion.g
-								initial={{ opacity: 0 }}
-								animate={{ opacity: 1, transition: { delay: TOTAL_DURATION, duration: 0.35 } }}
-								style={{
-									isolation: "isolate",
-									pointerEvents: "none"
-								}}
-							>
-								<path
-									d={chartCalculations.areaPath || ""}
-									fill="url(#chart-gradient)"
-									stroke="none"
-									style={{ transform: "translate3d(0,0,0)", WebkitTransform: "translate3d(0,0,0)", willChange: "transform", pointerEvents: "none" }}
-								/>
-								<path
-									d={chartCalculations.linePath || ""}
-									fill="none"
-									stroke={PRIMARY_COLOR}
-									strokeWidth="2"
-									filter="url(#line-glow)"
-									style={{ transform: "translate3d(0,0,0)", WebkitTransform: "translate3d(0,0,0)", willChange: "transform", pointerEvents: "none" }}
-								/>
-								{chartCalculations.points.map((p, i) => (
-									<circle
-										key={i}
-										r="2.5"
-										cx={chartCalculations.xScale(p.x)}
-										cy={chartCalculations.yScale(p.y)}
-										fill={BG_COLOR}
-										stroke={PRIMARY_COLOR}
-										strokeWidth="1"
-									/>
-								))}
-							</motion.g>
-						</>
-					}
-				</svg>
-				:
-				<motion.div
-					animate={{ opacity: isOnScreen ? 1 : 0, transition: { delay: 0.2 } }}
-					style={{ opacity: 0, position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: TEXT_COLOR }}
-				>
-					NO RECORDS YET
-				</motion.div>
-			}
+							{tick.toFixed(1)}
+						</text>
+					</g>
+				))}
+
+				{/* X-Axis Labels */}
+				{calculations.xTicks.map((tick, i) => (
+					<text
+						key={`${i}-${tick.getTime()}`}
+						x={calculations.xScale(tick)}
+						y={height - MARGIN.bottom + 50}
+						fill={TEXT_COLOR}
+						fontSize="28"
+						fontWeight="700"
+						fontFamily="Manrope Variable, sans-serif"
+						textAnchor="middle"
+					>
+						{format(tick, "MMM d").toUpperCase()}
+					</text>
+				))}
+
+				{/* Reactive Gradient Path */}
+				<path
+					d={calculations.areaD}
+					fill="url(#chartFill)"
+					style={{
+						opacity: (isOnScreen && isDone) ? 1 : 0,
+						// "none" when isDone is false so it vanishes instantly on data change
+						transition: isDone ? "opacity 500ms ease-out" : "none"
+					}}
+				/>
+			</svg>
+
+			{/* CANVAS LAYER: GPU Path Animation */}
+			<canvas
+				ref={canvasRef}
+				width={width}
+				height={height}
+				style={{
+					position: "absolute",
+					top: 0, left: 0, width: "100%", height: "100%",
+					display: "block", zIndex: 1
+				}}
+			/>
 		</div>
-	)
-}
-export default React.memo(D3Chart)
+	);
+};
+
+export default React.memo(CanvasChart);

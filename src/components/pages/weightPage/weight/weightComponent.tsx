@@ -1,54 +1,27 @@
-import { useData, type WeightLog } from "../dataContext"
+import { useData, type WeightLog } from "../../../dataContext"
 import "./weightComponent.css"
 import React, { useMemo, useState, type MouseEvent } from "react"
-import { CustomButton, RulerPicker, SegmentedControl } from "../generics.tsx"
+import { CustomButton, RulerPicker, SegmentedControl } from "../../../generics.tsx"
 import "react-datepicker/dist/react-datepicker.css"
 import { format, isSameDay } from "date-fns"
 import { RiDeleteBin5Line, RiCloseLine } from "react-icons/ri";
 import { motion, AnimatePresence } from "motion/react"
 import { ScaleLoader } from "react-spinners"
-import { IoIosTrendingDown, IoIosTrendingUp } from "react-icons/io"
-import { Datepicker } from "../datepicker/datepicker.tsx"
-import Card from "../card"
-import D3Chart from "../chart/chart"
+import { TrendingUp, TrendingDown } from "lucide-react"
+import { Datepicker } from "../../../datepicker/datepicker.tsx"
+import Card from "../../../card"
+import D3Chart from "../../../chart/chart"
 import { HiX } from "react-icons/hi"
 import { subDays, isAfter, startOfDay } from 'date-fns'
-import Modal from "../modal.tsx"
+import Modal from "../../../modal.tsx"
 
 
 const WeightComponent = (props: { isOnScreen: boolean }) => {
 	return (
-		<>
-			<CurrentWeight />
+		<div className="swiper-inner">
 			<WeightAnalytics isOnScreen={props.isOnScreen} />
 			<LogWeight />
-		</>
-	)
-}
-
-const CurrentWeight = () => {
-	const { weightLogs } = useData()
-	const stats = useMemo(() =>
-		calculateAverages(weightLogs.values),
-		[weightLogs.values]
-	)
-
-	return (
-		<Card
-			hideSettings
-			header={<span style={{ color: "var(--color-primary)", textShadow: "0 0 15px color-mix(in srgb, var(--color-primary), transparent 50%)" }}>CURRENT WEIGHT</span>}
-			contentStyle={{ marginBottom: -4 }}
-		>
-			<div className="current-weight-container">
-				<span className="current-weight">
-					{stats.currentAvg}
-					<span> KG</span>
-				</span>
-				<span className="stats">{Number(stats.diff) > 0 ? <IoIosTrendingUp style={{ fontSize: 24 }} /> : <IoIosTrendingDown style={{ fontSize: 24 }} />}{stats.diff}</span>
-			</div>
-
-		</Card>
-
+		</div>
 	)
 }
 
@@ -69,19 +42,24 @@ const calculateAverages = (data: WeightLog[]) => {
 	};
 };
 
-const modes = ["7 D", "14 D", "30 D", "ALL"]
+const modes = ["7D", "14D", "30D", "ALL"]
 
 const WeightAnalytics = (props: { isOnScreen: boolean }) => {
+
 	const { weightLogs } = useData()
-	const [mode, setMode] = useState<string>("7 D")
+	const stats = useMemo(() =>
+		calculateAverages(weightLogs.values),
+		[weightLogs.values]
+	)
+	const [mode, setMode] = useState<string>("7D")
 	const [showHistory, setShowHistory] = useState<boolean>(false)
 
 	const filteredData = useMemo(() => {
 		const now = new Date()
 		if (mode === "ALL") return weightLogs.values
-		let daysToSub = 7
-		if (mode === "14 D") daysToSub = 14
-		if (mode === "30 D") daysToSub = 30
+		let daysToSub = 6
+		if (mode === "14D") daysToSub = 13
+		if (mode === "30D") daysToSub = 29
 		const cutoff = startOfDay(subDays(now, daysToSub))
 		return weightLogs.values.filter(item => {
 			return isAfter(item.date, cutoff)
@@ -89,12 +67,25 @@ const WeightAnalytics = (props: { isOnScreen: boolean }) => {
 	}, [mode, weightLogs.values])
 
 	return (
+
 		<Card
-			header="WEIGHT TREND"
+			header="CURRENT WEIGHT"
+			subHeader="ANALYSE WEIGHT LOGS"
 			onSettingsClick={() => setShowHistory(true)}
+
 		>
-			<SegmentedControl id="weight" options={modes} onChange={setMode} />
-			<D3Chart data={filteredData} yAccessor="weight" isOnScreen={props.isOnScreen} />
+			<div className="current-weight-container">
+				<span className="current-weight">
+					{stats.currentAvg}
+					<span> KG</span>
+				</span>
+				<span className="stats">{Number(stats.diff) > 0 ? <TrendingUp strokeWidth="1.5" size="24" /> : <TrendingDown strokeWidth="1.5" size="24" />}{stats.diff}</span>
+			</div>
+
+			<div style={{ backgroundColor: "var(--color-dark)", borderRadius: 10 }}>
+				<SegmentedControl id="weight" options={modes} onChange={setMode} />
+				<D3Chart data={filteredData} yAccessor="weight" isOnScreen={props.isOnScreen} />
+			</div>
 			<Modal
 				visible={showHistory}
 				setVisible={setShowHistory}
@@ -112,9 +103,6 @@ const WeightAnalytics = (props: { isOnScreen: boolean }) => {
 		</Card>
 	)
 }
-
-
-
 
 const WeightAnalyticsSettings = () => {
 	const { weightLogs } = useData()
@@ -249,7 +237,7 @@ const LogWeight = () => {
 		e.preventDefault()
 		e.stopPropagation()
 
-		if (selectedDate) {
+		if (selectedDate && !isDateAlreadyLogged) {
 			setLoading(true)
 			weightLogs.manager?.post(
 				{ weight: logValue, date: selectedDate },
@@ -267,9 +255,9 @@ const LogWeight = () => {
 				alignItems: "center",
 				overflow: "visible"
 			}}
-			onSettingsClick={() => setShowDatePicker(true)}
+			hideSettings
 		>
-			<RulerPicker displayValue={logValue} setDisplayValue={setLogValue} date={selectedDate} />
+			<RulerPicker displayValue={logValue} setDisplayValue={setLogValue} date={selectedDate} onDateClick={() => setShowDatePicker(true)} />
 			<CustomButton
 				text={{
 					default: "SAVE ENTRY",

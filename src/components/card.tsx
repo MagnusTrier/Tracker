@@ -1,4 +1,4 @@
-import { HiOutlineDotsHorizontal } from "react-icons/hi"
+import { Ellipsis } from "lucide-react"
 
 interface CardProps {
 	header: string | React.ReactNode
@@ -14,7 +14,7 @@ interface CardProps {
 const Card = (props: CardProps) => {
 	return (
 		<div
-			className="blur card"
+			className="card"
 			style={props.style}
 		>
 			<div
@@ -29,7 +29,7 @@ const Card = (props: CardProps) => {
 							className="settings-icon"
 							onClick={props.onSettingsClick}
 						>
-							{props.settingsLogo ?? <HiOutlineDotsHorizontal />}
+							{props.settingsLogo ?? <Ellipsis />}
 						</div>
 					}
 				</h1>
@@ -57,7 +57,7 @@ const HeaderIcon = (props: { style?: React.CSSProperties }) => {
 		height: "5px",
 		borderRadius: "50%",
 		backgroundColor: "var(--color-primary)",
-		boxShadow: "0 0 5px color-mix(in srgb, var(--color-primary), transparent 40%)",
+		boxShadow: "0 0 5px color-mix(in srgb, var(--color-primary), transparent 60%)",
 		transform: "translateZ(0)",
 		willChange: "transform"
 	}
@@ -71,6 +71,7 @@ const HeaderIcon = (props: { style?: React.CSSProperties }) => {
 				display: "inline-block",
 				verticalAlign: "middle",
 				marginRight: "4px",
+				marginLeft: "1px",
 				...props.style
 			}}
 		>

@@ -1,0 +1,53 @@
+.swiper-wrapper {
+	display: flex;
+	transition-property: transform;
+}
+
+.swiper-container {
+	position: relative;
+	width: 100%;
+	display: flex;
+	height: calc(100dvh - 110px);
+}
+
+.swiper-slide {
+	flex-shrink: 0;
+	position: relative;
+	padding: 10px;
+
+	backface-visibility: hidden;
+	transform: translate3d(0, 0, 0);
+}
+
+.swiper-inner {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.paginator-display {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 38px;
+}
+
+.paginator-display>div {
+	width: 40px;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.paginator-display>div>div {
+	height: 3px;
+	width: 30px;
+	background-color: var(--color-border-strong);
+	border-radius: 50px;
+	transition: 300ms ease;
+}

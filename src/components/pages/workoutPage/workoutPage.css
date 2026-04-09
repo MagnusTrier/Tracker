@@ -1,0 +1,17 @@
+.workouts-display {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 10px;
+	overflow-y: scroll;
+	width: 100%;
+}
+
+.workouts-display>div {
+	width: 100%;
+	aspect-ratio: 3;
+	background-color: var(--color-dark);
+	border-radius: 10px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}

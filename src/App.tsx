@@ -2,14 +2,22 @@ import "./App.css"
 import { SessionProvider } from "./components/sessionContext"
 import { DataProvider } from "./components/dataContext"
 import SplashScreen from "./components/splashScreen"
+import { BrowserRouter } from "react-router-dom";
 
 function App() {
+	window.addEventListener('touchstart', (e: any) => {
+		if (e.pageX < 30) {
+			e.preventDefault()
+		}
+	}, { passive: false });
 	return (
-		<SessionProvider>
-			<DataProvider>
-				<SplashScreen />
-			</DataProvider>
-		</SessionProvider>
+		<BrowserRouter>
+			<SessionProvider>
+				<DataProvider>
+					<SplashScreen />
+				</DataProvider>
+			</SessionProvider>
+		</BrowserRouter>
 	)
 }
 

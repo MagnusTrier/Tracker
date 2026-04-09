@@ -11,7 +11,7 @@ const TICK_SPACING = 20
 
 const TOTAL_TICKS = (RANGE_MAX - RANGE_MIN) * 10
 
-export const RulerPicker = (props: { displayValue: number, setDisplayValue: (val: number) => void, date: Date | null }) => {
+export const RulerPicker = (props: { displayValue: number, setDisplayValue: (val: number) => void, date: Date | null, onDateClick: () => void }) => {
 
 	const INITIAL_OFFSET = (props.displayValue - RANGE_MIN) * 10 * -TICK_SPACING
 	const offset = useMotionValue(INITIAL_OFFSET)
@@ -54,7 +54,7 @@ export const RulerPicker = (props: { displayValue: number, setDisplayValue: (val
 
 			{
 				props.date &&
-				<div className="date">
+				<div className="date action-button-primary" onClick={props.onDateClick}>
 					<IoCalendarClearOutline fontSize={15} />
 					{format(props.date, "MMM d").toUpperCase()}
 				</div>
@@ -165,10 +165,7 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
 							<motion.div
 								layoutId={`active-pill-${props.id}`}
 								transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
-								className="segmented-control-active-indicator"
-							// onLayoutAnimationComplete={() => {
-							// 	props.onChange(tab)
-							// }}
+								className="segmented-control-active-indicator action-button-primary"
 							/>
 						)}
 					</div>
@@ -177,3 +174,18 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
 		</div>
 	);
 };
+
+export const PageContainer = (props: { children: React.ReactNode, style?: React.CSSProperties }) => {
+	return (
+		<motion.div
+			className="page"
+			initial={{ opacity: 0, x: "-25dvw" }}
+			animate={{ opacity: 1, x: 0 }}
+			exit={{ opacity: 0, x: "25dvw" }}
+			transition={{ duration: 0.3 }}
+			style={props.style}
+		>
+			{props.children}
+		</motion.div>
+	)
+}

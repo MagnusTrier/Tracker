@@ -19,8 +19,8 @@ const Modal = (props: { children: React.ReactNode, visible: boolean, setVisible:
 							inset: 0,
 							backdropFilter: "blur(10px)",
 							WebkitBackdropFilter: "blur(10px)",
-							backgroundColor: "color-mix(in srgb, var(--color-bg), transparent 15%)",
-							padding: 20
+							backgroundColor: "color-mix(in srgb, var(--color-bg), transparent 25%)",
+							padding: 10
 						}}
 					>
 						<motion.div
@@ -30,8 +30,7 @@ const Modal = (props: { children: React.ReactNode, visible: boolean, setVisible:
 							transition={{ ease: "easeInOut", duration: 0.4 }}
 							onClick={(e) => { e.stopPropagation(); e.preventDefault() }}
 							style={{
-
-								maxHeight: "calc(100vh - 48px)",
+								maxHeight: "100dvh",
 								overflow: "hidden",
 							}}
 						>

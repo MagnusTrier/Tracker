@@ -1,147 +1,31 @@
-import { useState, lazy, useMemo, startTransition } from "react"
-import { useSession } from "./sessionContext"
-import { useData, type Exercise } from "./dataContext"
-import { AnimatePresence, motion } from "motion/react"
-import { Swiper, SwiperSlide } from "swiper/react"
-import { Virtual } from "swiper/modules"
+import { lazy } from "react"
+import { AnimatePresence } from "motion/react"
+import Navbar from "./navbar/navbar"
+import { Routes, Route, Navigate, useLocation } from "react-router-dom"
 
-const WeightComponent = lazy(() => import("./weight/weightComponent"))
-const ExerciseComponent = lazy(() => import("./exercise/exerciseComponent"))
-const SettingsComponent = lazy(() => import("./settings/settings"))
+const WeightPage = lazy(() => import("./pages/weightPage/weightPage"))
+const WorkoutPage = lazy(() => import("./pages/workoutPage/workoutPage"))
+const SettingsPage = lazy(() => import("./pages/settingsPage/settingsPage"))
 
 const MountAppContent = () => {
-	const { showSettings } = useSession()
-	const { exercises } = useData()
-
-	const [page, setPage] = useState<number>(0)
-
-	const slides = useMemo(() => {
-		return ["weight", ...exercises.values, "settings"]
-	}, [exercises.values])
-
-	const getComponent = (val: string, index: number) => {
-		switch (val) {
-			case "weight":
-				return <WeightComponent isOnScreen={index === page} />
-			case "settings":
-				return <SettingsComponent />
-			default:
-				return <span>INVALID COMPONENT NAME</span>
-		}
-	}
-
+	const location = useLocation()
 	return (
-		<AnimatePresence >
-			<div
-				className="app-container"
-			>
-				<motion.div
-					key="app-content"
-					initial={{ opacity: 0, y: 10 }}
-					animate={!showSettings ? { opacity: 1, y: 0, visibility: "visible" } : { opacity: 0, y: "100vh", visibility: "hidden" }}
-					transition={{ ease: "easeInOut", duration: 0.5 }}
-					className="app-container-inner"
-				>
-					<Swiper
-						modules={[Virtual]}
-						slidesPerView={1}
-						threshold={10}
-						onSlideChange={(e) => startTransition(() => { setPage(e.activeIndex) })}
-						allowSlidePrev={page !== 0}
-						allowSlideNext={page !== slides.length - 1}
-						touchStartPreventDefault={false}
-						virtual className="swiper-container"
-					>
-						{
-							slides.map((s, i) => (
-								<SwiperSlide
-									key={`slide-${i}`}
-									virtualIndex={i}
-									className="swiper-slide"
-								>
-									{
-										typeof s === "string"
-											?
-											getComponent(s, i)
-											:
-											<ExerciseComponent exercise={s as Exercise} />
-									}
-								</SwiperSlide>
-							))
-						}
-					</Swiper>
-					<Paginator page={page} numPages={slides.length} />
-				</motion.div>
-			</div>
-		</AnimatePresence >
-	)
-}
+		<div
+			className="app-container"
+		>
+			<AnimatePresence mode="wait">
+				<Routes location={location} key={location.pathname}>
+					<Route path="/weight" element={<WeightPage />} />
+					<Route path="/workout" element={<WorkoutPage />} />
 
-const Paginator = (props: { page: number, numPages: number }) => {
-	const sliderStyle = {
-		active: {
-			backgroundColor: "color-mix(in srgb, var(--color-primary), transparent 0%)",
-			boxShadow: "0px 0px 10px color-mix(in srgb, var(--color-primary), transparent 50%)",
-			scaleY: 1.30,
+					<Route path="/settings" element={<SettingsPage />} />
 
-		},
-		isNext: {
-			backgroundColor: "color-mix(in srgb, var(--color-primary), transparent 50%)",
-			boxShadow: "0px 0px 10px color-mix(in srgb, var(--color-primary), transparent 80%)",
-			scaleY: 1
-		},
-		inactive: {
-			backgroundColor: "var(--color-border-strong)",
-			boxShadow: "0px 0px 8px transparent",
-			scaleY: 1
-		}
-	}
-	return (
-		<div className="paginator-display">
-			<motion.div
-				initial={sliderStyle.active}
-				animate={
-					props.page === 0
-						?
-						sliderStyle.active
-						:
-						props.page !== props.numPages - 1
-							?
-							sliderStyle.isNext
-							:
-							sliderStyle.inactive
-				}
-			/>
-			<motion.div
-				initial={sliderStyle.isNext}
-				animate={
-					(props.page !== 0 && props.page !== props.numPages - 1)
-						?
-						sliderStyle.active
-						:
-						(props.page === 0 || props.page === props.numPages - 1)
-							?
-							sliderStyle.isNext
-							: sliderStyle.inactive
-				}
-			/>
-			<motion.div
-				initial={sliderStyle.inactive}
-				animate={
-					props.page === props.numPages - 1
-						?
-						sliderStyle.active
-						:
-						props.page !== 0
-							?
-							sliderStyle.isNext
-							:
-							sliderStyle.inactive
-				}
-			/>
+					<Route path="/" element={<Navigate to="/weight" />} />
+				</Routes>
+			</AnimatePresence>
+			<Navbar />
 		</div>
 	)
-
 }
 
 export default MountAppContent

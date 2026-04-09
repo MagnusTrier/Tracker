@@ -8,3 +8,4 @@ interface ImportMeta {
 }
 
 declare module "@fontsource-variable/manrope/wght"
+declare module "swiper/css"
