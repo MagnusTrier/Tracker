@@ -1,7 +1,8 @@
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 
-const Modal = (props: { children: React.ReactNode, visible: boolean, setVisible: (val: boolean) => void }) => {
+const Modal = (props: { children: React.ReactNode, visible: boolean, setVisible: (val: boolean) => void, style?: React.CSSProperties }) => {
+	const dotPattern = `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='-6 -2 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='white' fill-opacity='0.075'/%3E%3C/svg%3E")`;
 	return (
 		createPortal(
 			<AnimatePresence>
@@ -17,21 +18,28 @@ const Modal = (props: { children: React.ReactNode, visible: boolean, setVisible:
 						style={{
 							position: "fixed",
 							inset: 0,
-							backdropFilter: "blur(10px)",
-							WebkitBackdropFilter: "blur(10px)",
-							backgroundColor: "color-mix(in srgb, var(--color-bg), transparent 25%)",
-							padding: 10
+							backgroundColor: "var(--color-bg)",
+							padding: 10,
+							paddingBottom: 30,
+							transform: "translate3d(0,0,0)",
+							backgroundImage: dotPattern,
+							backgroundAttachment: "fixed",
+							backgroundRepeat: "repeat"
 						}}
 					>
 						<motion.div
-							initial={{ opacity: 0, y: "50vh" }}
+							initial={{ opacity: 0, y: "20vh" }}
 							animate={{ opacity: 1, y: 0 }}
-							exit={{ opacity: 0, y: "50vh" }}
+							exit={{ opacity: 0, y: "20vh" }}
 							transition={{ ease: "easeInOut", duration: 0.4 }}
-							onClick={(e) => { e.stopPropagation(); e.preventDefault() }}
 							style={{
-								maxHeight: "100dvh",
+								maxHeight: "100%",
+								height: "100%",
 								overflow: "hidden",
+								transform: "translate3d(0,0,0)",
+								display: "flex",
+								flexDirection: "column",
+								...props.style
 							}}
 						>
 							{props.children}

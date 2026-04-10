@@ -4,6 +4,7 @@
 	gap: 10px;
 	overflow-y: scroll;
 	width: 100%;
+	overscroll-behavior-y: auto;
 }
 
 .workouts-display>div {

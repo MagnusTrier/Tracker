@@ -14,7 +14,7 @@
 
 	flex: 0 1 auto;
 
-	padding: 10px 20px;
+	padding: 10px;
 	border-radius: 20px;
 
 	max-height: 100%;
@@ -24,61 +24,112 @@
 
 	background-color: rgba(14, 14, 17, 1);
 	border: 1px solid var(--color-border);
+	justify-content: center;
+	position: relative;
+}
+
+.manage-buttons>div:active {
+	transform: scale(0.98);
+}
+
+.manage-buttons>div .title {
+	font-weight: 700;
+	font-size: 15px;
+	margin-bottom: -8px;
+	letter-spacing: 0.075ch;
+}
+
+.manage-buttons>div .sub-title {
+	color: var(--text-dim);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.05ch;
+	margin-top: 2px;
+
+}
+
+.exercises-display {
+	transform: translateZ(0);
+	backface-visibility: hidden;
+	flex: 1 1 auto;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	flex-shrink: 1;
+	overflow-y: auto;
+	overscroll-behavior-y: auto;
+	min-height: auto;
+	width: 100%;
+}
+
+.manage-buttons>div>div {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+}
+
+.exercise-item {
+	background-color: var(--color-dark);
+	height: 70px;
+	padding: 15px;
+	border-radius: 10px;
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	position: relative;
+	margin-top: 7px;
+	will-change: transform, opacity;
+	content-visibility: auto;
+	contain-intrinsic-size: 1px 70px;
+}
+
+.exercise-item:active {
+	transform: scale(0.985);
 }
 
 
-.manage-buttons>div>div {
-	--bg-active: radial-gradient(circle at 0% 0%, #acacff, var(--color-primary) 30%, #7070ff 100%);
-	--shadow: color-mix(in srgb, var(--color-primary), transparent 70%);
+.exercise-item .icon {
+	padding: 8px;
+	aspect-ratio: 1;
+	height: 100%;
+	display: flex;
+	align-items: center !important;
+	justify-content: center !important;
+}
 
-	position: relative;
-	overflow: hidden;
+.exercise-item .name {
+	display: flex;
+	flex-direction: column;
+	font-weight: 700;
+	font-size: 15px;
+	letter-spacing: 0.075ch;
+}
 
+.exercise-item .workout-count {
+	color: var(--text-dim);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.05ch;
+}
+
+.no-items {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-
-	padding: 0 15px;
-	margin-top: 5px;
-	height: 56px;
-
+	background-color: var(--color-dark);
 	border-radius: 10px;
-	border: 1px solid transparent;
 
-	background-color: rgba(0, 0, 0, 0.2);
-	color: var(--text-dim);
-
-	font-weight: 800;
-	font-size: 16px;
+	font-weight: 700;
+	font-size: 13px;
 	letter-spacing: 0.075ch;
-
-	cursor: not-allowed;
-	transition: 0.3s ease;
-	-webkit-tap-highlight-color: transparent;
-
-	flex-shrink: 0;
-
-	color: #000;
-	border-color: transparent;
-
-	cursor: pointer;
+	color: var(--text-dim);
+	height: 70px;
 }
 
-.manage-buttons>div>div:active {
-	transform: scale(0.9);
-}
-
-.manage-buttons>div>div::before {
-	content: "";
-	position: absolute;
-	inset: 0;
-	background: var(--bg-active);
-	opacity: 1;
-	z-index: 0;
-	transition: 0.3s ease;
-}
-
-.manage-buttons>div>div span {
-	position: relative;
-	z-index: 1;
+.action-buttons {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	width: 100%;
+	gap: 10px;
+	margin-top: 5px;
 }

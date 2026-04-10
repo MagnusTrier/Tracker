@@ -94,7 +94,7 @@ interface CustomButtonProps {
 		default: string | React.ReactNode,
 		disabled: string | React.ReactNode,
 	}
-	disabled: boolean
+	disabled?: boolean
 	onClick: (e: React.MouseEvent, setLoading: (val: boolean) => void) => void
 	style?: React.CSSProperties
 }
@@ -179,13 +179,50 @@ export const PageContainer = (props: { children: React.ReactNode, style?: React.
 	return (
 		<motion.div
 			className="page"
-			initial={{ opacity: 0, x: "-25dvw" }}
-			animate={{ opacity: 1, x: 0 }}
-			exit={{ opacity: 0, x: "25dvw" }}
+			initial={{ opacity: 0, y: 20 }}
+			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.3 }}
 			style={props.style}
 		>
 			{props.children}
 		</motion.div>
+	)
+}
+
+interface FastInputProps {
+	initialValue: string
+	onChange: (val: string) => void
+	placeholder?: string
+	className?: string
+	style?: React.CSSProperties
+}
+
+export const FastInput = ({ initialValue, onChange, className, placeholder, style }: FastInputProps) => {
+	const [value, setValue] = useState(initialValue)
+
+	useEffect(() => {
+		setValue(initialValue)
+	}, [initialValue])
+
+	const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const nextValue = e.target.value.toUpperCase()
+		setValue(nextValue)
+		onChange(nextValue)
+	}
+
+	return (
+		<input
+			type="text"
+			className={className}
+			value={value}
+			onChange={handleTextChange}
+			autoCapitalize="characters"
+			autoCorrect="off"
+			autoComplete="off"
+			spellCheck="false"
+			placeholder={placeholder}
+			style={{ ...style }}
+			onFocus={(e) => e.target.select()}
+		/>
 	)
 }

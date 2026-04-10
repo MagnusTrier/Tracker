@@ -9,6 +9,7 @@ interface CardProps {
 	contentStyle?: React.CSSProperties
 	settingsLogo?: React.ReactNode
 	style?: React.CSSProperties
+	onClick?: (e: React.MouseEvent) => void
 }
 
 const Card = (props: CardProps) => {
@@ -16,6 +17,7 @@ const Card = (props: CardProps) => {
 		<div
 			className="card"
 			style={props.style}
+			onClick={props.onClick}
 		>
 			<div
 				className="header-row"
@@ -24,13 +26,17 @@ const Card = (props: CardProps) => {
 					<HeaderIcon />
 					{props.header}
 					{
-						!props.hideSettings &&
-						<div
-							className="settings-icon"
-							onClick={props.onSettingsClick}
-						>
-							{props.settingsLogo ?? <Ellipsis />}
-						</div>
+						!props.hideSettings && (
+
+							props.settingsLogo
+							??
+							<div
+								className="settings-icon"
+								onClick={props.onSettingsClick}
+							>
+								<Ellipsis />
+							</div>
+						)
 					}
 				</h1>
 			</div>

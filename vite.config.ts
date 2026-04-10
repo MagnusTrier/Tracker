@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { visualizer } from "rollup-plugin-visualizer"
+// import { visualizer } from "rollup-plugin-visualizer"
 
 const silentFontCleaner = () => ({
 	name: 'silent-font-cleaner',
@@ -22,7 +22,7 @@ const silentFontCleaner = () => ({
 export default defineConfig({
 	plugins: [
 		react(),
-		visualizer({ open: true, filename: "bundle-stats.html" }),
+		// visualizer({ open: true, filename: "bundle-stats.html" }),
 		silentFontCleaner()
 	],
 	server: {

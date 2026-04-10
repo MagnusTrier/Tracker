@@ -31,6 +31,10 @@
 	-webkit-font-smoothing: antialiased;
 }
 
+.nav-link:active {
+	transform: scale(0.94);
+}
+
 .nav-link::before {
 	content: "";
 	position: absolute;

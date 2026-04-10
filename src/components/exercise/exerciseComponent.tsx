@@ -5,12 +5,9 @@ import Modal from "../modal"
 import React, { useState, useCallback } from "react"
 import { CustomButton, SegmentedControl } from "../generics"
 import { HiX } from "react-icons/hi"
-import { format } from "date-fns"
 import { AnimatePresence, motion } from "motion/react"
 import { v4 as uuidv4 } from "uuid"
 import { RiDeleteBin5Line } from "react-icons/ri"
-
-import D3Chart from "../chart/chart"
 
 interface ExerciseComponentProps {
 	exercise: Exercise
@@ -18,12 +15,10 @@ interface ExerciseComponentProps {
 
 const ExerciseComponent = (props: ExerciseComponentProps) => {
 	const [showModal, setShowModal] = useState<boolean>(false)
-	const { exercises, sets } = useData()
+	const { exercises } = useData()
 
 	const [mode, setMode] = useState<string>("WORKOUT")
 
-	const exerciseSets = sets.values.filter(val => val.exercise_id === props.exercise.id)
-	const hasSets = exerciseSets.length > 0
 
 	const handleDeleteExercise = async (e: React.MouseEvent, setLoading: (val: boolean) => void) => {
 		e.preventDefault()
@@ -46,7 +41,6 @@ const ExerciseComponent = (props: ExerciseComponentProps) => {
 		<>
 			<Card
 				header={<span style={{ color: "var(--color-primary)", textShadow: "0 0 15px color-mix(in srgb, var(--color-primary), transparent 50%)" }}>{props.exercise.name.toUpperCase()}</span>}
-				subHeader={<span>LAST WORKOUT LOGGED: {hasSets ? format(exerciseSets[0].date, "PP").toUpperCase() : "N/A"}</span>}
 				onSettingsClick={() => setShowModal(true)}
 				contentStyle={{ alignItems: "center" }}
 			>
@@ -119,8 +113,6 @@ const ExerciseComponent = (props: ExerciseComponentProps) => {
 }
 
 const Stats = (props: { exercise: Exercise }) => {
-	const { sets } = useData()
-	const exerciseSets = sets.values.filter(val => val.exercise_id === props.exercise.id)
 
 	return (
 		<motion.div
@@ -134,7 +126,6 @@ const Stats = (props: { exercise: Exercise }) => {
 				hideSettings
 			>
 				<SegmentedControl id={`${props.exercise.id}-trend`} options={["7 D", "14 D", "30 D", "ALL"]} onChange={() => { }} />
-				<D3Chart data={exerciseSets} yAccessor="reps" isOnScreen />
 			</Card>
 		</motion.div>
 	)
@@ -148,9 +139,8 @@ interface Set {
 }
 
 
-const Workout = (props: { exercise: Exercise }) => {
+const Workout = (_: { exercise: Exercise }) => {
 
-	const { sets } = useData()
 
 	const [activeSets, setActiveSets] = useState<Set[]>([{ id: uuidv4(), setNumber: 1, weight: "", reps: "" }])
 
@@ -182,23 +172,6 @@ const Workout = (props: { exercise: Exercise }) => {
 	}, [])
 
 	const postWorkout = () => {
-		const session_id = uuidv4()
-
-		const date = new Date()
-
-		activeSets.map(set => {
-			sets.manager?.post(
-				{
-					id: set.id,
-					weight: Number(set.weight),
-					reps: Number(set.reps),
-					set_number: set.setNumber,
-					exercise_id: props.exercise.id,
-					session_id,
-					date
-				}
-			)
-		})
 	}
 
 	return (

@@ -7,12 +7,12 @@ const Card = lazy(() => import("./card"))
 const MountAppContent = lazy(() => import("./mountAppContent"))
 
 const SplashScreen = () => {
-	const { exercises, sets, weightLogs } = useData();
+	const { exercises, weightLogs } = useData();
 	const { user, isLoading, login } = useSession()
 
 	const [isDataBooted, setIsDataBooted] = useState(false);
 
-	const allDataLoaded = !exercises.isLoading && !sets.isLoading && !weightLogs.isLoading;
+	const allDataLoaded = !exercises.isLoading && !weightLogs.isLoading;
 	const isReadyToShow = allDataLoaded && !isLoading;
 
 	useEffect(() => {
