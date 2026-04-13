@@ -28,9 +28,6 @@
 	position: relative;
 }
 
-.manage-buttons>div:active {
-	transform: scale(0.98);
-}
 
 .manage-buttons>div .title {
 	font-weight: 700;
@@ -60,6 +57,8 @@
 	overscroll-behavior-y: auto;
 	min-height: auto;
 	width: 100%;
+	border-bottom: 1px solid var(--color-border);
+
 }
 
 .manage-buttons>div>div {
@@ -69,24 +68,19 @@
 }
 
 .exercise-item {
-	background-color: var(--color-dark);
+	background-color: rgba(8, 8, 9, 0.5);
 	height: 70px;
 	padding: 15px;
-	border-radius: 10px;
+	border-radius: 1px;
 	display: flex;
 	gap: 10px;
 	align-items: center;
 	position: relative;
-	margin-top: 7px;
 	will-change: transform, opacity;
 	content-visibility: auto;
 	contain-intrinsic-size: 1px 70px;
+	border-top: 1px solid var(--color-border);
 }
-
-.exercise-item:active {
-	transform: scale(0.985);
-}
-
 
 .exercise-item .icon {
 	padding: 8px;

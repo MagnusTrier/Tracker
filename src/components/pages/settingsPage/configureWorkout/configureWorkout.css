@@ -3,3 +3,22 @@
 	grid-template-columns: repeat(2, 1fr);
 	gap: 10px;
 }
+
+.add-exercise-button {
+	width: 100%;
+	padding: 15px;
+}
+
+.add-exercise-button>div {
+	border: 1px solid color-mix(in srgb, var(--color-primary), transparent 50%);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--color-primary), transparent 95%);
+	height: 50px;
+	border-radius: 7px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--color-primary);
+	font-weight: 600;
+	letter-spacing: 0.05ch;
+	transition: 0.3s ease;
+}

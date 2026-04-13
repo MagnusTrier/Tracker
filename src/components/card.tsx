@@ -10,6 +10,8 @@ interface CardProps {
 	settingsLogo?: React.ReactNode
 	style?: React.CSSProperties
 	onClick?: (e: React.MouseEvent) => void
+	headerStyle?: React.CSSProperties
+	subHeaderStyle?: React.CSSProperties
 }
 
 const Card = (props: CardProps) => {
@@ -21,6 +23,7 @@ const Card = (props: CardProps) => {
 		>
 			<div
 				className="header-row"
+				style={props.headerStyle}
 			>
 				<h1>
 					<HeaderIcon />
@@ -42,7 +45,7 @@ const Card = (props: CardProps) => {
 			</div>
 			{
 				props.subHeader &&
-				<h2>
+				<h2 style={props.subHeaderStyle} >
 					{props.subHeader}
 				</h2>
 			}
@@ -56,7 +59,7 @@ const Card = (props: CardProps) => {
 	)
 }
 
-const HeaderIcon = (props: { style?: React.CSSProperties }) => {
+export const HeaderIcon = (props: { style?: React.CSSProperties }) => {
 	const dotBase: React.CSSProperties = {
 		position: "absolute",
 		width: "5px",

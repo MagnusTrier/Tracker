@@ -13,7 +13,7 @@ const ConfigureWorkout = (_: ConfigureWorkoutProps) => {
 	return (
 		<>
 			<Card
-				header="WORKOUT DETAILS"
+				header="CREATING NEW WORKOUT"
 				subHeader="DEFINE YOUR WORKOUT ROUTINE"
 				settingsLogo={
 					<div style={{
@@ -26,7 +26,7 @@ const ConfigureWorkout = (_: ConfigureWorkoutProps) => {
 						position: "absolute",
 						right: 12,
 						top: 12,
-						border: "1px solid rgba(20, 20, 24, 0.8)",
+						backgroundColor: "color-mix(in srgb, var(--color-bg), transparent 50%)",
 						color: "var(--color-primary)"
 					}}
 					>
@@ -46,11 +46,20 @@ const ConfigureWorkout = (_: ConfigureWorkoutProps) => {
 			<Card
 				header="EXERCISES"
 				subHeader="ADD AND ORDER EXERCISES"
-				style={{ marginTop: 10 }}
+				style={{ marginTop: 10, padding: 0 }}
+				headerStyle={{ padding: 10, paddingBottom: 0 }}
+				subHeaderStyle={{ paddingInline: 10 }}
 				contentStyle={{ marginTop: 10 }}
 				onClick={(e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation() }}
 				hideSettings
 			>
+				<div
+					className="add-exercise-button"
+				>
+					<div>
+						ADD EXERCISE
+					</div>
+				</div>
 			</Card>
 			<div
 				className="configure-workout-action-buttons"

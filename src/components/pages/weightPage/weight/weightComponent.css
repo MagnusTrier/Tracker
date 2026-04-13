@@ -148,10 +148,10 @@
 
 	font-size: 12px;
 	font-weight: 600;
-
 	width: 100%;
 	justify-content: center;
 	margin-bottom: 2px;
+	margin-top: -6px;
 }
 
 .current-weight {

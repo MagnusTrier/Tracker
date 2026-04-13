@@ -142,7 +142,6 @@ const CanvasChart = ({ data = [], yAccessor, isOnScreen }: CanvasChartProps) => 
 
 	return (
 		<div className="chart-container" style={{ position: "relative", width: "100%", aspectRatio: 16 / 9 }}>
-			{/* SVG LAYER: Static Grid & Dither-Free Gradient */}
 			<svg
 				viewBox={`0 0 ${width} ${height}`}
 				preserveAspectRatio="none"

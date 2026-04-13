@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, type ComponentType, useMemo } from "react"
 import { IoCalendarClearOutline } from "react-icons/io5"
-import { useMotionValue, useSpring, useTransform, useMotionValueEvent, motion } from "framer-motion"
+import { useMotionValue, useSpring, useTransform, useMotionValueEvent, motion, AnimatePresence } from "framer-motion"
 import { useDrag } from "@use-gesture/react"
 import { format } from "date-fns"
 import { ScaleLoader } from "react-spinners"
@@ -110,7 +110,7 @@ export const CustomButton = (props: CustomButtonProps) => {
 
 	return (
 		<div
-			className={`custom-button ${props.disabled ? "" : "active"}`}
+			className={`custom-button ${props.disabled ? "" : "active clickable"}`}
 			style={props.style}
 			onClick={(e) => props.onClick(e, setLoading)}
 		>
@@ -224,5 +224,64 @@ export const FastInput = ({ initialValue, onChange, className, placeholder, styl
 			style={{ ...style }}
 			onFocus={(e) => e.target.select()}
 		/>
+	)
+}
+
+
+interface AnimatedListProps<T> {
+	items: T[]
+	component: ComponentType<{ data: T }>
+	itemHeight?: number
+	emptyMessage?: string
+	wrapperClass?: string
+}
+
+export const AnimatedList = <T extends { id: string | number }>({
+	items,
+	component: Component,
+	itemHeight = 70,
+	emptyMessage = "NO ITEMS FOUND",
+	wrapperClass
+}: AnimatedListProps<T>) => {
+
+	const listHeight = useMemo(() => {
+		const count = items.length > 0 ? items.length : 1
+		return itemHeight * count
+	}, [items.length])
+
+	return (
+		<div className={wrapperClass || "animated-list-wrapper"}>
+			<motion.div
+				animate={{ height: listHeight }}
+				style={{ overflow: "hidden" }}
+				transition={{ duration: 0.3 }}
+			>
+				<AnimatePresence mode="popLayout" initial={false}>
+					{items.length > 0 ? (
+						items.map((item) => (
+							<motion.div
+								key={item.id}
+								layout="position"
+								initial={{ opacity: 0, y: 10 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0, scale: 0.9 }}
+								transition={{ duration: 0.2 }}
+							>
+								<Component data={item} />
+							</motion.div>
+						))
+					) : (
+						<motion.div
+							key="empty-state"
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0 }}
+						>
+							{emptyMessage}
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</motion.div>
+		</div>
 	)
 }

@@ -33,7 +33,7 @@ const NavbarLink = (props: { to: string, children: React.ReactNode }) => {
 
 	return (
 		<Link
-			className={`nav-link ${isActive && "nav-active"}`}
+			className={`nav-link clickable ${isActive && "nav-active"}`}
 			to={props.to}
 		>
 			{props.children}

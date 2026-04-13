@@ -6,6 +6,7 @@ import { parseISO } from "date-fns"
 export interface Exercise {
 	id: string
 	name: string
+	category: "PUSH" | "PULL" | "LEGS"
 }
 
 export interface WeightLog {
