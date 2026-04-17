@@ -141,7 +141,7 @@ const CanvasChart = ({ data = [], yAccessor, isOnScreen }: CanvasChartProps) => 
 	if (!calculations) return null;
 
 	return (
-		<div className="chart-container" style={{ position: "relative", width: "100%", aspectRatio: 16 / 9 }}>
+		<div style={{ position: "relative", flexGrow: 1, aspectRatio: 16 / 9 }}>
 			<svg
 				viewBox={`0 0 ${width} ${height}`}
 				preserveAspectRatio="none"

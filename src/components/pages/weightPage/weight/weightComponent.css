@@ -149,9 +149,7 @@
 	font-size: 12px;
 	font-weight: 600;
 	width: 100%;
-	justify-content: center;
 	margin-bottom: 2px;
-	margin-top: -6px;
 }
 
 .current-weight {
@@ -198,7 +196,7 @@
 	font-weight: 800;
 	user-select: none;
 	position: relative;
-	margin-bottom: 20px;
+	margin-bottom: 14px;
 }
 
 .value-display>span {
@@ -240,13 +238,13 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	height: 50px;
+	height: 56px;
 }
 
 .center-indicator {
 	position: absolute;
 	z-index: 10;
-	height: 15px;
+	height: 12px;
 	width: 3px;
 	bottom: calc(100% + 5px);
 
@@ -277,7 +275,7 @@
 	display: flex;
 	align-items: flex-start;
 	will-change: transform;
-	padding-bottom: 5px;
+	padding-bottom: 8px;
 	margin-left: -10px;
 }
 

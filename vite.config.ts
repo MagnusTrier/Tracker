@@ -27,7 +27,7 @@ export default defineConfig({
 	],
 	server: {
 		host: "0.0.0.0",
-		allowedHosts: [".loca.lt"],
+		allowedHosts: [".loca.lt", "192.168.50.45.nip.io"],
 	},
 	build: {
 		rollupOptions: {

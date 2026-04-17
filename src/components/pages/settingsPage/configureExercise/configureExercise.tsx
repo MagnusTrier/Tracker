@@ -1,14 +1,19 @@
 import "./configureExercise.css"
 import Card, { HeaderIcon } from "../../../card"
-import { AnimatedList, FastInput, CustomButton } from "../../../generics"
+import { AnimatedList, FastInput, CustomButton, CloseModalButton } from "../../../generics"
 import { useData, type Exercise } from "../../../dataContext"
 import Modal from "../../../modal"
-import { motion, type Transition } from "motion/react"
-import { useState } from "react"
-import { Search, Pen, Trash2, CheckCheck, Plus, Webhook, Zap, Forklift, Ellipsis } from "lucide-react"
-
+import { AnimatePresence, motion, type Transition } from "motion/react"
+import { useEffect, useState, useMemo } from "react"
+import { Search, Pen, Trash2, CheckCheck, Plus, Webhook, Zap, ChevronRight, Circle, Orbit, Activity } from "lucide-react"
 
 const TRANSITION: Transition = { duration: 0.3, ease: "easeInOut" }
+
+const icons = [<Zap />, <Webhook />, <Activity />, <Orbit />]
+
+type ExerciseListItem =
+	| { id: string; type: "HEADER"; label: string, index: number }
+	| { id: string; type: "ITEM"; data: Exercise }
 
 interface ConfigureExerciseProps {
 	visible: boolean
@@ -16,75 +21,156 @@ interface ConfigureExerciseProps {
 }
 
 const ConfigureExercise = (props: ConfigureExerciseProps) => {
-	const { exercises } = useData()
-	const [showModify, setShowModify] = useState<boolean>(false)
+	const { exercises, workoutExercises } = useData()
 
+	const [showModify, setShowModify] = useState<boolean>(false)
 	const [searchFilter, setSearchFilter] = useState<string>("")
+	const [currentExercise, setCurrentExercise] = useState<Exercise | null>(null)
+
+	const handleExerciseClick = (ex: Exercise | null) => {
+		setCurrentExercise(ex)
+		setShowModify(true)
+	}
+
+	const displayItems = useMemo(() => {
+		const categories = ["PUSH", "PULL", "LEGS", "OTHER"]
+		const result: ExerciseListItem[] = []
+
+		categories.forEach((cat, index) => {
+			const matches = exercises.values.filter(ex =>
+				ex.category === cat &&
+				ex.name.includes(searchFilter)
+			)
+
+			if (matches.length > 0) {
+				result.push({ id: `header-${cat}`, type: "HEADER", label: cat, index })
+				matches.forEach(ex => {
+					result.push({ id: ex.id, type: "ITEM", data: ex })
+				})
+			}
+		})
+
+		return result
+	}, [exercises.values, searchFilter])
+
+	const exerciseUsageCounts = useMemo(() => {
+		const counts: Record<string, number> = {};
+
+		workoutExercises.values.forEach((we) => {
+			counts[we.exercise_id] = (counts[we.exercise_id] || 0) + 1;
+		});
+
+		return counts;
+	}, [workoutExercises.values]);
+
+
 	return (
 		<Modal
 			visible={props.visible}
 			setVisible={showModify ? setShowModify : props.setVisible}
 			wrapperStyle={{ padding: 0 }}
 		>
-			<motion.div
-				animate={{ x: showModify ? "-100vw" : 0 }}
-				style={{ padding: 10 }}
-				transition={TRANSITION}
-			>
-				<Card
-					header="MANAGE EXERCISES"
-					subHeader="ADD OR EDIT EXERCISES"
-					style={{ padding: 0 }}
-					headerStyle={{ padding: 10, paddingBottom: 0 }}
-					onSettingsClick={() => props.setVisible(false)}
-					subHeaderStyle={{ paddingInline: 10 }}
-					contentStyle={{ alignItems: "center", maxHeight: "100dvh", gap: 0 }}
-					onClick={(e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation() }}
-				>
-					<div className="list-input-wrapper" style={{ color: searchFilter.length > 0 ? "var(--color-primary)" : "var(--text-dim)" }}>
-						<FastInput
-							initialValue={searchFilter}
-							onChange={setSearchFilter}
-							className="list-input"
-							placeholder="SEARCH EXERCISES..."
-						/>
-						<div>
-							<Search strokeWidth="1.5" size="20" />
-						</div>
-					</div>
-					<AnimatedList
-						items={exercises.values}
-						component={ExerciseItem}
-						emptyMessage="NO EXERCISES FOUND"
-					/>
-					<div style={{ padding: 15, width: "100%" }}>
-						<CustomButton
-							text={{
-								default: <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>ADD EXERCISE <Plus /></span>,
-								disabled: ""
-							}}
-							onClick={() => setShowModify(true)}
-							style={{ marginTop: 0, width: "100%" }}
-						/>
-					</div>
-				</Card>
-			</motion.div>
-			<motion.div
-				animate={{ x: showModify ? 0 : "100vw" }}
-				transition={TRANSITION}
-				style={{ position: "absolute", inset: 0, padding: 10, x: "100vw" }}
-			>
-				<ModifyExercise exercise={null} />
-			</motion.div>
-		</Modal>
-	)
-}
+			<AnimatePresence initial={false}>
+				{
+					!showModify ?
+						<motion.div
+							key="exercise-no-modify"
+							initial={{ x: "-100vw", opacity: 0 }}
+							animate={{ x: 0, opacity: 1 }}
+							exit={{ x: "-100vw", opacity: 0 }}
+							style={{ padding: "0px 10px 10px 10px" }}
+							transition={TRANSITION}
+						>
+							<Card
+								header="MANAGE EXERCISES"
+								subHeader="ADD OR EDIT EXERCISES"
+								style={{ maxHeight: "calc(100dvh - 40px)" }}
+								contentStyle={{ alignItems: "center", gap: 0 }}
+								onClick={(e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation() }}
+								settingsLogo={<CloseModalButton onClick={() => props.setVisible(false)} />}
+							>
+								<div
+									style={{
+										alignItems: "center",
+										gap: 0,
+										flex: "0 1 auto",
+										overflow: "hidden",
+										borderRadius: 8,
+										width: "100%",
+										display: "flex",
+										flexDirection: "column",
+										minHeight: 0,
+									}}
+								>
+									<div className="list-input-wrapper" style={{ color: searchFilter.length > 0 ? "var(--color-text)" : "var(--text-dim)", borderBottom: "1px solid var(--color-border)" }}>
+										<FastInput
+											initialValue={searchFilter}
+											onChange={setSearchFilter}
+											className="list-input"
+											placeholder="SEARCH EXERCISES..."
+										/>
+										<div>
+											<Search strokeWidth="1.5" size="20" />
+										</div>
+									</div>
+									<AnimatedList
+										items={displayItems}
+										itemHeight={55}
+										renderItem={(item) => {
+											if (item.type === "HEADER") {
+												return (
+													<div className="exercise-category-divider">
+														{icons[item.index]}
+														{item.label}
+													</div>
+												)
+											}
 
-const ExerciseItem = ({ data }: { data: Exercise }) => {
-	return (
-		<div>
-			{data.name}
-		</div>
+											const usageCount = exerciseUsageCounts[item.data.id] || 0
+											return (
+												<div className="exercise-item clickable" onClick={() => handleExerciseClick(item.data)}>
+													<div className="name-display">
+														<span>{item.data.name}</span>
+														<div className="name-subheader">
+															<span>{item.data.category}</span>
+															<Circle size="4" strokeWidth="1" fill="var(--text-dim)" />
+															<span>PART OF {usageCount} WORKOUT{usageCount !== 1 ? "S" : ""}</span>
+														</div>
+													</div>
+													<ChevronRight style={{ marginLeft: "auto" }} />
+												</div>
+											)
+										}}
+										emptyMessage="NO EXERCISES FOUND"
+									/>
+								</div>
+								<CustomButton
+									text={{
+										default: <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>ADD EXERCISE <Plus /></span>,
+										disabled: ""
+									}}
+									onClick={() => { setCurrentExercise(null); setShowModify(true) }}
+									style={{ marginTop: 15, width: "100%" }}
+								/>
+							</Card>
+						</motion.div>
+						:
+						<motion.div
+							key="exercise-modify"
+							initial={{ x: "100vw", opacity: 0 }}
+							animate={{ x: 0, opacity: 1 }}
+							exit={{ x: "100vw", opacity: 0 }}
+							transition={TRANSITION}
+							style={{ position: "absolute", inset: 0, padding: "0px 10px 10px 10px", x: "100vw" }}
+						>
+							<ModifyExercise
+								exercise={currentExercise}
+								hideModify={() => setShowModify(false)}
+							/>
+						</motion.div>
+				}
+			</AnimatePresence>
+		</Modal>
 	)
 }
 
@@ -92,29 +178,111 @@ type Category = "PUSH" | "PULL" | "LEGS" | "OTHER"
 
 interface ModifyExerciseProps {
 	exercise: Exercise | null
+	hideModify: () => void
 }
 
-const icons = [<Webhook />, <Zap />, <Forklift />, <Ellipsis />]
 
 const ModifyExercise = (props: ModifyExerciseProps) => {
+	const { exercises } = useData()
+
 	const [exerciseName, setExerciseName] = useState<string>(props.exercise?.name || "")
 	const [category, setCategory] = useState<Category>(props.exercise?.category || "PUSH")
+
+	useEffect(() => {
+		setExerciseName(props.exercise?.name || "")
+		setCategory(props.exercise?.category || "PUSH")
+	}, [props.exercise])
+
+
+	const nameExists = exercises.values.some(
+		(ex) => ex.name.toLowerCase() === exerciseName.toLowerCase() && ex.id !== props.exercise?.id
+	);
+
+	const disableSave = props.exercise
+		? (props.exercise.name === exerciseName && props.exercise.category === category) || nameExists || exerciseName.trim().length === 0
+		: exerciseName.trim().length === 0 || nameExists;
+
+	const handleClose = (e?: React.MouseEvent) => {
+		e?.preventDefault()
+		e?.stopPropagation()
+
+		props.hideModify()
+		setExerciseName("")
+		setCategory("PUSH")
+	}
+
+	const handleSave = (e: React.MouseEvent, setLoading: (val: boolean) => void) => {
+		e.preventDefault()
+		e.stopPropagation()
+		if (disableSave) return
+		setLoading(true)
+
+		if (props.exercise) {
+			const dirty: Partial<Exercise> = {}
+			if (exerciseName !== props.exercise.name) {
+				dirty["name"] = exerciseName
+			}
+			if (category !== props.exercise.category) {
+				dirty["category"] = category
+			}
+
+			exercises.manager?.put(
+				props.exercise.id,
+				{ ...dirty },
+				{
+					onSuccess: async () => {
+						await new Promise(resolve => setTimeout(resolve, 500))
+						handleClose()
+						setLoading(false)
+					}
+				}
+			)
+		} else {
+			exercises.manager?.post(
+				{ name: exerciseName, category },
+				{
+					onSuccess: async () => {
+						await new Promise(resolve => setTimeout(resolve, 500))
+						handleClose()
+						setLoading(false)
+					}
+				}
+			)
+		}
+	}
+
+	const handleDelete = (e: React.MouseEvent, setLoading: (val: boolean) => void) => {
+		e.stopPropagation()
+		e.preventDefault()
+
+		if (props.exercise) {
+			setLoading(true)
+			exercises.manager?.delete(
+				props.exercise.id,
+				{
+					onSuccess: async () => {
+						await new Promise(resolve => setTimeout(resolve, 500))
+						handleClose()
+						setLoading(false)
+					}
+				}
+			)
+		} else {
+			handleClose()
+		}
+	}
+
 	return (
 		<>
 			<Card
 				header={props.exercise ? `EDIT: ${props.exercise.name}` : "CREATE EXERCISE"}
-				subHeader={props.exercise ? "CHANGE THE PROPERTIES OF AN EXISTING EXERCISE" : "ADD A NEW EXERCISE TO YOUR LIBRARY"}
+				subHeader={props.exercise ? "CHANGE THE PROPERTIES OF THIS EXERCISE" : "ADD A NEW EXERCISE TO YOUR LIBRARY"}
 
-				style={{ padding: 0 }}
-				headerStyle={{ padding: 10, paddingBottom: 0 }}
-				subHeaderStyle={{ paddingInline: 10 }}
 				contentStyle={{ alignItems: "center", maxHeight: "100dvh", marginTop: 8, gap: 10 }}
 				onClick={(e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation() }}
-				hideSettings
+				settingsLogo={<CloseModalButton onClick={props.hideModify} />}
 			>
-
-
-				<div className="list-input-wrapper" style={{ color: exerciseName.length > 0 ? "var(--color-primary)" : "var(--text-dim)", borderBottom: "1px solid var(--color-border)" }}>
+				<div className="list-input-wrapper" style={{ color: exerciseName.length > 0 ? "var(--color-text)" : "var(--text-dim)", borderRadius: 8 }}>
 					<FastInput
 						initialValue={exerciseName}
 						onChange={setExerciseName}
@@ -126,7 +294,7 @@ const ModifyExercise = (props: ModifyExerciseProps) => {
 					</div>
 				</div>
 				<div
-					style={{ display: "flex", flexDirection: "column", width: "100%", paddingLeft: 10 }}
+					style={{ display: "flex", flexDirection: "column", width: "100%", }}
 				>
 					<div
 						className="header-row"
@@ -153,8 +321,7 @@ const ModifyExercise = (props: ModifyExerciseProps) => {
 							default: <span style={{ display: "flex", alignItems: "center", gap: 5 }}>DELETE <Trash2 /></span>,
 							disabled: ""
 						}}
-						onClick={() => { setExerciseName("") }}
-
+						onClick={handleDelete}
 						style={{
 							"--bg-active": "radial-gradient(circle at 0% 0%, #ff8597, var(--color-error) 30%, #ff4763 100%)",
 							"--shadow": "color-mix(in srgb, var(--color-error), transparent 70%)",
@@ -162,14 +329,14 @@ const ModifyExercise = (props: ModifyExerciseProps) => {
 							marginTop: 0,
 						} as React.CSSProperties}
 					/>
-
 					<CustomButton
 						text={{
 							default: <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>SAVE <CheckCheck /></span>,
-							disabled: ""
+							disabled: <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>SAVE <CheckCheck /></span>,
 						}}
-						onClick={() => { }}
+						onClick={handleSave}
 						style={{ marginTop: 0, width: "100%" }}
+						disabled={disableSave}
 					/>
 				</div>
 			</Card>

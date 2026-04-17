@@ -22,3 +22,206 @@
 	letter-spacing: 0.05ch;
 	transition: 0.3s ease;
 }
+
+.toggle-container {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	cursor: pointer;
+}
+
+.toggle-track {
+	position: relative;
+	width: 70px;
+	height: 36px;
+	border-radius: 100px;
+	background-color: var(--color-bg);
+	transition: all 0.3s ease;
+	border: 1px solid var(--color-border);
+}
+
+.toggle-track.active {
+	background: radial-gradient(circle at 0% 0%, #acacff, var(--color-primary) 30%, #7070ff 100%);
+	box-shadow: 0 0 12px color-mix(in srgb, var(--color-primary), transparent 70%);
+}
+
+.toggle-thumb {
+	position: absolute;
+	top: 5px;
+	left: 5px;
+	height: 24px;
+	aspect-ratio: 1;
+	background: var(--color-card);
+	border: 1px solid var(--color-border);
+	border-radius: 50%;
+	transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Move the thumb when active */
+.toggle-track.active .toggle-thumb {
+	transform: translateX(34px);
+}
+
+
+.selected-exercises-display {
+	display: flex;
+	background-color: var(--color-bg);
+	border-radius: 10px;
+	width: 100%;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.scroll-container {
+	/* Or whatever fixed height/flex-grow you need */
+
+	transform: translateZ(0);
+	backface-visibility: hidden;
+	flex: 1 1 auto;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	flex-shrink: 1;
+	overflow-y: auto;
+	overscroll-behavior-y: auto;
+	min-height: auto;
+	width: 100%;
+	background-color: color-mix(in srgb, var(--color-bg), transparent 0%);
+	font-weight: 600;
+	letter-spacing: 0.05ch;
+	color: var(--text-dim);
+
+	min-height: 0;
+	overflow-y: auto;
+	/* Smooth scrolling for touch, but can interfere with drag if not careful */
+	-webkit-overflow-scrolling: touch;
+	border-bottom: 1px solid var(--color-border);
+}
+
+.reorder-group {
+	display: flex;
+	flex-direction: column;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+
+
+.reorder-item {
+	height: 55px;
+	cursor: default;
+	width: 100%;
+	border-bottom: 1px solid var(--color-border);
+}
+
+.reorder-item:last-child {
+	border-color: transparent;
+}
+
+
+.index-display {
+	width: 12px;
+	color: var(--color-primary);
+}
+
+
+.item-content {
+	height: 100%;
+	padding: 7px;
+	padding-left: 20px;
+	padding-right: 10px;
+	gap: 20px;
+	color: var(--color-text);
+	width: 100%;
+	display: flex;
+	align-items: center;
+	font-weight: 800;
+	font-size: 14px;
+}
+
+.item-content .name-display {
+	display: flex;
+	flex-direction: column;
+	color: var(--color-text);
+	letter-spacing: 0.1ch;
+}
+
+.item-content .name-subheader {
+	font-size: 11px;
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	color: var(--text-dim);
+	letter-spacing: 0;
+}
+
+.item-content .name-subheader svg:first-child {
+	height: 12px;
+	width: 12px;
+}
+
+.drag-handle {
+	cursor: grab;
+	color: rgba(255, 255, 255, 0.4);
+	padding: 4px;
+	touch-action: none;
+	height: 100% !important;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-left: auto;
+	aspect-ratio: 1 !important;
+	background-color: rgba(0, 3, 6, 0.25);
+	border-radius: 10px;
+	color: var(--text-dim);
+}
+
+.drag-handle:active {
+	cursor: grabbing;
+}
+
+.add-exercise-button {
+	--border-width: 2px;
+	--radius: 10px;
+
+	position: relative;
+	border-radius: var(--radius);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--color-primary), transparent 90%);
+
+	height: 56px;
+	margin: 10px;
+	width: calc(100% - 20px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	color: var(--color-primary);
+
+	font-weight: 700;
+	font-size: 14px;
+	letter-spacing: 0.075ch;
+}
+
+
+.add-exercise-button::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: var(--radius);
+	padding: var(--border-width);
+
+	background: radial-gradient(circle at 0% 0%, #acacff, var(--color-primary) 30%, #7070ff 100%);
+
+	/* 2. Create a mask that covers everything EXCEPT the padding area */
+	mask: linear-gradient(#fff 0 0) content-box,
+		linear-gradient(#fff 0 0);
+
+	-webkit-mask: linear-gradient(#fff 0 0) content-box,
+		linear-gradient(#fff 0 0);
+	-webkit-mask-composite: xor;
+	mask-composite: exclude;
+}

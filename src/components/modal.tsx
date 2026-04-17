@@ -20,8 +20,6 @@ const Modal = (props: { children: React.ReactNode, visible: boolean, setVisible:
 							backgroundColor: "color-mix(in srgb, var(--color-bg), transparent 20%)",
 							backdropFilter: "blur(7px)",
 							WebkitBackdropFilter: "blur(7px)",
-							padding: 10,
-							paddingBottom: 30,
 							transform: "translate3d(0,0,0)",
 							...props.wrapperStyle
 						}}

@@ -70,7 +70,7 @@ const WeightAnalytics = (props: { isOnScreen: boolean }) => {
 
 		<Card
 			header="CURRENT WEIGHT"
-			subHeader="ANALYSE WEIGHT LOGS"
+			subHeader="AVERAGE WEIGHT FROM THE PAST 7 DAYS"
 			onSettingsClick={() => setShowHistory(true)}
 
 		>
@@ -82,7 +82,7 @@ const WeightAnalytics = (props: { isOnScreen: boolean }) => {
 				<span className="stats">{Number(stats.diff) > 0 ? <TrendingUp strokeWidth="1.5" size="24" /> : <TrendingDown strokeWidth="1.5" size="24" />}{stats.diff}</span>
 			</div>
 
-			<div style={{ backgroundColor: "var(--color-dark)", borderRadius: 10 }}>
+			<div style={{ backgroundColor: "var(--color-dark)", borderRadius: 8 }}>
 				<SegmentedControl id="weight" options={modes} onChange={setMode} />
 				<D3Chart data={filteredData} yAccessor="weight" isOnScreen={props.isOnScreen} />
 			</div>
@@ -265,6 +265,7 @@ const LogWeight = () => {
 				}}
 				disabled={isDateAlreadyLogged}
 				onClick={handlePostWeight}
+				style={{ marginTop: 9 }}
 			/>
 			<Modal
 				visible={showDatePicker}

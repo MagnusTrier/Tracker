@@ -67,58 +67,6 @@
 	right: 10px;
 }
 
-.exercise-item {
-	background-color: rgba(8, 8, 9, 0.5);
-	height: 70px;
-	padding: 15px;
-	border-radius: 1px;
-	display: flex;
-	gap: 10px;
-	align-items: center;
-	position: relative;
-	will-change: transform, opacity;
-	content-visibility: auto;
-	contain-intrinsic-size: 1px 70px;
-	border-top: 1px solid var(--color-border);
-}
-
-.exercise-item .icon {
-	padding: 8px;
-	aspect-ratio: 1;
-	height: 100%;
-	display: flex;
-	align-items: center !important;
-	justify-content: center !important;
-}
-
-.exercise-item .name {
-	display: flex;
-	flex-direction: column;
-	font-weight: 700;
-	font-size: 15px;
-	letter-spacing: 0.075ch;
-}
-
-.exercise-item .workout-count {
-	color: var(--text-dim);
-	font-size: 11px;
-	font-weight: 700;
-	letter-spacing: 0.05ch;
-}
-
-.no-items {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background-color: var(--color-dark);
-	border-radius: 10px;
-
-	font-weight: 700;
-	font-size: 13px;
-	letter-spacing: 0.075ch;
-	color: var(--text-dim);
-	height: 70px;
-}
 
 .action-buttons {
 	display: grid;
@@ -126,4 +74,91 @@
 	width: 100%;
 	gap: 10px;
 	margin-top: 5px;
+}
+
+.settings-option-header {
+	background-color: var(--color-bg);
+	border-top: 1px solid var(--color-border);
+	padding: 5px 15px;
+	padding-bottom: 0;
+	margin-bottom: -15px;
+	font-weight: 600;
+	color: var(--text-dim);
+	z-index: 9;
+	display: flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.logout-button {
+	--border-width: 2px;
+	--radius: 10px;
+
+	position: relative;
+	border-radius: var(--radius);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--color-error), transparent 90%);
+
+	margin: 10px;
+	margin-top: auto;
+	height: 56px;
+	width: calc(100% - 20px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	color: var(--color-error);
+
+	font-weight: 700;
+	font-size: 16px;
+	letter-spacing: 0.075ch;
+}
+
+
+.logout-button::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: var(--radius);
+	padding: var(--border-width);
+
+	background: radial-gradient(circle at 0% 0%, #ff8597, var(--color-error) 30%, #ff4763 100%);
+
+	/* 2. Create a mask that covers everything EXCEPT the padding area */
+	mask: linear-gradient(#fff 0 0) content-box,
+		linear-gradient(#fff 0 0);
+
+	-webkit-mask: linear-gradient(#fff 0 0) content-box,
+		linear-gradient(#fff 0 0);
+	-webkit-mask-composite: xor;
+	mask-composite: exclude;
+}
+
+.manage-icon {
+	position: absolute;
+	right: 15px;
+	top: 15px;
+}
+
+.manage-icon>* {
+	width: 80px;
+	height: 80px;
+	stroke-width: 0.75px;
+	color: rgb(34, 38, 44);
+	color: rgb(34, 38, 44);
+}
+
+.manage-expand-icon {
+	margin-left: auto;
+}
+
+.manage-expand-icon>* {
+	width: 40px;
+	height: 40px;
+
+}
+
+.manage-button-description {
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.05ch;
 }

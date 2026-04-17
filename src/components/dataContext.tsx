@@ -6,7 +6,7 @@ import { parseISO } from "date-fns"
 export interface Exercise {
 	id: string
 	name: string
-	category: "PUSH" | "PULL" | "LEGS"
+	category: "PUSH" | "PULL" | "LEGS" | "OTHER"
 }
 
 export interface WeightLog {
@@ -20,6 +20,7 @@ export interface Workout {
 	id: string
 	name: string
 	created_at: Date
+	circuit: boolean
 }
 
 export interface WorkoutExercise {
@@ -219,11 +220,17 @@ class DataManager<T extends { id?: string }> {
 		}, options)
 	}
 
-	async post(item: Partial<T> | Partial<T>[], options?: ManagerOptions<T>) {
+	async post(item: Partial<T> | Partial<T>[], options?: ManagerOptions<T>, includeUser: boolean = true) {
 		await this.runSafe(async () => {
-			const payload = Array.isArray(item)
-				? item.map(i => ({ ...i, user_id: this.userId }))
-				: { ...item, user_id: this.userId };
+			let payload
+			if (includeUser) {
+				payload = Array.isArray(item)
+					? item.map(i => ({ ...i, user_id: this.userId }))
+					: { ...item, user_id: this.userId };
+
+			} else {
+				payload = item
+			}
 
 			const { data, error } = await supabase
 				.from(this.table)
@@ -248,14 +255,21 @@ class DataManager<T extends { id?: string }> {
 		}, options, true)
 	}
 
-	async delete(id: string, options?: ManagerOptions<T>) {
+	// Inside class DataManager
+	async delete(query: string | Record<string, any>, options?: ManagerOptions<T>) {
 		await this.runSafe(async () => {
-			const { error } = await supabase
-				.from(this.table)
-				.delete()
-				.eq("id", id)
+			let supabaseQuery = supabase.from(this.table).delete();
 
-			if (error) throw error
-		}, options, true)
+			if (typeof query === "string") {
+				supabaseQuery = supabaseQuery.eq("id", query);
+			} else {
+				Object.entries(query).forEach(([column, value]) => {
+					supabaseQuery = supabaseQuery.eq(column, value);
+				});
+			}
+
+			const { error } = await supabaseQuery;
+			if (error) throw error;
+		}, options, true);
 	}
 }

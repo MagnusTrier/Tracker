@@ -3,14 +3,14 @@ body {
 	--color-primary: rgba(143, 150, 255, 1);
 	--color-error: #ff6e84;
 	--color-neutral: rgb(130, 130, 150);
-	--color-border: rgb(23, 23, 29);
 	--color-border-strong: rgba(53, 53, 63, 0.8);
 	--box-shadow: 0 0 10px #0008;
 	--text-dim: rgba(90, 90, 100, 1);
-	--color-bg: rgb(8, 8, 9);
+	--color-bg: #0c0e12;
 	--color-yellow: rgba(255, 242, 157, 1);
-	--color-card: rgb(14, 14, 17);
+	--color-card: #15171d;
 	--color-dark: var(--color-bg);
+	--color-border: color-mix(in srgb, var(--color-card), #fff 4%);
 
 	--font-main: 'Manrope Variable', 'Manrope', -apple-system, BlinkMacSystemFont,
 		'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
@@ -261,16 +261,36 @@ input:focus {
 .login {
 	position: fixed;
 	inset: 0;
-	height: 100vh;
-	width: 100vw;
 
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: 10px;
+	padding: 10px;
+}
 
-	font-weight: 400;
+
+.login-button {
+
+	background: radial-gradient(circle at 0% 0%, #acacff, var(--color-primary) 30%, #7070ff 100%);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--color-primary), transparent 70%);
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	height: 56px;
+	width: 100%;
+	border-radius: 10px;
+
+	color: #000;
+
+	font-weight: 700;
+	font-size: 16px;
+	letter-spacing: 0.075ch;
+
+	cursor: not-allowed;
+	-webkit-tap-highlight-color: transparent;
 }
 
 .segmented-control-tab-list {
@@ -327,16 +347,22 @@ input:focus {
 	overscroll-behavior-y: auto;
 	min-height: auto;
 	width: 100%;
-	border-bottom: 1px solid var(--color-border);
 	background-color: color-mix(in srgb, var(--color-bg), transparent 0%);
 	font-weight: 600;
 	letter-spacing: 0.05ch;
 	color: var(--text-dim);
 }
 
-.animated-list-wrapper>* {
+.animated-list-wrapper .no-items,
+.animated-list-wrapper .animated-list-item {
+	height: var(--item-height);
 	padding-left: 20px;
 	display: flex;
 	align-items: center;
-	border-top: 1px solid var(--color-border);
+	border-bottom: 1px solid var(--color-border);
+}
+
+.animated-list-wrapper .no-items:first-child,
+.animated-list-item:last-child {
+	border-bottom: 1px solid transparent;
 }

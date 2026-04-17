@@ -12,12 +12,13 @@ interface CardProps {
 	onClick?: (e: React.MouseEvent) => void
 	headerStyle?: React.CSSProperties
 	subHeaderStyle?: React.CSSProperties
+	className?: string
 }
 
 const Card = (props: CardProps) => {
 	return (
 		<div
-			className="card"
+			className={"card " + props.className}
 			style={props.style}
 			onClick={props.onClick}
 		>

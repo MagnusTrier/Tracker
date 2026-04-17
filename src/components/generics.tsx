@@ -1,9 +1,10 @@
-import { useState, useEffect, type ComponentType, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { IoCalendarClearOutline } from "react-icons/io5"
 import { useMotionValue, useSpring, useTransform, useMotionValueEvent, motion, AnimatePresence } from "framer-motion"
 import { useDrag } from "@use-gesture/react"
 import { format } from "date-fns"
 import { ScaleLoader } from "react-spinners"
+import { X } from "lucide-react"
 
 const RANGE_MIN = 70
 const RANGE_MAX = 100
@@ -195,34 +196,74 @@ interface FastInputProps {
 	placeholder?: string
 	className?: string
 	style?: React.CSSProperties
+	mode?: "text" | "dob" | "height" // New prop
+	onBlur?: () => void
 }
 
-export const FastInput = ({ initialValue, onChange, className, placeholder, style }: FastInputProps) => {
+export const FastInput = ({ initialValue, onChange, className, placeholder, style, mode = "text", onBlur }: FastInputProps) => {
 	const [value, setValue] = useState(initialValue)
 
-	useEffect(() => {
-		setValue(initialValue)
-	}, [initialValue])
+	const formatValue = (val: string, isDeleting: boolean): string => {
+		const digits = val.replace(/\D/g, "")
+
+		if (mode === "dob") {
+			const d = digits.slice(0, 8)
+
+			// 1. Validate Day (01-31)
+			let day = d.slice(0, 2)
+			if (day.length === 2 && parseInt(day) > 31) day = "31"
+			if (day.length === 2 && parseInt(day) === 0) day = "01"
+
+			// 2. Validate Month (01-12)
+			let month = d.slice(2, 4)
+			if (month.length === 2 && parseInt(month) > 12) month = "12"
+			if (month.length === 2 && parseInt(month) === 0) month = "01"
+
+			let year = d.slice(4, 8)
+			if (year.length === 4 && parseInt(year) > 2020) year = "2020"
+
+			// Formatting logic that respects backspacing
+			if (d.length <= 2) return day
+			if (d.length <= 4) return `${day} / ${month}`
+			return `${day} / ${month} / ${year}`
+		}
+
+		if (mode === "height") {
+			if (isDeleting) {
+				const h = digits.slice(0, -1);
+				return h ? `${h} CM` : "";
+			}
+
+			const h = digits.slice(0, 3);
+			return h ? `${h} CM` : "";
+		}
+
+		return val.toUpperCase()
+	}
 
 	const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const nextValue = e.target.value.toUpperCase()
+		const input = e.target
+		const rawValue = input.value
+
+		const isDeleting = (e.nativeEvent as any).inputType === "deleteContentBackward"
+
+		const nextValue = formatValue(rawValue, isDeleting)
+
 		setValue(nextValue)
 		onChange(nextValue)
 	}
 
 	return (
 		<input
-			type="text"
+			type={mode === "text" ? "text" : "tel"}
 			className={className}
 			value={value}
 			onChange={handleTextChange}
-			autoCapitalize="characters"
-			autoCorrect="off"
-			autoComplete="off"
-			spellCheck="false"
+			autoCapitalize={mode === "text" ? "characters" : "off"}
 			placeholder={placeholder}
 			style={{ ...style }}
 			onFocus={(e) => e.target.select()}
+			onBlur={onBlur}
 		/>
 	)
 }
@@ -230,7 +271,7 @@ export const FastInput = ({ initialValue, onChange, className, placeholder, styl
 
 interface AnimatedListProps<T> {
 	items: T[]
-	component: ComponentType<{ data: T }>
+	renderItem: (item: T) => React.ReactNode
 	itemHeight?: number
 	emptyMessage?: string
 	wrapperClass?: string
@@ -238,7 +279,7 @@ interface AnimatedListProps<T> {
 
 export const AnimatedList = <T extends { id: string | number }>({
 	items,
-	component: Component,
+	renderItem,
 	itemHeight = 70,
 	emptyMessage = "NO ITEMS FOUND",
 	wrapperClass
@@ -247,13 +288,13 @@ export const AnimatedList = <T extends { id: string | number }>({
 	const listHeight = useMemo(() => {
 		const count = items.length > 0 ? items.length : 1
 		return itemHeight * count
-	}, [items.length])
+	}, [items.length, itemHeight])
 
 	return (
 		<div className={wrapperClass || "animated-list-wrapper"}>
 			<motion.div
 				animate={{ height: listHeight }}
-				style={{ overflow: "hidden" }}
+				style={{ width: "100%" }}
 				transition={{ duration: 0.3 }}
 			>
 				<AnimatePresence mode="popLayout" initial={false}>
@@ -262,12 +303,11 @@ export const AnimatedList = <T extends { id: string | number }>({
 							<motion.div
 								key={item.id}
 								layout="position"
-								initial={{ opacity: 0, y: 10 }}
-								animate={{ opacity: 1, y: 0 }}
-								exit={{ opacity: 0, scale: 0.9 }}
 								transition={{ duration: 0.2 }}
+								className="animated-list-item"
+								style={{ "--item-height": `${itemHeight}px` } as React.CSSProperties}
 							>
-								<Component data={item} />
+								{renderItem(item)}
 							</motion.div>
 						))
 					) : (
@@ -276,12 +316,39 @@ export const AnimatedList = <T extends { id: string | number }>({
 							initial={{ opacity: 0 }}
 							animate={{ opacity: 1 }}
 							exit={{ opacity: 0 }}
+							className="no-items"
+							style={{ "--item-height": `${itemHeight}px` } as React.CSSProperties}
 						>
 							{emptyMessage}
 						</motion.div>
 					)}
 				</AnimatePresence>
 			</motion.div>
+		</div>
+	)
+}
+
+
+export const CloseModalButton = (props: { onClick: () => void }) => {
+	return (
+		<div
+			onClick={props.onClick}
+			className="clickable"
+			style={{
+				height: 35,
+				aspectRatio: 1,
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "center",
+				borderRadius: 10,
+				position: "absolute",
+				right: 12,
+				top: 12,
+				backgroundColor: "var(--color-bg)",
+				color: "var(--text-dim)"
+			}}
+		>
+			<X size="20" />
 		</div>
 	)
 }

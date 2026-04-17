@@ -62,17 +62,15 @@ const Login = (props: { onLogin: () => void }) => {
 			className="login"
 		>
 			<Card
-				header="Welcome to Tracker"
-				subHeader="Since you're new here you need to log in"
+				header="WELCOME TO TRACKER"
+				subHeader="YOU NEED TO LOG IN TO PROCEED"
 				contentStyle={{ alignItems: "center" }}
 				hideSettings
+				style={{ width: "100%" }}
 			>
-				<button
-					className="active"
-					onClick={props.onLogin}
-				>
-					<span>LOG IN</span>
-				</button>
+				<div className="login-button clickable" onClick={props.onLogin}>
+					LOG IN
+				</div>
 			</Card>
 		</div>
 	)
