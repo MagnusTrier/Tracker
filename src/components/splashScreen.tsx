@@ -1,18 +1,18 @@
 import { useEffect, useState, startTransition, lazy } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "./sessionContext";
-import { useData } from "./dataContext";
+import { useData } from "./dataApi/dataContext";
 
 const Card = lazy(() => import("./card"))
 const MountAppContent = lazy(() => import("./mountAppContent"))
 
 const SplashScreen = () => {
-	const { exercises, weightLogs } = useData();
+	const { exercises, weightLogs, workouts } = useData();
 	const { user, isLoading, login } = useSession()
 
 	const [isDataBooted, setIsDataBooted] = useState(false);
 
-	const allDataLoaded = !exercises.isLoading && !weightLogs.isLoading;
+	const allDataLoaded = !exercises.isLoading && !weightLogs.isLoading && !workouts.isLoading;
 	const isReadyToShow = allDataLoaded && !isLoading;
 
 	useEffect(() => {

@@ -4,7 +4,7 @@ import { PageContainer } from "../../generics"
 import { ChevronRight, Dumbbell, LogOut, BicepsFlexed, HeartPlus } from "lucide-react"
 import { useState } from "react"
 import ConfigureWorkout from "./configureWorkout/configureWorkout"
-import ConfigureExercise from "./configureExercise/configureExercise"
+// import ConfigureExercise from "./configureExercise/configureExercise"
 import { useSession } from "../../sessionContext"
 
 const SettingsPage = () => {
@@ -93,10 +93,10 @@ const SettingsPage = () => {
 			</div>
 
 
-			<ConfigureExercise
-				visible={showExercisesModal}
-				setVisible={setShowExercisesModal}
-			/>
+			{/* <ConfigureExercise */}
+			{/* 	visible={showExercisesModal} */}
+			{/* 	setVisible={setShowExercisesModal} */}
+			{/* /> */}
 			<ConfigureWorkout
 				visible={showWorkoutsModal}
 				setVisible={setShowWorkoutsModal}

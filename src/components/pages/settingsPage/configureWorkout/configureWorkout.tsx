@@ -1,24 +1,21 @@
 import "./configureWorkout.css"
 import Card, { HeaderIcon } from "../../../card"
 import { CustomButton, FastInput, CloseModalButton, AnimatedList } from "../../../generics"
-import { useState, useMemo, useEffect, type Dispatch, type SetStateAction } from "react"
-import { useData, type Workout, type Exercise } from "../../../dataContext"
+import { useState, useMemo, useEffect } from "react"
+import { useData } from "../../../dataApi/dataContext"
+import { type Workout } from "../../../dataApi/managers/WorkoutManager"
+import { type Exercise } from "../../../dataApi/managers/ExerciseManager"
 import { AnimatePresence, motion, type Transition, Reorder, useDragControls } from "motion/react"
 import Modal from "../../../modal"
 import { Search, ChevronRight, Plus, Pen, CheckCheck, Trash2, Zap, Webhook, Activity, Orbit, Circle, Undo, Square, SquareCheck, Grip } from "lucide-react"
 
 const icons = [<Zap />, <Webhook />, <Activity />, <Orbit />]
 const TRANSITION: Transition = { duration: 0.3, ease: "easeInOut" }
+const emptyWorkout: Workout = { id: "", name: "", circuit: false, exercises: [] }
 
 
 type PageState = "overview" | "modify" | "selectExercises"
 
-type ModifyWorkoutType = {
-	id: string
-	name: string
-	circuit: boolean
-	selectedExercises: Exercise[]
-}
 
 interface ConfigureWorkoutProps {
 	visible: boolean
@@ -26,13 +23,13 @@ interface ConfigureWorkoutProps {
 }
 
 const ConfigureWorkout = (props: ConfigureWorkoutProps) => {
-	const { exercises, workoutExercises, workouts } = useData()
+	const { workouts } = useData()
 
 	const [pageState, setPageState] = useState<PageState>("overview")
 	const [previousPage, setPreviousPage] = useState<PageState>("overview")
 
 	const [searchFilter, setSearchFilter] = useState<string>("")
-	const [currentWorkout, setCurrentWorkout] = useState<ModifyWorkoutType | null>(null)
+	const [currentWorkout, setCurrentWorkout] = useState<Workout>(emptyWorkout)
 	const [atSelectExercises, setAtSelectExercises] = useState<boolean>(false)
 
 
@@ -41,44 +38,16 @@ const ConfigureWorkout = (props: ConfigureWorkoutProps) => {
 	}, [atSelectExercises])
 
 	const filteredWorkouts = useMemo(() => {
-		const allFullWorkouts = workouts.values.map(workout => {
-			const associatedExercises = workoutExercises.values
-				.filter(we => we.workout_id === workout.id)
-				.sort((a, b) => a.sequence_order - b.sequence_order)
-				.map(we => ({
-					...we,
-					name: exercises.values.find(ex => ex.id === we.exercise_id)?.name || "Unknown"
-				}));
+		if (!searchFilter.trim()) return workouts.data;
 
-			return { ...workout, exercises: associatedExercises };
-		});
-
-		if (!searchFilter.trim()) return allFullWorkouts;
-
-		return allFullWorkouts.filter(workout =>
+		return workouts.data.filter(workout =>
 			workout.name.toLowerCase().includes(searchFilter.toLowerCase())
 		);
-	}, [workouts.values, workoutExercises.values, exercises.values, searchFilter]);
-
-	const exerciseLookup = useMemo(() => {
-		return new Map(exercises.values.map(e => [e.id, e]))
-	}, [exercises.values])
+	}, [workouts.data, searchFilter]);
 
 
-	const handleWorkoutClick = (workout: Workout | null) => {
-		if (!workout) return
-
-		setCurrentWorkout({
-			id: workout.id,
-			name: workout.name,
-			circuit: workout.circuit,
-			selectedExercises: workoutExercises.values
-				.filter(e => e.workout_id === workout.id)
-				.sort((a, b) => a.sequence_order - b.sequence_order)
-				.map(e => exerciseLookup.get(e.exercise_id))
-				.filter((e): e is Exercise => !!e)
-		})
-
+	const handleGoToModify = (workout: Workout) => {
+		setCurrentWorkout(workout)
 		setPageState("modify")
 	}
 
@@ -96,15 +65,10 @@ const ConfigureWorkout = (props: ConfigureWorkoutProps) => {
 		}
 	}
 
-	const handleConfirmSelectedExercises = (exercises: Exercise[]) => {
+	const updateCurrentWorkout = (val: Partial<Workout>) => {
 		setCurrentWorkout(prev => {
-			if (!prev) return { id: "", name: "", circuit: false, selectedExercises: exercises }
-			return {
-				...prev,
-				selectedExercises: exercises
-			}
+			return { ...prev, ...val }
 		})
-		setPageState("modify")
 	}
 
 
@@ -162,7 +126,7 @@ const ConfigureWorkout = (props: ConfigureWorkoutProps) => {
 									items={filteredWorkouts}
 									renderItem={(item) => {
 										return (
-											<div className="exercise-item clickable" onClick={() => handleWorkoutClick(item)}>
+											<div className="exercise-item clickable" onClick={() => handleGoToModify(item)}>
 												{item.name}
 												<ChevronRight style={{ marginLeft: "auto" }} />
 											</div>
@@ -176,7 +140,7 @@ const ConfigureWorkout = (props: ConfigureWorkoutProps) => {
 									default: <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>ADD WORKOUT <Plus /></span>,
 									disabled: ""
 								}}
-								onClick={() => { setCurrentWorkout(null); setPageState("modify") }}
+								onClick={() => handleGoToModify(emptyWorkout)}
 								style={{ marginTop: 15, width: "100%" }}
 							/>
 						</Card>
@@ -195,7 +159,7 @@ const ConfigureWorkout = (props: ConfigureWorkoutProps) => {
 					>
 						<ModifyWorkout
 							workout={currentWorkout}
-							setWorkout={setCurrentWorkout}
+							updateWorkout={updateCurrentWorkout}
 							hideModify={() => setPageState("overview")}
 							goToSelectExercises={setAtSelectExercises}
 
@@ -216,8 +180,8 @@ const ConfigureWorkout = (props: ConfigureWorkoutProps) => {
 					>
 						<SelectExercises
 							hide={() => setPageState("modify")}
-							selectedExercises={currentWorkout?.selectedExercises || []}
-							onConfirm={handleConfirmSelectedExercises}
+							selectedExercises={currentWorkout.exercises}
+							onConfirm={(ex) => updateCurrentWorkout({ exercises: ex })}
 						/>
 					</motion.div>
 				}
@@ -227,100 +191,94 @@ const ConfigureWorkout = (props: ConfigureWorkoutProps) => {
 }
 
 interface ModifyWorkoutProps {
-	workout: ModifyWorkoutType | null
-	setWorkout: Dispatch<SetStateAction<ModifyWorkoutType | null>>
+	workout: Workout
+	updateWorkout: (val: Partial<Workout>) => void
 	hideModify: () => void
 	goToSelectExercises: (val: boolean) => void
 }
 
 const ModifyWorkout = (props: ModifyWorkoutProps) => {
-	const { workouts, workoutExercises } = useData()
+	const { workouts } = useData()
 
 	const [workoutName, setWorkoutName] = useState<string>(props.workout?.name || "")
 	const [isCircuit, setIsCircuit] = useState<boolean>(props.workout?.circuit || false)
-	const [localSelectedExercises, setLocalSelectedExercises] = useState<Exercise[]>(props.workout?.selectedExercises || [])
 
-	const nameExists = workouts.values.some(
-		(wo) => wo.name.toLowerCase() === workoutName.toLowerCase() && wo.id !== props.workout?.id
+	const [localExercises, setLocalExercises] = useState(props.workout.exercises)
+
+	const nameExists = workouts.data.some(
+		(wo) => wo.name.toLowerCase() === workoutName.toLowerCase()
 	) || workoutName.length === 0
 
-	const originalWorkout = workouts.values.find(w => w.id === props.workout?.id)
-	const originalExercises = workoutExercises.values
-		.filter(e => e.workout_id === props.workout?.id)
-		.sort((a, b) => a.sequence_order - b.sequence_order)
-		.map(e => e.exercise_id)
+	const originalWorkout = workouts.data.find(w => w.id === props.workout.id)
 
 	const nameChanged = workoutName !== originalWorkout?.name
 	const circuitChanged = isCircuit !== originalWorkout?.circuit
 
-	const areIdentical = (arr1: string[], arr2: string[]) => {
+	const areIdentical = (arr1: any, arr2: any) => {
 		return arr1.length === arr2.length &&
-			arr1.every((ex, index) => ex === arr2[index]);
+			arr1.every((ex: any, index: any) => ex === arr2[index]);
 	};
 
-
-	const exercisesChanged = !areIdentical(localSelectedExercises.map(e => e.id), originalExercises)
+	const exercisesChanged = !areIdentical(props.workout.exercises, originalWorkout?.exercises)
 
 	const isDirty = props.workout && !nameExists && (nameChanged || circuitChanged || exercisesChanged)
 
-	const disableSave = props.workout
-		? !isDirty || localSelectedExercises.length === 0
-		: nameExists || localSelectedExercises.length === 0;
+	const disableSave = !isDirty || props.workout.exercises.length === 0
 
 	const handleSave = async (e: React.MouseEvent, setLoading: (val: boolean) => void) => {
 		e.preventDefault()
 		e.stopPropagation()
 		if (disableSave) return
-		setLoading(true)
-
-		const workoutPayload = { name: workoutName, circuit: isCircuit };
-
-		if (props.workout?.id) {
-			await workouts.manager?.put(props.workout.id, workoutPayload, {
-				onSuccess: async () => {
-					await workoutExercises.manager?.delete({ workout_id: props.workout!.id });
-					const exercisesToInsert = localSelectedExercises.map((ex, index) => ({
-						workout_id: props.workout!.id,
-						exercise_id: ex.id,
-						sequence_order: index
-					}));
-
-					await workoutExercises.manager?.post(exercisesToInsert, {
-						onSuccess: () => {
-							setLoading(false);
-							props.hideModify();
-						}
-					}, false);
-				}
-			});
-		} else {
-			await workouts.manager?.post(workoutPayload, {
-				onSuccess: async (newWorkout) => {
-					const workoutId = Array.isArray(newWorkout) ? newWorkout[0].id : newWorkout.id;
-
-					const exercisesToInsert = localSelectedExercises.map((ex, index) => ({
-						workout_id: workoutId,
-						exercise_id: ex.id,
-						sequence_order: index
-					}));
-
-					await workoutExercises.manager?.post(exercisesToInsert, {
-						onSuccess: () => {
-							setLoading(false); // Clear loading
-							props.hideModify(); // Close the screen
-						},
-						onError: (err) => {
-							console.error("Exercises failed", err);
-							setLoading(false);
-						}
-					}, false);
-				},
-				onError: (err) => {
-					console.error("Workout failed", err);
-					setLoading(false);
-				}
-			});
-		}
+		// setLoading(true)
+		//
+		// const workoutPayload = { name: workoutName, circuit: isCircuit };
+		//
+		// if (props.workout?.id) {
+		// 	await workouts.manager?.put(props.workout.id, workoutPayload, {
+		// 		onSuccess: async () => {
+		// 			await workoutExercises.manager?.delete({ workout_id: props.workout!.id });
+		// 			const exercisesToInsert = localSelectedExercises.map((ex, index) => ({
+		// 				workout_id: props.workout!.id,
+		// 				exercise_id: ex.id,
+		// 				sequence_order: index
+		// 			}));
+		//
+		// 			await workoutExercises.manager?.post(exercisesToInsert, {
+		// 				onSuccess: () => {
+		// 					setLoading(false);
+		// 					props.hideModify();
+		// 				}
+		// 			}, false);
+		// 		}
+		// 	});
+		// } else {
+		// 	await workouts.manager?.post(workoutPayload, {
+		// 		onSuccess: async (newWorkout) => {
+		// 			const workoutId = Array.isArray(newWorkout) ? newWorkout[0].id : newWorkout.id;
+		//
+		// 			const exercisesToInsert = localSelectedExercises.map((ex, index) => ({
+		// 				workout_id: workoutId,
+		// 				exercise_id: ex.id,
+		// 				sequence_order: index
+		// 			}));
+		//
+		// 			await workoutExercises.manager?.post(exercisesToInsert, {
+		// 				onSuccess: () => {
+		// 					setLoading(false); // Clear loading
+		// 					props.hideModify(); // Close the screen
+		// 				},
+		// 				onError: (err) => {
+		// 					console.error("Exercises failed", err);
+		// 					setLoading(false);
+		// 				}
+		// 			}, false);
+		// 		},
+		// 		onError: (err) => {
+		// 			console.error("Workout failed", err);
+		// 			setLoading(false);
+		// 		}
+		// 	});
+		// }
 	}
 
 	const handleDelete = async (e: React.MouseEvent, setLoading: (val: boolean) => void) => {
@@ -328,31 +286,24 @@ const ModifyWorkout = (props: ModifyWorkoutProps) => {
 		e.preventDefault();
 
 		if (!props.workout?.id) return;
-
-		// Confirm with the user first
-		if (!window.confirm("Are you sure you want to delete this workout? This will remove all associated exercise data.")) return;
-
-		setLoading(true);
-
-		await workouts.manager?.delete(props.workout.id, {
-			minTime: 500,
-			onSuccess: () => {
-				props.hideModify(); // Return to the list view
-				setLoading(false)
-			},
-			onError: (err) => {
-				console.error("Delete failed:", err);
-				setLoading(false);
-			}
-		});
+		//
+		// // Confirm with the user first
+		// if (!window.confirm("Are you sure you want to delete this workout? This will remove all associated exercise data.")) return;
+		//
+		// setLoading(true);
+		//
+		// await workouts.manager?.delete(props.workout.id, {
+		// 	minTime: 500,
+		// 	onSuccess: () => {
+		// 		props.hideModify(); // Return to the list view
+		// 		setLoading(false)
+		// 	},
+		// 	onError: (err) => {
+		// 		console.error("Delete failed:", err);
+		// 		setLoading(false);
+		// 	}
+		// });
 	};
-
-	const updateWorkout = (val: Partial<ModifyWorkoutType>) => {
-		props.setWorkout(prev => {
-			if (!prev) return { id: "", name: "", circuit: false, selectedExercises: [], ...val }
-			return { ...prev, ...val }
-		})
-	}
 
 
 	return (
@@ -372,7 +323,7 @@ const ModifyWorkout = (props: ModifyWorkoutProps) => {
 						onChange={setWorkoutName}
 						className="list-input"
 						placeholder="E.G. PUSH A"
-						onBlur={() => updateWorkout({ name: workoutName })}
+						onBlur={() => props.updateWorkout({ name: workoutName })}
 					/>
 					<div>
 						<Pen strokeWidth="1.5" size="20" />
@@ -407,7 +358,7 @@ const ModifyWorkout = (props: ModifyWorkoutProps) => {
 					>
 						<h1>
 							<HeaderIcon />
-							EXERCISES ({localSelectedExercises.length})
+							EXERCISES ({props.workout.exercises.length})
 						</h1>
 					</div>
 					<h2>
@@ -417,17 +368,11 @@ const ModifyWorkout = (props: ModifyWorkoutProps) => {
 				<div
 					className="selected-exercises-display"
 				>
-					{localSelectedExercises.length > 0 &&
+					{localExercises.length > 0 &&
 						<ScrollableReorderList
-							items={localSelectedExercises}
-							setItems={setLocalSelectedExercises}
-							onPointerUp={() => props.setWorkout(prev => {
-								if (!prev) return prev
-								return {
-									...prev,
-									selectedExercises: localSelectedExercises
-								}
-							})}
+							items={localExercises}
+							setItems={setLocalExercises}
+							onPointerUp={() => props.updateWorkout({ exercises: localExercises })}
 						/>
 
 					}
@@ -541,7 +486,7 @@ type ExerciseListItem =
 
 
 const SelectExercises = (props: { hide: () => void, selectedExercises: Exercise[], onConfirm: (val: Exercise[]) => void }) => {
-	const { exercises, workoutExercises } = useData()
+	const { exercises, workouts } = useData()
 
 	const [searchFilter, setSearchFilter] = useState<string>("")
 
@@ -554,7 +499,7 @@ const SelectExercises = (props: { hide: () => void, selectedExercises: Exercise[
 		const result: ExerciseListItem[] = []
 
 		categories.forEach((cat, index) => {
-			const matches = exercises.values.filter(ex =>
+			const matches = exercises.data.filter(ex =>
 				ex.category === cat &&
 				ex.name.includes(searchFilter)
 			)
@@ -568,17 +513,19 @@ const SelectExercises = (props: { hide: () => void, selectedExercises: Exercise[
 		})
 
 		return result
-	}, [exercises.values, searchFilter])
+	}, [exercises.data, searchFilter])
 
 	const exerciseUsageCounts = useMemo(() => {
 		const counts: Record<string, number> = {};
 
-		workoutExercises.values.forEach((we) => {
-			counts[we.exercise_id] = (counts[we.exercise_id] || 0) + 1;
+		workouts.data.forEach((workout) => {
+			workout.exercises.forEach((ex) => {
+				counts[ex.id] = (counts[ex.id] || 0) + 1;
+			});
 		});
 
 		return counts;
-	}, [workoutExercises.values]);
+	}, [workouts.data]);
 
 	return (
 		<Card

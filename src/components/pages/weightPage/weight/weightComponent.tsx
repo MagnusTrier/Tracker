@@ -1,4 +1,5 @@
-import { useData, type WeightLog } from "../../../dataContext"
+import { useData } from "../../../dataApi/dataContext"
+import { type WeightLog } from "../../../dataApi/managers/WeightManager.ts"
 import "./weightComponent.css"
 import React, { useMemo, useState, type MouseEvent } from "react"
 import { CustomButton, RulerPicker, SegmentedControl } from "../../../generics.tsx"
@@ -48,23 +49,23 @@ const WeightAnalytics = (props: { isOnScreen: boolean }) => {
 
 	const { weightLogs } = useData()
 	const stats = useMemo(() =>
-		calculateAverages(weightLogs.values),
-		[weightLogs.values]
+		calculateAverages(weightLogs.data),
+		[weightLogs.data]
 	)
 	const [mode, setMode] = useState<string>("7D")
 	const [showHistory, setShowHistory] = useState<boolean>(false)
 
 	const filteredData = useMemo(() => {
 		const now = new Date()
-		if (mode === "ALL") return weightLogs.values
+		if (mode === "ALL") return weightLogs.data
 		let daysToSub = 6
 		if (mode === "14D") daysToSub = 13
 		if (mode === "30D") daysToSub = 29
 		const cutoff = startOfDay(subDays(now, daysToSub))
-		return weightLogs.values.filter(item => {
+		return weightLogs.data.filter(item => {
 			return isAfter(item.date, cutoff)
 		})
-	}, [mode, weightLogs.values])
+	}, [mode, weightLogs.data])
 
 	return (
 
@@ -108,20 +109,20 @@ const WeightAnalyticsSettings = () => {
 	const { weightLogs } = useData()
 
 	const deleteLog = (id: string) => {
-		weightLogs.manager?.delete(id, { minTime: 1000 })
+		weightLogs.manager.deleteWeightLog(id)
 	}
 
 	const logList = useMemo(() => {
-		return weightLogs.values.map((log) => (
+		return weightLogs.data.map((log) => (
 			<WeightLogItem
 				key={log.id}
 				item={log}
 				onClick={deleteLog}
 			/>
 		))
-	}, [weightLogs.values])
+	}, [weightLogs.data])
 
-	if (!weightLogs.values.length) return (
+	if (!weightLogs.data.length) return (
 		<div
 			className="date-container"
 			style={{
@@ -221,7 +222,7 @@ const WeightLogItem = (props: { item: WeightLog, onClick: (val: string) => void 
 
 const LogWeight = () => {
 	const { weightLogs } = useData()
-	const latestWeight = weightLogs.values[0]?.weight ?? 0;
+	const latestWeight = weightLogs.data[0]?.weight ?? 0;
 
 	const [logValue, setLogValue] = useState<number>(latestWeight)
 	const [showDatePicker, setShowDatePicker] = useState<boolean>(false)
@@ -230,7 +231,7 @@ const LogWeight = () => {
 	const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
 
 	const isDateAlreadyLogged = selectedDate
-		? weightLogs.values.some(log => isSameDay(log.date, selectedDate))
+		? weightLogs.data.some(log => isSameDay(log.date, selectedDate))
 		: false;
 
 	const handlePostWeight = async (e: MouseEvent, setLoading: (val: boolean) => void) => {
@@ -239,11 +240,7 @@ const LogWeight = () => {
 
 		if (selectedDate && !isDateAlreadyLogged) {
 			setLoading(true)
-			weightLogs.manager?.post(
-				{ weight: logValue, date: selectedDate },
-				{
-					minTime: 1000,
-				})
+			weightLogs.manager.addWeight(logValue, selectedDate)
 		}
 	}
 
@@ -281,7 +278,7 @@ const LogWeight = () => {
 						key="datepicker"
 						selectedDate={selectedDate}
 						onSelect={(d) => { setSelectedDate(d); }}
-						excludeDates={weightLogs.values.map(val => val.date)}
+						excludeDates={weightLogs.data.map(val => val.date)}
 					/>
 				</Card>
 			</Modal>

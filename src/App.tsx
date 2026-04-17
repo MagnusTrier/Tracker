@@ -1,6 +1,6 @@
 import "./App.css"
 import { SessionProvider } from "./components/sessionContext"
-import { DataProvider } from "./components/dataContext"
+import { DataProvider } from "./components/dataApi/dataContext"
 import SplashScreen from "./components/splashScreen"
 import { BrowserRouter } from "react-router-dom";
 
