@@ -1,7 +1,8 @@
 import "./configureExercise.css"
 import Card, { HeaderIcon } from "../../../card"
 import { AnimatedList, FastInput, CustomButton, CloseModalButton } from "../../../generics"
-import { useData, type Exercise } from "../../../dataContext"
+import { useData } from "../../../dataApi/dataContext"
+import { type Exercise } from "../../../dataApi/managers/ExerciseManager"
 import Modal from "../../../modal"
 import { AnimatePresence, motion, type Transition } from "motion/react"
 import { useEffect, useState, useMemo } from "react"
@@ -21,7 +22,7 @@ interface ConfigureExerciseProps {
 }
 
 const ConfigureExercise = (props: ConfigureExerciseProps) => {
-	const { exercises, workoutExercises } = useData()
+	const { exercises, workouts } = useData()
 
 	const [showModify, setShowModify] = useState<boolean>(false)
 	const [searchFilter, setSearchFilter] = useState<string>("")
@@ -37,7 +38,7 @@ const ConfigureExercise = (props: ConfigureExerciseProps) => {
 		const result: ExerciseListItem[] = []
 
 		categories.forEach((cat, index) => {
-			const matches = exercises.values.filter(ex =>
+			const matches = exercises.data.filter(ex =>
 				ex.category === cat &&
 				ex.name.includes(searchFilter)
 			)
@@ -51,17 +52,19 @@ const ConfigureExercise = (props: ConfigureExerciseProps) => {
 		})
 
 		return result
-	}, [exercises.values, searchFilter])
+	}, [exercises.data, searchFilter])
 
 	const exerciseUsageCounts = useMemo(() => {
 		const counts: Record<string, number> = {};
 
-		workoutExercises.values.forEach((we) => {
-			counts[we.exercise_id] = (counts[we.exercise_id] || 0) + 1;
+		workouts.data.forEach((workout) => {
+			workout.exercises.forEach((ex) => {
+				counts[ex.id] = (counts[ex.id] || 0) + 1;
+			});
 		});
 
 		return counts;
-	}, [workoutExercises.values]);
+	}, [workouts.data]);
 
 
 	return (
@@ -194,7 +197,7 @@ const ModifyExercise = (props: ModifyExerciseProps) => {
 	}, [props.exercise])
 
 
-	const nameExists = exercises.values.some(
+	const nameExists = exercises.data.some(
 		(ex) => ex.name.toLowerCase() === exerciseName.toLowerCase() && ex.id !== props.exercise?.id
 	);
 
@@ -211,7 +214,7 @@ const ModifyExercise = (props: ModifyExerciseProps) => {
 		setCategory("PUSH")
 	}
 
-	const handleSave = (e: React.MouseEvent, setLoading: (val: boolean) => void) => {
+	const handleSave = async (e: React.MouseEvent, setLoading: (val: boolean) => void) => {
 		e.preventDefault()
 		e.stopPropagation()
 		if (disableSave) return
@@ -226,50 +229,27 @@ const ModifyExercise = (props: ModifyExerciseProps) => {
 				dirty["category"] = category
 			}
 
-			exercises.manager?.put(
+			await exercises.manager.updateCustomExercise(
 				props.exercise.id,
 				{ ...dirty },
-				{
-					onSuccess: async () => {
-						await new Promise(resolve => setTimeout(resolve, 500))
-						handleClose()
-						setLoading(false)
-					}
-				}
 			)
+			handleClose()
+
 		} else {
-			exercises.manager?.post(
-				{ name: exerciseName, category },
-				{
-					onSuccess: async () => {
-						await new Promise(resolve => setTimeout(resolve, 500))
-						handleClose()
-						setLoading(false)
-					}
-				}
-			)
+			await exercises.manager.createCustomExercise(exerciseName, category)
+			handleClose()
 		}
 	}
 
-	const handleDelete = (e: React.MouseEvent, setLoading: (val: boolean) => void) => {
+	const handleDelete = async (e: React.MouseEvent, setLoading: (val: boolean) => void) => {
 		e.stopPropagation()
 		e.preventDefault()
 
 		if (props.exercise) {
 			setLoading(true)
-			exercises.manager?.delete(
-				props.exercise.id,
-				{
-					onSuccess: async () => {
-						await new Promise(resolve => setTimeout(resolve, 500))
-						handleClose()
-						setLoading(false)
-					}
-				}
-			)
-		} else {
-			handleClose()
+			await exercises.manager.deleteCustomExercise(props.exercise.id)
 		}
+		handleClose()
 	}
 
 	return (
