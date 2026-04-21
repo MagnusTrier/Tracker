@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { type Session, type User } from "@supabase/supabase-js"
 import { supabase } from "../lib/supabase";
+import { type ActiveWorkout } from "./dataApi/managers/WorkoutManager";
 
 interface SessionContextType {
 	user: User | null;
@@ -12,6 +13,8 @@ interface SessionContextType {
 	clearError: () => void;
 	showSettings: boolean;
 	setShowSettings: (val: boolean) => void;
+	activeWorkout: ActiveWorkout | null
+	setActiveWorkout: (val: ActiveWorkout | null) => void
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined)
@@ -22,6 +25,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
 	const [isLoading, setIsLoading] = useState<boolean>(true)
 	const [error, setError] = useState<string | null>(null)
 	const [showSettings, setShowSettings] = useState<boolean>(false)
+	const [activeWorkout, setActiveWorkout] = useState<ActiveWorkout | null>(null)
 
 	useEffect(() => {
 
@@ -95,7 +99,9 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
 		error,
 		clearError,
 		showSettings,
-		setShowSettings
+		setShowSettings,
+		activeWorkout,
+		setActiveWorkout
 	}
 
 	return (

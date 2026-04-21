@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useMemo } from "react"
 import { useSession } from "../sessionContext"
-import { WorkoutManager, type Workout } from "./managers/WorkoutManager"
+import { WorkoutManager, type Workout, type WorkoutHistoryMap } from "./managers/WorkoutManager"
 import { WeightManager, type WeightLog } from "./managers/WeightManager"
 import { ExerciseManager, type Exercise } from "./managers/ExerciseManager"
 
@@ -11,6 +11,7 @@ interface DataContextType {
 		data: Workout[]
 		isLoading: boolean
 		manager: WorkoutManager
+		history: WorkoutHistoryMap
 	}
 	weightLogs: {
 		data: WeightLog[]
@@ -30,6 +31,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
 	const { user } = useSession()
 
 	const [workouts, setWorkouts] = useState<Workout[]>([])
+	const [workoutHistory, setWorkoutHistory] = useState<WorkoutHistoryMap>({})
 	const [weightLogs, setWeightLogs] = useState<WeightLog[]>([])
 	const [exercises, setExercises] = useState<Exercise[]>([])
 
@@ -46,7 +48,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
 	const managers = useMemo(() => {
 		if (!user) return null
 		return {
-			workouts: new WorkoutManager(user.id, setPartLoading("workouts"), setWorkouts),
+			workouts: new WorkoutManager(user.id, setPartLoading("workouts"), setWorkouts, setWorkoutHistory),
 			weightLogs: new WeightManager(user.id, setPartLoading("weightLogs"), setWeightLogs),
 			exercises: new ExerciseManager(user.id, setPartLoading("exercises"), setExercises, setWorkouts)
 		}
@@ -65,7 +67,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
 	if (!managers) return null
 
 	const value = {
-		workouts: { data: workouts, isLoading: loading.workouts, manager: managers.workouts },
+		workouts: { data: workouts, isLoading: loading.workouts, manager: managers.workouts, history: workoutHistory },
 		weightLogs: { data: weightLogs, isLoading: loading.weightLogs, manager: managers.weightLogs },
 		exercises: { data: exercises, isLoading: loading.exercises, manager: managers.exercises }
 	}

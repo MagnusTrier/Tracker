@@ -15,41 +15,23 @@ interface CardProps {
 	className?: string
 }
 
+const defaultOnClick = (e: React.MouseEvent) => {
+	e.preventDefault()
+	e.stopPropagation()
+}
+
 const Card = (props: CardProps) => {
 	return (
 		<div
 			className={"card " + props.className}
 			style={props.style}
-			onClick={props.onClick}
+			onClick={props.onClick || defaultOnClick}
 		>
-			<div
-				className="header-row"
-				style={props.headerStyle}
-			>
-				<h1>
-					<HeaderIcon />
-					{props.header}
-					{
-						!props.hideSettings && (
-
-							props.settingsLogo
-							??
-							<div
-								className="settings-icon"
-								onClick={props.onSettingsClick}
-							>
-								<Ellipsis />
-							</div>
-						)
-					}
-				</h1>
-			</div>
-			{
-				props.subHeader &&
-				<h2 style={props.subHeaderStyle} >
-					{props.subHeader}
-				</h2>
-			}
+			<Header
+				header={props.header}
+				subHeader={props.subHeader}
+				icon={!props.hideSettings && (props.settingsLogo ?? <div className="settings-icon" onClick={props.onSettingsClick}><Ellipsis /></div>)}
+			/>
 			<div
 				className="card-content"
 				style={props.contentStyle}
@@ -59,6 +41,28 @@ const Card = (props: CardProps) => {
 		</div>
 	)
 }
+
+export const Header = (props: { header: string | React.ReactNode, subHeader: string | React.ReactNode, icon?: React.ReactNode }) => {
+	return (
+		<div
+			style={{ display: "flex", flexDirection: "column", width: "100%", }}
+		>
+			<div
+				className="header-row"
+			>
+				<h1>
+					<HeaderIcon />
+					{props.header}
+					{props.icon}
+				</h1>
+			</div>
+			<h2>
+				{props.subHeader}
+			</h2>
+		</div>
+	)
+}
+
 
 export const HeaderIcon = (props: { style?: React.CSSProperties }) => {
 	const dotBase: React.CSSProperties = {

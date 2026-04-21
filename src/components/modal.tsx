@@ -1,7 +1,32 @@
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, type Variants } from "motion/react";
 
-const Modal = (props: { children: React.ReactNode, visible: boolean, setVisible: (val: boolean) => void, style?: React.CSSProperties, wrapperStyle?: React.CSSProperties }) => {
+const TRANSITIONS: Variants = {
+	enter: (direction: number) => ({
+		x: direction === 0 ? 0 : direction > 0 ? "100%" : "-100%",
+		opacity: 0
+	}),
+	center: {
+		x: 0,
+		opacity: 1
+	},
+	exit: (direction: number) => ({
+		x: direction === 0 ? 0 : direction > 0 ? "-100%" : "100%",
+		opacity: 0
+	})
+}
+
+interface ModalProps {
+	children: React.ReactNode
+	visible: boolean
+	onOverlayClick: () => void
+	page: number
+	direction: number
+}
+
+const Modal = (props: ModalProps) => {
+
+
 	return (
 		createPortal(
 			<AnimatePresence>
@@ -9,11 +34,11 @@ const Modal = (props: { children: React.ReactNode, visible: boolean, setVisible:
 					props.visible &&
 					<motion.div
 						key="modal"
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
+						initial={{ opacity: 0, paddingTop: "20vh" }}
+						animate={{ opacity: 1, paddingTop: 0 }}
+						exit={{ opacity: 0, paddingTop: "20vh" }}
 						transition={{ duration: 0.4, ease: "easeInOut" }}
-						onClick={(e) => { e.stopPropagation(); e.preventDefault(); props.setVisible(false) }}
+						onClick={props.onOverlayClick}
 						style={{
 							position: "fixed",
 							inset: 0,
@@ -21,30 +46,32 @@ const Modal = (props: { children: React.ReactNode, visible: boolean, setVisible:
 							backdropFilter: "blur(7px)",
 							WebkitBackdropFilter: "blur(7px)",
 							transform: "translate3d(0,0,0)",
-							...props.wrapperStyle
 						}}
 					>
-						<motion.div
-							initial={{ opacity: 0, y: "20vh" }}
-							animate={{ opacity: 1, y: 0 }}
-							exit={{ opacity: 0, y: "20vh" }}
-							transition={{ ease: "easeInOut", duration: 0.4 }}
-							style={{
-								maxHeight: "100%",
-								height: "100%",
-								overflow: "hidden",
-								transform: "translate3d(0,0,0)",
-								display: "flex",
-								flexDirection: "column",
-								...props.style
-							}}
-						>
-							{props.children}
-						</motion.div>
+						<AnimatePresence mode="popLayout" initial={false} custom={props.direction}>
+							<motion.div
+								key={props.page}
+								custom={props.direction}
+								variants={TRANSITIONS}
+								initial="enter"
+								animate="center"
+								exit="exit"
+								transition={{ ease: "easeInOut", duration: 0.4 }}
+								style={{
+									maxHeight: "100%",
+									height: "100%",
+									overflow: "hidden",
+									transform: "translate3d(0,0,0)",
+									padding: "0px 10px 10px 10px"
+								}}
+							>
+								{props.children}
+							</motion.div>
+						</AnimatePresence>
 					</motion.div>
 				}
-			</AnimatePresence >
-			, document.getElementById("portal-root")!
+			</AnimatePresence >,
+			document.getElementById("portal-root")!
 		)
 	)
 }

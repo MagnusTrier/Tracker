@@ -5,7 +5,7 @@ import { PageContainer } from "../../generics"
 
 const WeightPage = () => {
 	return (
-		<PageContainer>
+		<PageContainer style={{ padding: 0 }}>
 			<Swiper slides={[<WeightComponent isOnScreen />, <span>page 2</span>]} />
 		</PageContainer>
 	)

@@ -3,7 +3,7 @@ import Card from "../../card"
 import { PageContainer } from "../../generics"
 import { ChevronRight, Dumbbell, LogOut, BicepsFlexed, HeartPlus } from "lucide-react"
 import { useState } from "react"
-import ConfigureWorkout from "./configureWorkout/configureWorkout"
+// import ConfigureWorkout from "./configureWorkout/configureWorkout"
 import ConfigureExercise from "./configureExercise/configureExercise"
 import { useSession } from "../../sessionContext"
 
@@ -14,7 +14,7 @@ const SettingsPage = () => {
 	const { signOut } = useSession()
 
 	return (
-		<PageContainer style={{ padding: "0px 10px 10px 10px" }}>
+		<PageContainer>
 			<Card
 				header="BIOMETRICS"
 				className="clickable"
@@ -61,30 +61,11 @@ const SettingsPage = () => {
 				<div />
 				<h2 style={{ fontSize: 13, color: "var(--color-yellow)", display: "flex", alignItems: "center" }}>CONFIGURE WORKOUTS <ChevronRight style={{ height: 22, width: 22 }} /></h2>
 			</Card>
-			<Card
-				header="EXERCISES"
-				onClick={() => setShowExercisesModal(true)}
-				className="clickable"
-				style={{ marginTop: 10 }}
-				contentStyle={{
-					marginTop: 0,
-					display: "grid",
-					gridTemplateColumns: "2fr 1fr",
-					gap: 10,
-				}}
-				hideSettings
-			>
-				<h2
-					className="manage-button-description"
-				>
-					THE FOUNDATION FOR TRACKING YOUR PROGRESSION
-				</h2>
-				<div className="manage-icon">
-					<BicepsFlexed />
-				</div>
-				<div />
-				<h2 style={{ fontSize: 13, color: "var(--color-primary)", display: "flex", alignItems: "center" }}>VIEW EXERCISE LIBRARY <ChevronRight style={{ height: 22, width: 22 }} /></h2>
-			</Card>
+
+			<ConfigureExercise
+				visible={showExercisesModal}
+				setVisible={setShowExercisesModal}
+			/>
 			<div
 				className="logout-button clickable"
 				onClick={signOut}
@@ -93,14 +74,10 @@ const SettingsPage = () => {
 			</div>
 
 
-			<ConfigureExercise
-				visible={showExercisesModal}
-				setVisible={setShowExercisesModal}
-			/>
-			<ConfigureWorkout
-				visible={showWorkoutsModal}
-				setVisible={setShowWorkoutsModal}
-			/>
+			{/* <ConfigureWorkout */}
+			{/* 	visible={showWorkoutsModal} */}
+			{/* 	setVisible={setShowWorkoutsModal} */}
+			{/* /> */}
 
 		</PageContainer>
 	)

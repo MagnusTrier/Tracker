@@ -17,6 +17,39 @@ export interface DBWorkoutExercise {
 	sequence_order: number
 }
 
+export interface DBWorkoutLog {
+	id: string
+	workout_id: string | null
+	user_id: string
+	started_at: Date
+	completed_at: Date | null
+	notes: string | null
+}
+
+export interface DBExerciseLog {
+	id: string
+	workout_log_id: string
+	exercise_id: string
+	weight_kg: number
+	reps: number
+	sets: number
+}
+
+export interface SetLog {
+	weight_kg: number
+	reps: number
+	set_nr: number
+}
+
+export type ExerciseSetMap = Record<string, SetLog[]>
+
+
+export interface WorkoutLogDetailed extends DBWorkoutLog {
+	exercises: ExerciseSetMap
+}
+
+export type WorkoutHistoryMap = Record<string, WorkoutLogDetailed[]>
+
 type BaseWorkout = Omit<DBWorkout, "user_id" | "created_at">
 
 export interface Workout extends BaseWorkout {
@@ -24,15 +57,22 @@ export interface Workout extends BaseWorkout {
 	exercises: Exercise[]
 }
 
+export interface ActiveWorkout extends Workout {
+	data: ExerciseSetMap
+}
+
 export class WorkoutManager extends BaseManager {
 	private setWorkouts: (data: Workout[]) => void
+	private setWorkoutHistory: (data: WorkoutHistoryMap) => void
 	constructor(
 		userId: string,
 		setLoading: (val: boolean) => void,
-		setWorkouts: (data: Workout[]) => void
+		setWorkouts: (data: Workout[]) => void,
+		setWorkoutHistory: (data: WorkoutHistoryMap) => void
 	) {
 		super(userId, setLoading)
 		this.setWorkouts = setWorkouts
+		this.setWorkoutHistory = setWorkoutHistory
 	}
 
 	async fetchAllWorkouts() {
@@ -153,5 +193,96 @@ export class WorkoutManager extends BaseManager {
 			await this.fetchAllWorkouts()
 		})
 
+	}
+
+	async fetchWorkoutHistory() {
+		return this.runSafe(async () => {
+			const { data, error } = await supabase
+				.from("workout_logs")
+				.select(`
+				*,
+				raw_sets:exercise_logs (*)
+			`)
+				.eq("user_id", this.userId)
+				.order("started_at", { ascending: false })
+
+			if (error) throw error
+
+			const historyMap = {} as any
+
+			(data || []).forEach((log: any) => {
+				const workoutId = log.workout_id || "unassigned"
+
+				const exerciseMap: ExerciseSetMap = {}
+				log.raw_sets.forEach((s: any) => {
+					if (!exerciseMap[s.exercise_id]) {
+						exerciseMap[s.exercise_id] = []
+					}
+					exerciseMap[s.exercise_id].push({
+						weight_kg: Number(s.weight_kg),
+						reps: s.reps,
+						set_nr: s.sets
+					})
+				})
+
+				Object.values(exerciseMap).forEach(sets =>
+					sets.sort((a, b) => a.set_nr - b.set_nr)
+				)
+
+				const polishedLog: WorkoutLogDetailed = {
+					...log,
+					started_at: new Date(log.started_at),
+					completed_at: log.completed_at ? new Date(log.completed_at) : null,
+					exercises: exerciseMap
+				}
+
+				if (!historyMap[workoutId]) {
+					historyMap[workoutId] = []
+				}
+				historyMap[workoutId].push(polishedLog)
+			})
+
+			this.setWorkoutHistory(historyMap)
+
+			return historyMap
+		})
+	}
+
+	async logWorkoutSession(workoutId: string, exerciseMap: ExerciseSetMap, notes?: string) {
+		return this.runSafe(async () => {
+			const { data: log, error: logError } = await supabase
+				.from("workout_logs")
+				.insert({
+					workout_id: workoutId,
+					user_id: this.userId,
+					completed_at: new Date().toISOString(),
+					notes: notes || null
+				})
+				.select()
+				.single();
+
+			if (logError) throw logError;
+
+			const setRecords = Object.entries(exerciseMap).flatMap(([exerciseId, sets]) =>
+				sets.map(s => ({
+					workout_log_id: log.id,
+					exercise_id: exerciseId,
+					weight_kg: Number(s.weight_kg),
+					reps: Math.round(s.reps),
+					sets: s.set_nr
+				}))
+			);
+
+			if (setRecords.length > 0) {
+				const { error: setsError } = await supabase
+					.from("exercise_logs")
+					.insert(setRecords);
+
+				if (setsError) throw setsError;
+			}
+
+			await this.fetchAllWorkouts();
+			return log;
+		});
 	}
 }

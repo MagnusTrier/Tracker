@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef, useLayoutEffect } from "react"
 import { IoCalendarClearOutline } from "react-icons/io5"
 import { useMotionValue, useSpring, useTransform, useMotionValueEvent, motion, AnimatePresence } from "framer-motion"
 import { useDrag } from "@use-gesture/react"
 import { format } from "date-fns"
 import { ScaleLoader } from "react-spinners"
-import { X } from "lucide-react"
+import { ArrowBigRight, X } from "lucide-react"
 
 const RANGE_MIN = 70
 const RANGE_MAX = 100
@@ -57,7 +57,7 @@ export const RulerPicker = (props: { displayValue: number, setDisplayValue: (val
 				props.date &&
 				<div className="date action-button-primary" onClick={props.onDateClick}>
 					<IoCalendarClearOutline fontSize={15} />
-					{format(props.date, "MMM d").toUpperCase()}
+					B	{format(props.date, "MMM d").toUpperCase()}
 				</div>
 			}
 			<div className="value-display">
@@ -90,46 +90,156 @@ export const RulerPicker = (props: { displayValue: number, setDisplayValue: (val
 	)
 }
 
-interface CustomButtonProps {
-	text: {
-		default: string | React.ReactNode,
-		disabled: string | React.ReactNode,
-	}
-	disabled?: boolean
+export const Slider = (props: { onConfirm: () => void, active: boolean }) => {
+	const [trackWidth, setTrackWidth] = useState<number>(0)
+	const trackRef = useRef<HTMLDivElement>(null)
+
+	const x = useMotionValue(0)
+	const springX = useSpring(x, { stiffness: 400, damping: 40 })
+
+	useLayoutEffect(() => {
+		if (!trackRef.current) return
+		const observer = new ResizeObserver((entries) => {
+			setTrackWidth(entries[0].contentRect.width)
+		})
+		observer.observe(trackRef.current)
+		return () => observer.disconnect()
+	}, [])
+
+	const HANDLE_SIZE = 50
+	const PADDING = 8
+	const maxDrag = trackWidth - HANDLE_SIZE - PADDING * 2
+
+	const textOpacity = useTransform(x, [0, maxDrag * 0.7], [1, 0])
+	const background = useTransform(
+		x,
+		[0, maxDrag],
+		[
+			"radial-gradient(circle at 0% 0%, #0c0e12 0%, #0c0e12 30%, #0c0e12 100%)",
+			"radial-gradient(circle at 0% 0%, #acacff 0%, rgb(143,150,255) 30%, #7070ff 100%)"
+		]
+	) as any;
+
+	const bind = useDrag(({ offset: [ox], last }) => {
+		const currentX = Math.max(0, Math.min(ox, maxDrag))
+
+		if (last) {
+			if (currentX > maxDrag * 0.85) {
+				x.set(maxDrag)
+			} else {
+				x.set(0)
+			}
+		} else {
+			x.set(currentX)
+		}
+	}, {
+		from: () => [x.get(), 0],
+		bounds: { left: 0, right: maxDrag }
+	}) as any
+
+
+	useMotionValueEvent(springX, "change", (latest) => {
+		if (latest >= maxDrag * 0.99) {
+			props.onConfirm()
+		}
+	})
+
+	return (
+		<div
+			ref={trackRef}
+			className="slider-container"
+			style={{ pointerEvents: !props.active ? "none" : "all" }}
+		>
+			<motion.div
+				className="slider-track"
+				style={{ background }}
+			>
+				<motion.div
+					style={{ opacity: textOpacity }}
+					className="slider-text"
+				>
+					SLIDE TO START
+				</motion.div>
+				<motion.div
+					{...bind()}
+					style={{
+						x: springX,
+						width: HANDLE_SIZE,
+						height: HANDLE_SIZE,
+						borderColor: props.active ? "var(--color-primary)" : "",
+						color: props.active ? "var(--color-primary)" : "var(--text-dim)"
+					}}
+					className="slider-handle"
+				>
+					<ArrowBigRight strokeWidth="1.5" />
+				</motion.div>
+			</motion.div>
+		</div>
+
+	)
+
+}
+
+type ButtonText = string | React.ReactNode
+
+interface BaseButtonProps {
 	onClick: (e: React.MouseEvent, setLoading: (val: boolean) => void) => void
 	style?: React.CSSProperties
+	theme?: "default" | "error" | "neutral"
+}
+
+interface DisabledButtonProps extends BaseButtonProps {
+	disabled: true
+	text: {
+		default: ButtonText
+		disabled?: ButtonText
+	}
+}
+
+interface EnabledButtonProps extends BaseButtonProps {
+	disabled?: false
+	text: {
+		default: ButtonText
+		disabled?: ButtonText
+	}
+}
+
+type CustomButtonProps = EnabledButtonProps | DisabledButtonProps
+
+
+const THEMES: Record<NonNullable<CustomButtonProps["theme"]>, React.CSSProperties> = {
+	default: {},
+	error: {
+		"--bg-active": "radial-gradient(circle at 0% 0%, #ff8597, var(--color-error) 30%, #ff4763 100%)",
+		"--shadow": "color-mix(in srgb, var(--color-error), transparent 70%)",
+	} as React.CSSProperties,
+	neutral: {
+		"--bg-active": "radial-gradient(circle at 0% 0%, #848498, #71718a 30%, #3f3f50 100%)",
+		"--shadow": "color-mix(in srgb, #717171a, transparent 70%)",
+	} as React.CSSProperties
 }
 
 export const CustomButton = (props: CustomButtonProps) => {
 	const [loading, setLoading] = useState<boolean>(false)
+	const { disabled, text, onClick, style, theme = "default" } = props
 
 	useEffect(() => {
-		if (props.disabled) {
-			setLoading(false)
-		}
-	}, [props.disabled])
+		if (disabled) setLoading(false)
+	}, [disabled])
 
 	return (
 		<div
-			className={`custom-button ${props.disabled ? "" : "active clickable"}`}
-			style={props.style}
-			onClick={(e) => props.onClick(e, setLoading)}
+			className={`custom-button ${disabled ? "" : "active clickable"}`}
+			style={{ ...THEMES[theme], ...style }}
+			onClick={(e) => !disabled && onClick(e, setLoading)}
 		>
-			{
-				props.disabled
-					?
-					<span>
-						{props.text.disabled}
-					</span>
-					:
-					loading ?
-						<ScaleLoader
-							height={18.5}
-							radius={2}
-							color="#000"
-						/> :
-						<span>{props.text.default}</span>
-			}
+			{disabled ? (
+				<span>{text.disabled || text.default}</span>
+			) : loading ? (
+				<ScaleLoader height={18.5} radius={2} color="#000" />
+			) : (
+				<span>{text.default}</span>
+			)}
 		</div>
 	)
 }
@@ -145,7 +255,7 @@ interface SegmentedControlProps {
 }
 
 export const SegmentedControl = (props: SegmentedControlProps) => {
-	const [activeTab, setActiveTab] = useState(props.options[0]);
+	const [activeTab, setActiveTab] = useState(props.options[0])
 	return (
 		<div
 			key={props.id}
@@ -161,7 +271,6 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
 						onClick={() => { setActiveTab(tab); props.onChange(tab) }}
 					>
 						<span style={{ zIndex: 2, position: "relative" }}>{tab}</span>
-
 						{activeTab === tab && (
 							<motion.div
 								layoutId={`active-pill-${props.id}`}
@@ -173,8 +282,8 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
 				))}
 			</div>
 		</div>
-	);
-};
+	)
+}
 
 export const PageContainer = (props: { children: React.ReactNode, style?: React.CSSProperties }) => {
 	return (
@@ -230,12 +339,12 @@ export const FastInput = ({ initialValue, onChange, className, placeholder, styl
 
 		if (mode === "height") {
 			if (isDeleting) {
-				const h = digits.slice(0, -1);
-				return h ? `${h} CM` : "";
+				const h = digits.slice(0, -1)
+				return h ? `${h} CM` : ""
 			}
 
-			const h = digits.slice(0, 3);
-			return h ? `${h} CM` : "";
+			const h = digits.slice(0, 3)
+			return h ? `${h} CM` : ""
 		}
 
 		return val.toUpperCase()

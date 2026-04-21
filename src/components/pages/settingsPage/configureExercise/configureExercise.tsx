@@ -1,58 +1,106 @@
 import "./configureExercise.css"
-import Card, { HeaderIcon } from "../../../card"
-import { AnimatedList, FastInput, CustomButton, CloseModalButton } from "../../../generics"
+import Card, { Header } from "../../../card"
+import { CustomButton, CloseModalButton } from "../../../generics"
 import { useData } from "../../../dataApi/dataContext"
 import { type Exercise } from "../../../dataApi/managers/ExerciseManager"
 import Modal from "../../../modal"
-import { AnimatePresence, motion, type Transition } from "motion/react"
-import { useEffect, useState, useMemo } from "react"
-import { Search, Pen, Trash2, CheckCheck, Plus, Webhook, Zap, ChevronRight, Circle, Orbit, Activity } from "lucide-react"
+import { motion } from "motion/react"
+import { useState, useMemo, useCallback } from "react"
+import { BicepsFlexed, Trash2, CheckCheck, Plus, Webhook, Zap, ChevronRight, Circle, Orbit, Activity } from "lucide-react"
+import List, { ListInput } from "../../../list/list"
 
-const TRANSITION: Transition = { duration: 0.3, ease: "easeInOut" }
-
-const icons = [<Zap />, <Webhook />, <Activity />, <Orbit />]
+const CATEGORIES: Exercise["category"][] = ["PUSH", "PULL", "LEGS", "OTHER"];
+const ICONS = [<Zap />, <Webhook />, <Activity />, <Orbit />]
+const emptyExercise: Exercise = { id: "", name: "", category: "PUSH", created_at: new Date() }
 
 type ExerciseListItem =
 	| { id: string; type: "HEADER"; label: string, index: number }
 	| { id: string; type: "ITEM"; data: Exercise }
 
-interface ConfigureExerciseProps {
-	visible: boolean
-	setVisible: (val: boolean) => void
-}
+const ConfigureExercise = () => {
+	const [showModal, setShowModal] = useState<boolean>(false)
 
-const ConfigureExercise = (props: ConfigureExerciseProps) => {
-	const { exercises, workouts } = useData()
+	const [currentExercise, setCurrentExercise] = useState<Exercise>(emptyExercise)
 
-	const [showModify, setShowModify] = useState<boolean>(false)
-	const [searchFilter, setSearchFilter] = useState<string>("")
-	const [currentExercise, setCurrentExercise] = useState<Exercise | null>(null)
-
-	const handleExerciseClick = (ex: Exercise | null) => {
-		setCurrentExercise(ex)
-		setShowModify(true)
+	const [[page, direction], setPage] = useState<[number, number]>([0, 0])
+	const paginate = (newDirection: number) => {
+		setPage([page + newDirection, newDirection])
 	}
 
-	const displayItems = useMemo(() => {
-		const categories = ["PUSH", "PULL", "LEGS", "OTHER"]
-		const result: ExerciseListItem[] = []
+	const renderContent = () => {
+		switch (page) {
+			case 0:
+				return (
+					<ExercisesDisplay
+						paginate={paginate}
+						hide={() => setShowModal(false)}
+						setCurrentExercise={setCurrentExercise}
+					/>
+				)
+			case 1:
+				return (
+					<ModifyExercise
+						exercise={currentExercise}
+						hide={() => paginate(-1)}
+					/>
+				)
+			default:
+				return null
+		}
+	}
 
-		categories.forEach((cat, index) => {
-			const matches = exercises.data.filter(ex =>
-				ex.category === cat &&
-				ex.name.includes(searchFilter)
-			)
+	const handleOverlayClick = () => {
+		if (page === 0) {
+			paginate(0)
+			setShowModal(false)
+		} else {
+			paginate(-1)
+		}
+	}
 
-			if (matches.length > 0) {
-				result.push({ id: `header-${cat}`, type: "HEADER", label: cat, index })
-				matches.forEach(ex => {
-					result.push({ id: ex.id, type: "ITEM", data: ex })
-				})
-			}
-		})
 
-		return result
-	}, [exercises.data, searchFilter])
+	return (
+		<>
+			<Card
+				header="EXERCISES"
+				onClick={() => setShowModal(true)}
+				className="clickable"
+				style={{ marginTop: 10 }}
+				contentStyle={{
+					marginTop: 0,
+					display: "grid",
+					gridTemplateColumns: "2fr 1fr",
+					gap: 10,
+				}}
+				hideSettings
+			>
+				<h2
+					className="manage-button-description"
+				>
+					THE FOUNDATION FOR TRACKING YOUR PROGRESSION
+				</h2>
+				<div className="manage-icon">
+					<BicepsFlexed />
+				</div>
+				<div />
+				<h2 style={{ fontSize: 13, color: "var(--color-primary)", display: "flex", alignItems: "center" }}>VIEW EXERCISE LIBRARY <ChevronRight style={{ height: 22, width: 22 }} /></h2>
+			</Card>
+			<Modal
+				visible={showModal}
+				onOverlayClick={handleOverlayClick}
+				page={page}
+				direction={direction}
+			>
+				{renderContent()}
+			</Modal>
+		</>
+	)
+}
+
+
+const ExercisesDisplay = (props: { paginate: (val: number) => void, hide: () => void, setCurrentExercise: (val: Exercise) => void }) => {
+
+	const { exercises, workouts } = useData()
 
 	const exerciseUsageCounts = useMemo(() => {
 		const counts: Record<string, number> = {};
@@ -67,152 +115,99 @@ const ConfigureExercise = (props: ConfigureExerciseProps) => {
 	}, [workouts.data]);
 
 
-	return (
-		<Modal
-			visible={props.visible}
-			setVisible={showModify ? setShowModify : props.setVisible}
-			wrapperStyle={{ padding: 0 }}
-		>
-			<AnimatePresence initial={false}>
-				{
-					!showModify ?
-						<motion.div
-							key="exercise-no-modify"
-							initial={{ x: "-100vw", opacity: 0 }}
-							animate={{ x: 0, opacity: 1 }}
-							exit={{ x: "-100vw", opacity: 0 }}
-							style={{ padding: "0px 10px 10px 10px" }}
-							transition={TRANSITION}
-						>
-							<Card
-								header="MANAGE EXERCISES"
-								subHeader="ADD OR EDIT EXERCISES"
-								style={{ maxHeight: "calc(100dvh - 40px)" }}
-								contentStyle={{ alignItems: "center", gap: 0 }}
-								onClick={(e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation() }}
-								settingsLogo={<CloseModalButton onClick={() => props.setVisible(false)} />}
-							>
-								<div
-									style={{
-										alignItems: "center",
-										gap: 0,
-										flex: "0 1 auto",
-										overflow: "hidden",
-										borderRadius: 8,
-										width: "100%",
-										display: "flex",
-										flexDirection: "column",
-										minHeight: 0,
-									}}
-								>
-									<div className="list-input-wrapper" style={{ color: searchFilter.length > 0 ? "var(--color-text)" : "var(--text-dim)", borderBottom: "1px solid var(--color-border)" }}>
-										<FastInput
-											initialValue={searchFilter}
-											onChange={setSearchFilter}
-											className="list-input"
-											placeholder="SEARCH EXERCISES..."
-										/>
-										<div>
-											<Search strokeWidth="1.5" size="20" />
-										</div>
-									</div>
-									<AnimatedList
-										items={displayItems}
-										itemHeight={55}
-										renderItem={(item) => {
-											if (item.type === "HEADER") {
-												return (
-													<div className="exercise-category-divider">
-														{icons[item.index]}
-														{item.label}
-													</div>
-												)
-											}
+	const handleExerciseClick = (ex: Exercise) => {
+		props.setCurrentExercise(ex)
+		props.paginate(1)
+	}
 
-											const usageCount = exerciseUsageCounts[item.data.id] || 0
-											return (
-												<div className="exercise-item clickable" onClick={() => handleExerciseClick(item.data)}>
-													<div className="name-display">
-														<span>{item.data.name}</span>
-														<div className="name-subheader">
-															<span>{item.data.category}</span>
-															<Circle size="4" strokeWidth="1" fill="var(--text-dim)" />
-															<span>PART OF {usageCount} WORKOUT{usageCount !== 1 ? "S" : ""}</span>
-														</div>
-													</div>
-													<ChevronRight style={{ marginLeft: "auto" }} />
-												</div>
-											)
-										}}
-										emptyMessage="NO EXERCISES FOUND"
-									/>
+	const handleTransform = useCallback((items: Exercise[], query: string) => {
+		const result: ExerciseListItem[] = []
+
+		CATEGORIES.forEach((cat, index) => {
+			const matches = items.filter(ex =>
+				ex.category === cat &&
+				ex.name.includes(query)
+			)
+
+			if (matches.length > 0) {
+				result.push({ id: `header-${cat}`, type: "HEADER", label: cat, index })
+				matches.forEach(ex => {
+					result.push({ id: ex.id, type: "ITEM", data: ex })
+				})
+			}
+		})
+
+		return result
+	}, [])
+
+	return (
+		<Card
+			header="MANAGE EXERCISES"
+			subHeader="ADD OR EDIT EXERCISES"
+			settingsLogo={
+				<CloseModalButton
+					onClick={props.hide}
+				/>
+			}
+		>
+			<List<Exercise, ExerciseListItem>
+				items={exercises.data}
+				search={{
+					placeholder: "SEARCH EXERCISES...",
+					transformFn: handleTransform
+				}}
+				renderItem={(item) => {
+					if (item.type === "HEADER") {
+						return (
+							<div className="exercise-category-divider">
+								{ICONS[item.index]}
+								{item.label}
+							</div>
+						)
+					}
+
+					const usageCount = exerciseUsageCounts[item.data.id] || 0
+					return (
+						<div className="exercise-item clickable" onClick={() => handleExerciseClick(item.data)}>
+							<div className="name-display">
+								<span>{item.data.name}</span>
+								<div className="name-subheader">
+									<span>{item.data.category}</span>
+									<Circle size="4" strokeWidth="1" fill="var(--text-dim)" />
+									<span>PART OF {usageCount} WORKOUT{usageCount !== 1 ? "S" : ""}</span>
 								</div>
-								<CustomButton
-									text={{
-										default: <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>ADD EXERCISE <Plus /></span>,
-										disabled: ""
-									}}
-									onClick={() => { setCurrentExercise(null); setShowModify(true) }}
-									style={{ marginTop: 15, width: "100%" }}
-								/>
-							</Card>
-						</motion.div>
-						:
-						<motion.div
-							key="exercise-modify"
-							initial={{ x: "100vw", opacity: 0 }}
-							animate={{ x: 0, opacity: 1 }}
-							exit={{ x: "100vw", opacity: 0 }}
-							transition={TRANSITION}
-							style={{ position: "absolute", inset: 0, padding: "0px 10px 10px 10px", x: "100vw" }}
-						>
-							<ModifyExercise
-								exercise={currentExercise}
-								hideModify={() => setShowModify(false)}
-							/>
-						</motion.div>
-				}
-			</AnimatePresence>
-		</Modal>
+							</div>
+							<ChevronRight style={{ marginLeft: "auto" }} />
+						</div>
+					)
+				}}
+				emptyMessage="NO EXERCISES FOUND"
+			/>
+			<CustomButton
+				text={{ default: <>ADD EXERCISE <Plus /></> }}
+				onClick={() => handleExerciseClick(emptyExercise)}
+				style={{ marginTop: 12, width: "100%" }}
+			/>
+		</Card >
 	)
 }
 
-type Category = "PUSH" | "PULL" | "LEGS" | "OTHER"
-
 interface ModifyExerciseProps {
-	exercise: Exercise | null
-	hideModify: () => void
+	exercise: Exercise
+	hide: () => void
 }
-
 
 const ModifyExercise = (props: ModifyExerciseProps) => {
 	const { exercises } = useData()
 
-	const [exerciseName, setExerciseName] = useState<string>(props.exercise?.name || "")
-	const [category, setCategory] = useState<Category>(props.exercise?.category || "PUSH")
-
-	useEffect(() => {
-		setExerciseName(props.exercise?.name || "")
-		setCategory(props.exercise?.category || "PUSH")
-	}, [props.exercise])
-
+	const [exerciseName, setExerciseName] = useState<string>(props.exercise.name)
+	const [category, setCategory] = useState<Exercise["category"]>(props.exercise.category)
 
 	const nameExists = exercises.data.some(
 		(ex) => ex.name.toLowerCase() === exerciseName.toLowerCase() && ex.id !== props.exercise?.id
 	);
 
-	const disableSave = props.exercise
-		? (props.exercise.name === exerciseName && props.exercise.category === category) || nameExists || exerciseName.trim().length === 0
-		: exerciseName.trim().length === 0 || nameExists;
-
-	const handleClose = (e?: React.MouseEvent) => {
-		e?.preventDefault()
-		e?.stopPropagation()
-
-		props.hideModify()
-		setExerciseName("")
-		setCategory("PUSH")
-	}
+	const disableSave = (props.exercise.name === exerciseName && props.exercise.category === category) || nameExists || exerciseName.trim().length === 0
 
 	const handleSave = async (e: React.MouseEvent, setLoading: (val: boolean) => void) => {
 		e.preventDefault()
@@ -220,7 +215,7 @@ const ModifyExercise = (props: ModifyExerciseProps) => {
 		if (disableSave) return
 		setLoading(true)
 
-		if (props.exercise) {
+		if (props.exercise.id.length > 0) {
 			const dirty: Partial<Exercise> = {}
 			if (exerciseName !== props.exercise.name) {
 				dirty["name"] = exerciseName
@@ -233,12 +228,10 @@ const ModifyExercise = (props: ModifyExerciseProps) => {
 				props.exercise.id,
 				{ ...dirty },
 			)
-			handleClose()
-
 		} else {
 			await exercises.manager.createCustomExercise(exerciseName, category)
-			handleClose()
 		}
+		props.hide()
 	}
 
 	const handleDelete = async (e: React.MouseEvent, setLoading: (val: boolean) => void) => {
@@ -249,91 +242,54 @@ const ModifyExercise = (props: ModifyExerciseProps) => {
 			setLoading(true)
 			await exercises.manager.deleteCustomExercise(props.exercise.id)
 		}
-		handleClose()
+		props.hide()
 	}
 
 	return (
-		<>
-			<Card
-				header={props.exercise ? `EDIT: ${props.exercise.name}` : "CREATE EXERCISE"}
-				subHeader={props.exercise ? "CHANGE THE PROPERTIES OF THIS EXERCISE" : "ADD A NEW EXERCISE TO YOUR LIBRARY"}
-
-				contentStyle={{ alignItems: "center", maxHeight: "100dvh", marginTop: 8, gap: 10 }}
-				onClick={(e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation() }}
-				settingsLogo={<CloseModalButton onClick={props.hideModify} />}
+		<Card
+			header={props.exercise ? `EDIT: ${props.exercise.name}` : "CREATE EXERCISE"}
+			subHeader={props.exercise ? "CHANGE THE PROPERTIES OF THIS EXERCISE" : "ADD A NEW EXERCISE TO YOUR LIBRARY"}
+			contentStyle={{ gap: 10 }}
+			settingsLogo={<CloseModalButton onClick={props.hide} />}
+		>
+			<ListInput
+				placeholder="E.G. PULLUPS"
+				value={exerciseName}
+				onChange={setExerciseName}
+				style={{ border: "none", backgroundColor: "var(--color-bg)", borderRadius: 8 }}
+			/>
+			<Header header="CATEGORY" subHeader="SELECT THE CATEGORY FOR THIS EXERCISE" />
+			<CategoryGridSelector
+				category={category}
+				setCategory={setCategory}
+			/>
+			<div
+				className="modify-exercise-buttons"
 			>
-				<div className="list-input-wrapper" style={{ color: exerciseName.length > 0 ? "var(--color-text)" : "var(--text-dim)", borderRadius: 8 }}>
-					<FastInput
-						initialValue={exerciseName}
-						onChange={setExerciseName}
-						className="list-input"
-						placeholder="E.G. PULLUPS"
-					/>
-					<div>
-						<Pen strokeWidth="1.5" size="20" />
-					</div>
-				</div>
-				<div
-					style={{ display: "flex", flexDirection: "column", width: "100%", }}
-				>
-					<div
-						className="header-row"
-					>
-						<h1>
-							<HeaderIcon />
-							CATEGORY
-						</h1>
-					</div>
-					<h2>
-						SELECT THE CATEGORY FOR THIS EXERCISE
-					</h2>
-				</div>
-				<CategoryGridSelector
-					category={category}
-					setCategory={setCategory}
-					icons={icons}
+				<CustomButton
+					text={{ default: <>DELETE <Trash2 /></> }}
+					onClick={handleDelete}
+					style={{ width: "100%" }}
+					theme="error"
 				/>
-				<div
-					className="modify-exercise-buttons"
-				>
-					<CustomButton
-						text={{
-							default: <span style={{ display: "flex", alignItems: "center", gap: 5 }}>DELETE <Trash2 /></span>,
-							disabled: ""
-						}}
-						onClick={handleDelete}
-						style={{
-							"--bg-active": "radial-gradient(circle at 0% 0%, #ff8597, var(--color-error) 30%, #ff4763 100%)",
-							"--shadow": "color-mix(in srgb, var(--color-error), transparent 70%)",
-							width: "100%",
-							marginTop: 0,
-						} as React.CSSProperties}
-					/>
-					<CustomButton
-						text={{
-							default: <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>SAVE <CheckCheck /></span>,
-							disabled: <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>SAVE <CheckCheck /></span>,
-						}}
-						onClick={handleSave}
-						style={{ marginTop: 0, width: "100%" }}
-						disabled={disableSave}
-					/>
-				</div>
-			</Card>
-
-		</>
+				<CustomButton
+					text={{ default: <>SAVE <CheckCheck /></> }}
+					onClick={handleSave}
+					style={{ width: "100%" }}
+					disabled={disableSave}
+				/>
+			</div>
+		</Card>
 	)
 }
 
 interface CategoryGridProps {
-	category: Category;
-	setCategory: (val: Category) => void;
-	icons: React.ReactNode[];
+	category: Exercise["category"];
+	setCategory: (val: Exercise["category"]) => void;
 }
 
-export const CategoryGridSelector = ({ category, setCategory, icons }: CategoryGridProps) => {
-	const options: Category[] = ["PUSH", "PULL", "LEGS", "OTHER"];
-	const activeIndex = options.indexOf(category);
+const CategoryGridSelector = ({ category, setCategory }: CategoryGridProps) => {
+	const activeIndex = CATEGORIES.indexOf(category);
 	const padding = 12
 	return (
 		<div className="category-wrapper">
@@ -348,17 +304,17 @@ export const CategoryGridSelector = ({ category, setCategory, icons }: CategoryG
 				transition={{ type: "spring", stiffness: 450, damping: 35 }}
 			/>
 
-			{options.map((val, index) => (
+			{CATEGORIES.map((val, index) => (
 				<div
 					key={val}
-					className={`category-item ${category === val ? "active" : ""}`}
+					className={`category-item ${category === val && "active"}`}
 					onClick={() => setCategory(val)}
 				>
 					<div className="label-group">
 						<span className="index-number">{(index + 1).toString().padStart(2, "0")}</span>
 						<span className="category-name">{val}</span>
 					</div>
-					{icons[index]}
+					{ICONS[index]}
 				</div>
 			))}
 		</div>
