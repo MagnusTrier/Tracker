@@ -30,14 +30,14 @@ export interface DBExerciseLog {
 	id: string
 	workout_log_id: string
 	exercise_id: string
-	weight_kg: number
-	reps: number
-	sets: number
+	weight_kg: string
+	reps: string
+	sets: string
 }
 
 export interface SetLog {
-	weight_kg: number
-	reps: number
+	weight_kg: string
+	reps: string
 	set_nr: number
 }
 
@@ -59,6 +59,7 @@ export interface Workout extends BaseWorkout {
 
 export interface ActiveWorkout extends Workout {
 	data: ExerciseSetMap
+	timer: number
 }
 
 export class WorkoutManager extends BaseManager {
@@ -219,18 +220,21 @@ export class WorkoutManager extends BaseManager {
 						exerciseMap[s.exercise_id] = []
 					}
 					exerciseMap[s.exercise_id].push({
-						weight_kg: Number(s.weight_kg),
-						reps: s.reps,
+						weight_kg: s.weight_kg.toString(),
+						reps: s.reps.toString(),
 						set_nr: s.sets
 					})
 				})
 
 				Object.values(exerciseMap).forEach(sets =>
-					sets.sort((a, b) => a.set_nr - b.set_nr)
+					sets.sort((a, b) => Number(a.set_nr) - Number(b.set_nr))
 				)
 
 				const polishedLog: WorkoutLogDetailed = {
-					...log,
+					workout_id: log.workout_id,
+					user_id: log.user_id,
+					id: log.id,
+					notes: log.notes,
 					started_at: new Date(log.started_at),
 					completed_at: log.completed_at ? new Date(log.completed_at) : null,
 					exercises: exerciseMap
@@ -268,7 +272,7 @@ export class WorkoutManager extends BaseManager {
 					workout_log_id: log.id,
 					exercise_id: exerciseId,
 					weight_kg: Number(s.weight_kg),
-					reps: Math.round(s.reps),
+					reps: s.reps,
 					sets: s.set_nr
 				}))
 			);

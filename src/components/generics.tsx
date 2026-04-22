@@ -214,8 +214,9 @@ const THEMES: Record<NonNullable<CustomButtonProps["theme"]>, React.CSSPropertie
 		"--shadow": "color-mix(in srgb, var(--color-error), transparent 70%)",
 	} as React.CSSProperties,
 	neutral: {
-		"--bg-active": "radial-gradient(circle at 0% 0%, #848498, #71718a 30%, #3f3f50 100%)",
-		"--shadow": "color-mix(in srgb, #717171a, transparent 70%)",
+		"--bg-active": "none",
+		"--shadow": "none",
+		color: "var(--color-text)"
 	} as React.CSSProperties
 }
 
@@ -229,7 +230,7 @@ export const CustomButton = (props: CustomButtonProps) => {
 
 	return (
 		<div
-			className={`custom-button ${disabled ? "" : "active clickable"}`}
+			className={`${props.theme === "neutral" && "neutral"} custom-button ${disabled ? "" : "active clickable"} `}
 			style={{ ...THEMES[theme], ...style }}
 			onClick={(e) => !disabled && onClick(e, setLoading)}
 		>

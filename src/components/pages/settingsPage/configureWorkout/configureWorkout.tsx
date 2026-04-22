@@ -75,7 +75,9 @@ const ConfigureWorkout = (props: ConfigureWorkoutProps) => {
 	return (
 		<Modal
 			visible={props.visible}
-			setVisible={handleSetVisible}
+			onOverlayClick={handleSetVisible}
+			page={0}
+			direction={0}
 		>
 			<AnimatePresence initial={false}>
 				{
@@ -225,7 +227,7 @@ const ModifyWorkout = (props: ModifyWorkoutProps) => {
 
 	const disableSave = !isDirty || props.workout.exercises.length === 0
 
-	const handleSave = async (e: React.MouseEvent, setLoading: (val: boolean) => void) => {
+	const handleSave = async (e: React.MouseEvent, _: (val: boolean) => void) => {
 		e.preventDefault()
 		e.stopPropagation()
 		if (disableSave) return
@@ -281,7 +283,7 @@ const ModifyWorkout = (props: ModifyWorkoutProps) => {
 		// }
 	}
 
-	const handleDelete = async (e: React.MouseEvent, setLoading: (val: boolean) => void) => {
+	const handleDelete = async (e: React.MouseEvent, _: (val: boolean) => void) => {
 		e.stopPropagation();
 		e.preventDefault();
 

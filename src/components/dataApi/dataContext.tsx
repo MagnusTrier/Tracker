@@ -59,6 +59,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
 	useEffect(() => {
 		if (managers) {
 			managers.workouts.fetchAllWorkouts()
+			managers.workouts.fetchWorkoutHistory()
 			managers.weightLogs.fetchWeights()
 			managers.exercises.fetchExercises()
 		}

@@ -1,15 +1,12 @@
 import "./settingsPage.css"
 import Card from "../../card"
 import { PageContainer } from "../../generics"
-import { ChevronRight, Dumbbell, LogOut, BicepsFlexed, HeartPlus } from "lucide-react"
-import { useState } from "react"
+import { ChevronRight, Dumbbell, LogOut, HeartPlus } from "lucide-react"
 // import ConfigureWorkout from "./configureWorkout/configureWorkout"
 import ConfigureExercise from "./configureExercise/configureExercise"
 import { useSession } from "../../sessionContext"
 
 const SettingsPage = () => {
-	const [showExercisesModal, setShowExercisesModal] = useState<boolean>(false)
-	const [showWorkoutsModal, setShowWorkoutsModal] = useState<boolean>(false)
 
 	const { signOut } = useSession()
 
@@ -39,7 +36,6 @@ const SettingsPage = () => {
 			</Card>
 			<Card
 				header="WORKOUTS"
-				onClick={() => setShowWorkoutsModal(true)}
 				className="clickable"
 				style={{ marginTop: 10 }}
 				contentStyle={{
@@ -62,10 +58,7 @@ const SettingsPage = () => {
 				<h2 style={{ fontSize: 13, color: "var(--color-yellow)", display: "flex", alignItems: "center" }}>CONFIGURE WORKOUTS <ChevronRight style={{ height: 22, width: 22 }} /></h2>
 			</Card>
 
-			<ConfigureExercise
-				visible={showExercisesModal}
-				setVisible={setShowExercisesModal}
-			/>
+			<ConfigureExercise />
 			<div
 				className="logout-button clickable"
 				onClick={signOut}

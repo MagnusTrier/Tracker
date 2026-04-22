@@ -89,7 +89,9 @@ const WeightAnalytics = (props: { isOnScreen: boolean }) => {
 			</div>
 			<Modal
 				visible={showHistory}
-				setVisible={setShowHistory}
+				onOverlayClick={() => setShowHistory(false)}
+				page={0}
+				direction={0}
 			>
 				<Card
 					header="HISTORY"
@@ -266,7 +268,9 @@ const LogWeight = () => {
 			/>
 			<Modal
 				visible={showDatePicker}
-				setVisible={setShowDatePicker}
+				onOverlayClick={() => setShowDatePicker(false)}
+				page={0}
+				direction={0}
 			>
 				<Card
 					header="CALENDAR"

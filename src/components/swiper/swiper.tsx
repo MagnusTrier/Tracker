@@ -17,6 +17,7 @@ const Swiper = (props: { slides: React.ReactNode[], circuit?: boolean }) => {
 				touchStartPreventDefault={false}
 				className="swiper-container"
 				loop={props.circuit}
+				style={{ transform: "translateZ(0)" }}
 			>
 				{props.slides.map((s, i) => (
 					<SwiperSlide key={`slide-${i}`} className="swiper-slide">
@@ -38,17 +39,15 @@ const Paginator = (props: { page: number, numPages: number, circuit?: boolean })
 		<div className="paginator-display">
 			{
 				Array.from({ length: props.numPages }, (_, i) =>
-					<div key={`item-${i}`} >
-						<div
-							style={
-								props.page === i
-									? { backgroundColor: "var(--color-primary)", scale: 1.1, boxShadow: "0px 0px 4px color-mix(in srgb, var(--color-primary), transparent 70%)" }
-									: isNeighbor(i)
-										? { backgroundColor: "color-mix(in srgb, var(--color-primary), transparent 50%)", boxShadow: "0px 0px 4px color-mix(in srgb, var(--color-primary), transparent 90%)" }
-										: {}
-							}
-						/>
-					</div>
+					<div key={`item-${i}`}
+						style={
+							props.page === i
+								? { backgroundColor: "var(--color-primary)", width: 25, boxShadow: "0px 0px 4px color-mix(in srgb, var(--color-primary), transparent 70%)" }
+								: isNeighbor(i)
+									? { backgroundColor: "color-mix(in srgb, var(--color-primary), transparent 60%)", boxShadow: "0px 0px 4px color-mix(in srgb, var(--color-primary), transparent 90%)" }
+									: {}
+						}
+					/>
 				)
 			}
 		</div>

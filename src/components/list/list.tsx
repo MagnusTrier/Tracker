@@ -11,7 +11,7 @@ interface ListProps<T, R = T> {
 		placeholder: string
 		transformFn: (items: T[], query: string) => R[]
 	}
-	style: React.CSSProperties
+	style?: React.CSSProperties
 }
 
 const List = <T extends { id: string | number }, R extends { id: string | number } = T>(props: ListProps<T, R>) => {

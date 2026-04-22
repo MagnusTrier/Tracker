@@ -30,7 +30,7 @@ const WorkoutPage = () => {
 
 	const handleConfirmSlide = () => {
 		if (selectedWorkout) {
-			setActiveWorkout({ ...selectedWorkout, data: {} })
+			setActiveWorkout({ ...selectedWorkout, data: {}, timer: 0 })
 			nav("/activeWorkout")
 		}
 	}
