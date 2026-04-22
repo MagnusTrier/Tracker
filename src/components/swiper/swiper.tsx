@@ -2,29 +2,32 @@ import { useState } from "react"
 import { Swiper as ExternalSwiper, SwiperSlide } from "swiper/react"
 import "./swiper.css"
 import "swiper/css"
+import { PageContainer } from "../generics"
 
 const Swiper = (props: { slides: React.ReactNode[], circuit?: boolean }) => {
 	const [page, setPage] = useState<number>(0)
 
 	return (
 		<>
-			<ExternalSwiper
-				slidesPerView={1}
-				threshold={10}
-				onActiveIndexChange={(e) => setPage(e.realIndex)}
-				allowSlidePrev={props.circuit ? true : page !== 0}
-				allowSlideNext={props.circuit ? true : page !== props.slides.length - 1}
-				touchStartPreventDefault={false}
-				className="swiper-container"
-				loop={props.circuit}
-				style={{ transform: "translateZ(0)" }}
-			>
-				{props.slides.map((s, i) => (
-					<SwiperSlide key={`slide-${i}`} className="swiper-slide">
-						{s}
-					</SwiperSlide>
-				))}
-			</ExternalSwiper>
+			<PageContainer>
+				<ExternalSwiper
+					slidesPerView={1}
+					threshold={10}
+					onActiveIndexChange={(e) => setPage(e.realIndex)}
+					allowSlidePrev={props.circuit ? true : page !== 0}
+					allowSlideNext={props.circuit ? true : page !== props.slides.length - 1}
+					touchStartPreventDefault={false}
+					className="swiper-container"
+					loop={props.circuit}
+					style={{ transform: "translateZ(0)" }}
+				>
+					{props.slides.map((s, i) => (
+						<SwiperSlide key={`slide-${i}`} className="swiper-slide">
+							{s}
+						</SwiperSlide>
+					))}
+				</ExternalSwiper>
+			</PageContainer>
 			<Paginator page={page} numPages={props.slides.length} circuit={props.circuit} />
 		</>
 	)

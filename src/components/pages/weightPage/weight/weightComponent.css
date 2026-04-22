@@ -1,193 +1,45 @@
-.weight-log-item-container {
-	--br: 10px;
-
-	position: relative;
-
-	display: block;
-	font-weight: 400;
-	overflow-y: auto;
-	overflow-x: hidden;
-	border-radius: var(--br);
-
-	margin-top: 5px;
-}
-
-.weight-log-item {
-	border-radius: var(--br);
-	display: grid;
-	grid-template-columns: 1fr 100px 70px;
-	height: 70px;
-	position: relative;
-	background-color: var(--color-dark);
-
-	contain: layout paint;
-	transform: translateZ(0);
-}
-
-.weight-log-item:not(:last-child) {
-	margin-bottom: 7px;
-}
-
-
-.weight-log-item>div {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	padding: 10px;
-}
-
-
-.weight-log-item-container .date-container {
-	position: relative;
-	border-radius: var(--br) 0 0 var(--br);
-	align-items: start;
-	font-size: 14px;
-	font-weight: 600;
-}
-
-.weight-log-item-container .date-container::before {
-	content: '';
-	position: absolute;
-	height: 80%;
-	bottom: 10%;
-	width: 1px;
-	left: 0px;
-	background: linear-gradient(transparent,
-			color-mix(in srgb, var(--color-primary), transparent 50%), transparent);
-}
-
-.weight-log-item-container .date-container span:first-child {
-	color: var(--color-primary);
-	font-size: 12px;
-	font-weight: 700;
-	letter-spacing: 0.05;
-}
-
-.weight-log-item-container .delete {
-	border-radius: 0 var(--br) var(--br) 0;
-	width: 100%;
-}
-
-.weight-log-item-container .delete div {
-	border-radius: 50%;
-	background-color: color-mix(in srgb, var(--color-error), transparent 95%);
-	border: 1px solid color-mix(in srgb, var(--color-error), transparent 95%);
-	height: 90%;
-	aspect-ratio: 1;
-	color: var(--color-error);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 18px;
-}
-
-.weight-log-item-container .weight {
-	flex-direction: row;
-	justify-content: start;
-	gap: 5px;
-	font-size: 22px;
-	font-weight: 700;
-}
-
-.weight-log-item-container .weight span {
-	font-size: 16px;
-	color: var(--text-dim);
-	margin-top: 4px;
-}
-
-.weight-log-item-container .confirm-delete {
-	position: absolute;
-	left: 0;
-	top: 0;
-	width: 100%;
-	height: 100%;
-	background-color: rgba(12, 12, 12, 0.95);
-	border-radius: var(--br);
-
-	display: flex;
-	flex-direction: row;
-	justify-content: space-evenly;
-	z-index: 10;
-}
-
-.current-weight-container,
-.weight-log-item {
-	will-change: transform, opacity;
-}
-
-.weight-log-item-container .confirm-delete>div {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-
-	border-radius: 50%;
-	background-color: color-mix(in srgb, var(--color), transparent 95%);
-	border: 1px solid color-mix(in srgb, var(--color), transparent 95%);
-	height: 90%;
-	aspect-ratio: 1;
-	color: var(--color);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 18px;
-}
-
-.log-weight-settings {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 5px;
-}
-
-.current-weight-container {
-	display: flex;
-	gap: 10px;
-	align-items: center;
-
-	font-size: 12px;
-	font-weight: 600;
-	width: 100%;
-	margin-bottom: 2px;
-}
-
 .current-weight {
 	font-size: 28px;
 	font-weight: 800;
+
+	display: flex;
+	align-items: center;
+
+	width: fit-content;
+	will-change: transform, opacity;
+	position: relative;
+
+	margin-block: 2px 5px;
 }
 
-.current-weight>span:first-child {
+.current-weight::after {
+	content: "KG";
 	font-size: 16px;
 	color: var(--text-dim);
 	font-weight: 500;
+	height: 80%;
+	display: flex;
+	align-items: end;
+	margin-inline: 2px 10px;
 }
 
-.current-weight-container .stats {
+.current-weight .stats {
+	position: absolute;
+	left: 100%;
 	font-size: 16px;
 	font-weight: 600;
 	background-color: color-mix(in srgb, var(--color-yellow), 95% transparent);
 	border: 1px solid color-mix(in srgb, var(--color-yellow), 75% transparent);
 	box-shadow: 0 0 10px color-mix(in srgb, var(--color-yellow), 95% transparent);
 	color: var(--color-yellow);
-	border-radius: 10px;
-	padding: 5px 8px;
-	border-radius: 10px;
+	border-radius: 5px;
+	padding: 0px 5px;
 	display: flex;
 	align-items: center;
-	height: 34px;
 	gap: 8px;
+	height: 80%;
 }
 
-.slider-slide-container {
-	position: relative;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	touch-action: none;
-	width: 100%;
-	margin-top: 2px;
-}
 
 .value-display {
 	font-size: 28px;
@@ -196,10 +48,12 @@
 	font-weight: 800;
 	user-select: none;
 	position: relative;
-	margin-bottom: 14px;
+	margin-bottom: 18px;
+	font-variant-numeric: tabular-nums;
 }
 
-.value-display>span {
+.value-display::after {
+	content: "KG";
 	position: absolute;
 	bottom: 5px;
 	left: 96%;
@@ -209,18 +63,7 @@
 	font-weight: 500;
 }
 
-.value-display>div {
-	position: absolute;
-	left: calc(100% + 28px);
-	top: 0;
-	height: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.slider-slide-container .date {
-	border-radius: 10px;
+.date {
 	padding: 8px;
 	font-size: 14px;
 	font-weight: 700;
@@ -229,24 +72,18 @@
 	display: flex;
 	align-items: center;
 	gap: 5px;
-
+	margin-top: 7px;
 }
 
-.scroller-wrapper {
-	position: relative;
-	width: 100%;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	height: 56px;
-}
-
-.center-indicator {
+.value-display::before {
+	content: "";
 	position: absolute;
 	z-index: 10;
 	height: 12px;
 	width: 3px;
-	bottom: calc(100% + 5px);
+	bottom: -12px;
+	left: 50%;
+	transform: translateX(-50%);
 
 	background-color: var(--color-primary);
 	box-shadow: 0 0 6px color-mix(in srgb, var(--color-primary), transparent 45%);
@@ -256,14 +93,15 @@
 
 .touch-area {
 	width: 100%;
-	height: 100%;
+	height: 50px;
 	cursor: grab;
 	display: flex;
 	align-items: flex-end;
 	padding-left: 50%;
-	overflow: hidden;
+	overflow-x: hidden;
+	overflow-y: visible;
 	background-color: var(--color-dark);
-	border-radius: 7px;
+	border-radius: 5px;
 	touch-action: none;
 }
 
@@ -272,69 +110,60 @@
 }
 
 .ruler-track {
-	display: flex;
-	align-items: flex-start;
-	will-change: transform;
-	padding-bottom: 8px;
-	margin-left: -10px;
-}
-
-.tick-item {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
+	position: relative;
+	height: 100%;
 	flex-shrink: 0;
+	will-change: transform;
 }
 
-.tick-label {
-	font-family: 'Manrope Variable', sans-serif;
+.ruler-track::before,
+.ruler-track::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 10px;
+
+	-webkit-mask-repeat: repeat-x;
+	mask-repeat: repeat-x;
+	-webkit-mask-position: -1px 0;
+	mask-position: -1px 0;
+	pointer-events: none;
+}
+
+.ruler-track::before {
+	height: 10px;
+	background-color: color-mix(in srgb, var(--text-dim), var(--color-bg) 60%);
+
+	--mask-minor: url("data:image/svg+xml,%3Csvg width='20' height='12' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='2' height='12' rx='1' fill='black'/%3E%3C/svg%3E");
+	-webkit-mask-image: var(--mask-minor);
+	mask-image: var(--mask-minor);
+
+	-webkit-mask-size: 20px 12px;
+	mask-size: 20px 12px;
+}
+
+.ruler-track::after {
+	height: 17px;
+	background-color: color-mix(in srgb, var(--text-dim), var(--color-bg) 40%);
+
+	--mask-major: url("data:image/svg+xml,%3Csvg width='200' height='25' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='2' height='25' rx='1' fill='black'/%3E%3C/svg%3E");
+	-webkit-mask-image: var(--mask-major);
+	mask-image: var(--mask-major);
+
+	-webkit-mask-size: 200px 25px;
+	mask-size: 200px 25px;
+}
+
+.tick-label-container {
+	position: absolute;
+	top: 27px;
+	transform: translateX(-50%);
+	z-index: 10;
+
+	font-family: var(--font-main);
 	font-size: 12px;
 	color: color-mix(in srgb, var(--text-dim), transparent 40%);
 	font-weight: 600;
 	user-select: none;
-}
-
-.tick-line {
-	width: 2px;
-	background-color: color-mix(in srgb, var(--text-dim), transparent 60%);
-	border-radius: 1px;
-}
-
-.tick-line.major {
-	height: 20px;
-	background-color: color-mix(in srgb, var(--text-dim), transparent 40%);
-}
-
-.tick-line.minor {
-	height: 10px;
-	width: 2px;
-}
-
-.nav-wrapper {
-	background-color: var(--color-dark);
-	border-radius: 10px;
-	margin-top: 6px;
-}
-
-.tabs-list {
-	display: flex;
-	list-style: none;
-	margin: 0;
-	position: relative;
-	padding: 6px;
-}
-
-.tab-item {
-	flex: 1;
-	padding: 5px 0;
-	font-size: 12px;
-	font-weight: 600;
-	text-align: center;
-	cursor: pointer;
-	position: relative;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	transition: color 0.2s ease;
-	-webkit-tap-highlight-color: transparent;
 }

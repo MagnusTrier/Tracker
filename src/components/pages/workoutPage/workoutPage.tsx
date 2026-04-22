@@ -36,40 +36,43 @@ const WorkoutPage = () => {
 	}
 
 	return (
-		<PageContainer >
-			<Card
-				header="START WORKOUT"
-				subHeader="SELECT WORKOUT AND SLIDE TO START"
-				hideSettings
-				contentStyle={{ alignItems: "center", gap: 12 }}
-			>
-				<List
-					items={workouts.data}
-					search={{
-						placeholder: "SEARCH WORKOUTS...",
-						transformFn: handleTransform
-					}}
-					renderItem={(item) => {
-						const isActive = selectedWorkout && selectedWorkout.id === item.id
-						return (
-							<div className="workout-item clickable" onClick={() => setSelectedWorkout(isActive ? null : item)}
-								style={{ borderColor: isActive ? "var(--color-primary)" : "" }}>
-								<div className="name-display">
-									<span> {item.name}</span>
-									<div className="name-subheader">
-										<span>{item.exercises.length} EXERCISE{item.exercises.length === 1 ? "" : "S"}</span>
+		<>
+			<PageContainer style={{ padding: 10 }}>
+				<Card
+					header="START WORKOUT"
+					subHeader="SELECT WORKOUT AND SLIDE TO START"
+					hideSettings
+					contentStyle={{ alignItems: "center", gap: 12 }}
+				>
+					<List
+						items={workouts.data}
+						search={{
+							placeholder: "SEARCH WORKOUTS...",
+							transformFn: handleTransform
+						}}
+						renderItem={(item) => {
+							const isActive = selectedWorkout && selectedWorkout.id === item.id
+							return (
+								<div className="workout-item clickable" onClick={() => setSelectedWorkout(isActive ? null : item)}
+									style={{ borderColor: isActive ? "var(--color-primary)" : "" }}>
+									<div className="name-display">
+										<span> {item.name}</span>
+										<div className="name-subheader">
+											<span>{item.exercises.length} EXERCISE{item.exercises.length === 1 ? "" : "S"}</span>
+										</div>
 									</div>
+									<ChevronRight style={{ color: isActive ? "var(--color-primary)" : "", marginLeft: "auto" }} />
 								</div>
-								<ChevronRight style={{ color: isActive ? "var(--color-primary)" : "", marginLeft: "auto" }} />
-							</div>
-						)
-					}}
-					emptyMessage="NO WORKOUTS FOUND"
-					style={{ padding: 0 }}
-				/>
-				<Slider onConfirm={handleConfirmSlide} active={selectedWorkout !== null} />
-			</Card>
-		</PageContainer>
+							)
+						}}
+						emptyMessage="NO WORKOUTS FOUND"
+						style={{ padding: 0 }}
+					/>
+					<Slider onConfirm={handleConfirmSlide} active={selectedWorkout !== null} />
+				</Card>
+			</PageContainer>
+			<span />
+		</>
 	)
 }
 

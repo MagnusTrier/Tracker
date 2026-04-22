@@ -4,15 +4,16 @@ import { useMotionValue, useSpring, useTransform, useMotionValueEvent, motion, A
 import { useDrag } from "@use-gesture/react"
 import { format } from "date-fns"
 import { ScaleLoader } from "react-spinners"
-import { ArrowBigRight, X } from "lucide-react"
+import { ArrowBigRight, Calendar1, X } from "lucide-react"
 
-const RANGE_MIN = 70
+const RANGE_MIN = 50
 const RANGE_MAX = 100
 const TICK_SPACING = 20
 
 const TOTAL_TICKS = (RANGE_MAX - RANGE_MIN) * 10
 
-export const RulerPicker = (props: { displayValue: number, setDisplayValue: (val: number) => void, date: Date | null, onDateClick: () => void }) => {
+export const RulerPicker = (props: { displayValue: number, setDisplayValue: (val: number) => void, date: Date, onDateClick: () => void }) => {
+	const displayRef = useRef<HTMLDivElement>(null)
 
 	const INITIAL_OFFSET = (props.displayValue - RANGE_MIN) * 10 * -TICK_SPACING
 	const offset = useMotionValue(INITIAL_OFFSET)
@@ -30,64 +31,61 @@ export const RulerPicker = (props: { displayValue: number, setDisplayValue: (val
 	)
 
 	useMotionValueEvent(numericValue, "change", (latest) => {
-		props.setDisplayValue(Math.round(latest * 10) / 10)
-	})
+		const val = Math.round(latest * 10) / 10;
+		if (displayRef.current) {
+			displayRef.current.innerText = val.toFixed(1);
+		}
+		props.setDisplayValue(val);
+	});
 
-	const bind = useDrag(({ offset: [x], last, memo }) => {
-		const minScroll = -TOTAL_TICKS * TICK_SPACING
-		const maxScroll = 0
+	const bind = useDrag(({ offset: [x], last }) => {
+		const minScroll = -TOTAL_TICKS * TICK_SPACING;
+		const maxScroll = 0;
 
 		if (last) {
-			const snappedValue = Math.round(x / TICK_SPACING) * TICK_SPACING
-			offset.set(Math.max(minScroll, Math.min(maxScroll, snappedValue)))
+			const snappedValue = Math.round(x / TICK_SPACING) * TICK_SPACING;
+			offset.set(Math.max(minScroll, Math.min(maxScroll, snappedValue)));
 		} else {
-			offset.set(Math.max(minScroll, Math.min(maxScroll, x)))
+			offset.set(Math.max(minScroll, Math.min(maxScroll, x)));
 		}
-
-		return memo
 	}, {
 		from: () => [offset.get(), 0],
 		rubberband: true,
-	})
+		preventWindowScrollPropagation: true,
+	});
+
+	const labels = [];
+	for (let i = 0; i <= TOTAL_TICKS; i += 10) {
+		labels.push(
+			<div key={i} className="tick-label-container" style={{ left: i * TICK_SPACING }}>
+				<span className="tick-label">{(RANGE_MIN + i / 10).toFixed(0)}</span>
+			</div>
+		);
+	}
 
 	return (
-		<div className="slider-slide-container">
-
-			{
-				props.date &&
-				<div className="date action-button-primary" onClick={props.onDateClick}>
-					<IoCalendarClearOutline fontSize={15} />
-					B	{format(props.date, "MMM d").toUpperCase()}
-				</div>
-			}
-			<div className="value-display">
+		<>
+			<div className="date action-button-primary" onClick={props.onDateClick}>
+				<Calendar1 strokeWidth="1.8" size="18" />
+				{format(props.date, "MMM d").toUpperCase()}
+			</div>
+			<div className="value-display" ref={displayRef}>
 				{props.displayValue.toFixed(1)}
-				<span>KG</span>
 			</div>
-			<div className="scroller-wrapper">
-				<div className="center-indicator" />
-				<div {...bind()} className="touch-area swiper-no-swiping">
-					<motion.div
-						className="ruler-track"
-						style={{ x: springOffset }}
-					>
-						{[...Array(TOTAL_TICKS + 1)].map((_, i) => {
-							const val = RANGE_MIN + i / 10
-							const isMajor = i % 10 === 0
-							return (
-								<div key={i} className="tick-item" style={{ width: TICK_SPACING }}>
-									<div className={`tick-line ${isMajor ? 'major' : 'minor'}`} />
-									{isMajor && (
-										<span className="tick-label">{val.toFixed(0)}</span>
-									)}
-								</div>
-							)
-						})}
-					</motion.div>
-				</div>
+			<div {...bind()} className="touch-area swiper-no-swiping">
+				<motion.div
+					className="ruler-track"
+					style={{
+						x: springOffset,
+						width: TOTAL_TICKS * TICK_SPACING,
+						willChange: "transform" // Force GPU Layer
+					}}
+				>
+					{labels}
+				</motion.div>
 			</div>
-		</div>
-	)
+		</>
+	);
 }
 
 export const Slider = (props: { onConfirm: () => void, active: boolean }) => {
@@ -206,20 +204,6 @@ interface EnabledButtonProps extends BaseButtonProps {
 
 type CustomButtonProps = EnabledButtonProps | DisabledButtonProps
 
-
-const THEMES: Record<NonNullable<CustomButtonProps["theme"]>, React.CSSProperties> = {
-	default: {},
-	error: {
-		"--bg-active": "radial-gradient(circle at 0% 0%, #ff8597, var(--color-error) 30%, #ff4763 100%)",
-		"--shadow": "color-mix(in srgb, var(--color-error), transparent 70%)",
-	} as React.CSSProperties,
-	neutral: {
-		"--bg-active": "none",
-		"--shadow": "none",
-		color: "var(--color-text)"
-	} as React.CSSProperties
-}
-
 export const CustomButton = (props: CustomButtonProps) => {
 	const [loading, setLoading] = useState<boolean>(false)
 	const { disabled, text, onClick, style, theme = "default" } = props
@@ -230,17 +214,16 @@ export const CustomButton = (props: CustomButtonProps) => {
 
 	return (
 		<div
-			className={`${props.theme === "neutral" && "neutral"} custom-button ${disabled ? "" : "active clickable"} `}
-			style={{ ...THEMES[theme], ...style }}
+			className={` button  ${disabled ? "disabled" : "clickable"} ${theme}`}
+			style={style}
 			onClick={(e) => !disabled && onClick(e, setLoading)}
 		>
-			{disabled ? (
-				<span>{text.disabled || text.default}</span>
-			) : loading ? (
-				<ScaleLoader height={18.5} radius={2} color="#000" />
-			) : (
-				<span>{text.default}</span>
-			)}
+			{disabled
+				? (text.disabled || text.default)
+				: loading
+					? <ScaleLoader height={18.5} radius={2} color="#000" />
+					: text.default
+			}
 		</div>
 	)
 }
@@ -306,7 +289,7 @@ interface FastInputProps {
 	placeholder?: string
 	className?: string
 	style?: React.CSSProperties
-	mode?: "text" | "dob" | "height" // New prop
+	mode?: "text" | "dob" | "height"
 	onBlur?: () => void
 }
 

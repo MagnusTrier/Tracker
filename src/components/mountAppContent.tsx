@@ -6,6 +6,7 @@ import SettingsPage from "./pages/settingsPage/settingsPage"
 import ActiveWorkoutPage from "./pages/activeWorkoutPage/activeWorkoutPage"
 import { useSession } from "./sessionContext"
 import { useEffect } from "react"
+import StatusPage from "./pages/statusPage/statusPage"
 
 const MountAppContent = () => {
 	const location = useLocation()
@@ -27,13 +28,13 @@ const MountAppContent = () => {
 			<Routes location={location} key={location.pathname}>
 				<Route path="/weight" element={<WeightPage />} />
 				<Route path="/workout" element={<WorkoutPage />} />
-
+				<Route path="/status" element={<StatusPage />} />
 				<Route path="/settings" element={<SettingsPage />} />
 				<Route path="/activeWorkout" element={<ActiveWorkoutPage />} />
 
 				<Route path="/" element={<Navigate to="/weight" />} />
 			</Routes>
-			<Navbar />
+			{location.pathname !== "/activeWorkout" && <Navbar />}
 		</div>
 	)
 }

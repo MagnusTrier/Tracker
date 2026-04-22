@@ -184,22 +184,10 @@ const ActiveWorkoutPage = () => {
 
 	return (
 		<>
-			<PageContainer
-				style={{
-					position: "fixed",
-					height: "100dvh",
-					width: "100dvw",
-					zIndex: 1000,
-					padding: 0,
-					maxHeight: "100dvh"
-				}}
-			>
-				<div className="active-workout-content">
-					<Swiper
-						slides={exerciseSlides}
-						circuit />
-				</div>
-			</PageContainer>
+			<Swiper
+				slides={exerciseSlides}
+				circuit
+			/>
 			<div className="active-workout-navbar">
 				<div className="item" onClick={() => setShowExitPrompt(true)}>
 					<LogOut strokeWidth="1.5" size="28" />
@@ -327,8 +315,8 @@ const ExerciseCard = memo((props: {
 	}
 
 	return (
-		<div className="card" style={{ maxHeight: "calc(100dvh - 133px)" }}>
-			<h1><HeaderIcon />{`${props.exercise.name} (${props.index + 1}/${props.total})`}</h1>
+		<div className="card">
+			<h1>{HeaderIcon}{`${props.exercise.name} (${props.index + 1}/${props.total})`}</h1>
 			<h2>LOG SETS FOR THIS EXERCISE</h2>
 			{
 				props.data &&
