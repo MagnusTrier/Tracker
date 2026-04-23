@@ -63,22 +63,12 @@ const ConfigureExercise = () => {
 		<>
 			<Card
 				header="EXERCISES"
+				subHeader="THE FOUNDATION FOR TRACKING YOUR PROGRESSION"
 				onClick={() => setShowModal(true)}
 				className="clickable"
 				style={{ marginTop: 10 }}
-				contentStyle={{
-					marginTop: 0,
-					display: "grid",
-					gridTemplateColumns: "2fr 1fr",
-					gap: 10,
-				}}
 				hideSettings
 			>
-				<h2
-					className="manage-button-description"
-				>
-					THE FOUNDATION FOR TRACKING YOUR PROGRESSION
-				</h2>
 				<div className="manage-icon">
 					<BicepsFlexed />
 				</div>
@@ -249,7 +239,6 @@ const ModifyExercise = (props: ModifyExerciseProps) => {
 		<Card
 			header={props.exercise ? `EDIT: ${props.exercise.name}` : "CREATE EXERCISE"}
 			subHeader={props.exercise ? "CHANGE THE PROPERTIES OF THIS EXERCISE" : "ADD A NEW EXERCISE TO YOUR LIBRARY"}
-			contentStyle={{ gap: 10 }}
 			settingsLogo={<CloseModalButton onClick={props.hide} />}
 		>
 			<ListInput

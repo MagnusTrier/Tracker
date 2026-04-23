@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom"
-import { PageContainer } from "../../generics"
 import "./activeWorkoutPage.css"
 import { HeaderIcon } from "../../card"
 import type { Exercise } from "../../dataApi/managers/ExerciseManager"

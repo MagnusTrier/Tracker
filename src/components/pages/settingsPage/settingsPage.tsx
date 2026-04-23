@@ -15,14 +15,10 @@ const SettingsPage = () => {
 			<PageContainer style={{ padding: "10px 10px 0 10px" }}>
 				<Card
 					header="BIOMETRICS"
+					subHeader="MANAGE YOUR PHYSICAL STATS FOR ACCURATE TRACKING"
 					className="clickable"
 					hideSettings
 				>
-					<h2
-						className="manage-button-description"
-					>
-						MANAGE YOUR PHYSICAL STATS FOR ACCURATE TRACKING
-					</h2>
 					<div className="manage-icon">
 						<HeartPlus />
 					</div>
@@ -31,15 +27,11 @@ const SettingsPage = () => {
 				</Card>
 				<Card
 					header="WORKOUTS"
+					subHeader="CREATE TEMPLATES USING YOUR EXERCISE LIBRARY"
 					className="clickable"
 					style={{ marginTop: 10 }}
 					hideSettings
 				>
-					<h2
-						className="manage-button-description"
-					>
-						CREATE TEMPLATES USING YOUR EXERCISE LIBRARY
-					</h2>
 					<div className="manage-icon">
 						<Dumbbell />
 					</div>

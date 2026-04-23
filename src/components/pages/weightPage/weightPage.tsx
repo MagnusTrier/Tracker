@@ -4,7 +4,7 @@ import WeightComponent from "./weight/weightComponent"
 
 const WeightPage = () => {
 	return (
-		<Swiper slides={[<WeightComponent isOnScreen />, <span>page 2</span>]} />
+		<Swiper slides={[<WeightComponent />, <span>page 2</span>]} />
 	)
 }
 

@@ -95,7 +95,6 @@ const ConfigureWorkout = (props: ConfigureWorkoutProps) => {
 							header="MANAGE WORKOUTS"
 							subHeader="ADD OR EDIT WORKOUTS"
 							style={{ maxHeight: "calc(100dvh - 40px)" }}
-							contentStyle={{ alignItems: "center", gap: 0, marginTop: 8 }}
 							onClick={(e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation() }}
 							settingsLogo={<CloseModalButton onClick={() => props.setVisible(false)} />}
 						>
@@ -315,7 +314,6 @@ const ModifyWorkout = (props: ModifyWorkoutProps) => {
 				subHeader={props.workout ? "CHANGE THE PROPERTIES OF THIS WORKOUT" : "ADD A NEW WORKOUT TO YOUR LIBRARY"}
 
 				style={{ maxHeight: "calc(100dvh - 40px)" }}
-				contentStyle={{ alignItems: "center", maxHeight: "100dvh", marginTop: 8, gap: 10 }}
 				onClick={(e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation() }}
 				settingsLogo={<CloseModalButton onClick={props.hideModify} />}
 			>
@@ -339,7 +337,7 @@ const ModifyWorkout = (props: ModifyWorkoutProps) => {
 						className="header-row"
 					>
 						<h1>
-							<HeaderIcon />
+							{HeaderIcon}
 							CIRCUIT MODE
 						</h1>
 					</div>
@@ -359,7 +357,7 @@ const ModifyWorkout = (props: ModifyWorkoutProps) => {
 						className="header-row"
 					>
 						<h1>
-							<HeaderIcon />
+							{HeaderIcon}
 							EXERCISES ({props.workout.exercises.length})
 						</h1>
 					</div>
