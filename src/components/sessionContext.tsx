@@ -118,11 +118,3 @@ export const useSession = () => {
 	}
 	return context
 }
-
-export const useUser = () => {
-	const { user } = useSession()
-	if (!user) {
-		throw new Error("useUser must be used within a logged-in boundary")
-	}
-	return user
-}

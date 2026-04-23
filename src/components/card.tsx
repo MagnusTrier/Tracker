@@ -1,6 +1,6 @@
 interface CardProps {
-	header: string | React.ReactNode
-	subHeader: React.ReactNode
+	header: string
+	subHeader: string
 	children: React.ReactNode
 	hideSettings?: boolean
 	settingsLogo?: React.ReactNode
@@ -18,13 +18,14 @@ const Card = (props: CardProps) => {
 	return (
 		<div
 			className={"card " + props.className}
-			style={props.style}
+			style={{
+				"--content-before": `"${props.header}"`,
+				"--content-after": `"${props.subHeader}"`,
+				...props.style
+			} as React.CSSProperties}
 			onClick={props.onClick || defaultOnClick}
 		>
-			<Header
-				header={props.header}
-				subHeader={props.subHeader}
-			/>
+			{HeaderIcon}
 			{props.children}
 		</div>
 	)

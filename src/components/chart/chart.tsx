@@ -197,7 +197,7 @@ const CanvasChart = ({ data = [], yAccessor, isOnScreen }: CanvasChartProps) => 
 									fill={TEXT_COLOR}
 									fontSize="30"
 									fontWeight="700"
-									fontFamily="Manrope Variable, sans-serif"
+									fontFamily="Manrope, sans-serif"
 									textAnchor="end"
 									dominantBaseline="middle"
 								>
@@ -214,7 +214,7 @@ const CanvasChart = ({ data = [], yAccessor, isOnScreen }: CanvasChartProps) => 
 								fill={TEXT_COLOR}
 								fontSize="28"
 								fontWeight="700"
-								fontFamily="Manrope Variable, sans-serif"
+								fontFamily="Manrope, sans-serif"
 								textAnchor="middle"
 							>
 								{format(tick, "MMM d").toUpperCase()}

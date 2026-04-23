@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { GoTriangleLeft, GoTriangleRight } from "react-icons/go"
 import {
 	format,
 	addMonths,
@@ -59,11 +58,11 @@ export const Datepicker = ({ selectedDate, onSelect, excludeDates = [] }: Props)
 		>
 			<div className="calendar-header">
 				<div onClick={handlePrevMonth}>
-					<GoTriangleLeft />
+					{/* <GoTriangleLeft /> */}
 				</div>
 				<h2>{format(viewDate, 'MMMM yyyy').toUpperCase()}</h2>
 				<div onClick={handleNextMonth}>
-					<GoTriangleRight />
+					{/* <GoTriangleRight /> */}
 				</div>
 			</div>
 
