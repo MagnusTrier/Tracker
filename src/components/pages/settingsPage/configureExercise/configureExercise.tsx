@@ -83,7 +83,7 @@ const ConfigureExercise = () => {
 					<BicepsFlexed />
 				</div>
 				<div />
-				<h2 style={{ fontSize: 13, color: "var(--color-primary)", display: "flex", alignItems: "center" }}>VIEW EXERCISE LIBRARY <ChevronRight style={{ height: 22, width: 22 }} /></h2>
+				<h2 style={{ fontSize: 13, color: "var(--text-primary)", display: "flex", alignItems: "center" }}>VIEW EXERCISE LIBRARY <ChevronRight style={{ height: 22, width: 22 }} /></h2>
 			</Card>
 			<Modal
 				visible={showModal}
@@ -173,7 +173,7 @@ const ExercisesDisplay = (props: { paginate: (val: number) => void, hide: () => 
 								<span>{item.data.name}</span>
 								<div className="name-subheader">
 									<span>{item.data.category}</span>
-									<Circle size="4" strokeWidth="1" fill="var(--text-dim)" />
+									<Circle size="4" strokeWidth="1" fill="var(--text-muted)" />
 									<span>PART OF {usageCount} WORKOUT{usageCount !== 1 ? "S" : ""}</span>
 								</div>
 							</div>
@@ -256,7 +256,7 @@ const ModifyExercise = (props: ModifyExerciseProps) => {
 				placeholder="E.G. PULLUPS"
 				value={exerciseName}
 				onChange={setExerciseName}
-				style={{ border: "none", backgroundColor: "var(--color-bg)", borderRadius: 8 }}
+				style={{ border: "none", backgroundColor: "var(--surface-main)", borderRadius: 8 }}
 			/>
 			<Header header="CATEGORY" subHeader="SELECT THE CATEGORY FOR THIS EXERCISE" />
 			<CategoryGridSelector

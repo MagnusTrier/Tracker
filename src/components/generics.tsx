@@ -1,5 +1,4 @@
-import { useState, useEffect, useMemo, useRef, useLayoutEffect } from "react"
-import { IoCalendarClearOutline } from "react-icons/io5"
+import { useState, useEffect, useMemo, useRef, useLayoutEffect, useCallback } from "react"
 import { useMotionValue, useSpring, useTransform, useMotionValueEvent, motion, AnimatePresence } from "framer-motion"
 import { useDrag } from "@use-gesture/react"
 import { format } from "date-fns"
@@ -164,8 +163,8 @@ export const Slider = (props: { onConfirm: () => void, active: boolean }) => {
 						x: springX,
 						width: HANDLE_SIZE,
 						height: HANDLE_SIZE,
-						borderColor: props.active ? "var(--color-primary)" : "",
-						color: props.active ? "var(--color-primary)" : "var(--text-dim)"
+						borderColor: props.active ? "var(--action-primary)" : "",
+						color: props.active ? "var(--text-primary)" : "var(--text-muted)"
 					}}
 					className="slider-handle"
 				>
@@ -229,8 +228,9 @@ export const CustomButton = (props: CustomButtonProps) => {
 }
 
 interface SegmentedControlProps {
-	options: any[]
-	onChange: (val: any) => void
+	options: string[]
+	value: string
+	onChange: (val: string) => void
 	id: string | number
 	containerClass?: string
 	tabListClass?: string
@@ -238,36 +238,52 @@ interface SegmentedControlProps {
 	activeIndicatorClass?: string
 }
 
-export const SegmentedControl = (props: SegmentedControlProps) => {
-	const [activeTab, setActiveTab] = useState(props.options[0])
+export const SegmentedControl = ({
+	options,
+	value,
+	onChange,
+	id,
+	containerClass = "segmented-control-container",
+	tabListClass = "segmented-control-tab-list",
+	tabItemClass = "segmented-control-tab-item",
+	activeIndicatorClass = "segmented-control-active-indicator action-button-primary"
+}: SegmentedControlProps) => {
+
+	const handleTabClick = useCallback((tab: string) => {
+		if (tab !== value) {
+			onChange(tab)
+		}
+	}, [onChange, value])
+
 	return (
-		<div
-			key={props.id}
-			className={props.containerClass ?? "segmented-control-container"}
-		>
-			<div
-				className={props.tabListClass ?? "segmented-control-tab-list"}
-			>
-				{props.options.map((tab) => (
-					<div
-						key={tab}
-						className={props.tabItemClass ?? `segmented-control-tab-item ${activeTab === tab && "active"}`}
-						onClick={() => { setActiveTab(tab); props.onChange(tab) }}
-					>
-						<span style={{ zIndex: 2, position: "relative" }}>{tab}</span>
-						{activeTab === tab && (
-							<motion.div
-								layoutId={`active-pill-${props.id}`}
-								transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
-								className="segmented-control-active-indicator action-button-primary"
-							/>
-						)}
-					</div>
-				))}
+		<div key={id} className={containerClass}>
+			<div className={tabListClass} role="tablist">
+				{options.map((tab) => {
+					const isActive = value === tab;
+
+					return (
+						<div
+							key={`${id}-${tab}`}
+							role="tab"
+							aria-selected={isActive}
+							className={`${tabItemClass} ${isActive ? "active" : ""}`}
+							onClick={() => handleTabClick(tab)}
+						>
+							<span>{tab}</span>
+							{isActive && (
+								<motion.div
+									layoutId={`active-pill-${id}`}
+									transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+									className={activeIndicatorClass}
+								/>
+							)}
+						</div>
+					);
+				})}
 			</div>
 		</div>
-	)
-}
+	);
+};
 
 export const PageContainer = (props: { children: React.ReactNode, style?: React.CSSProperties }) => {
 	return (
@@ -421,7 +437,6 @@ export const AnimatedList = <T extends { id: string | number }>({
 	)
 }
 
-
 export const CloseModalButton = (props: { onClick: () => void }) => {
 	return (
 		<div
@@ -437,8 +452,8 @@ export const CloseModalButton = (props: { onClick: () => void }) => {
 				position: "absolute",
 				right: 12,
 				top: 12,
-				backgroundColor: "var(--color-bg)",
-				color: "var(--text-dim)"
+				backgroundColor: "var(--surface-main)",
+				color: "var(--text-muted)"
 			}}
 		>
 			<X size="20" />

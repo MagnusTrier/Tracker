@@ -23,7 +23,7 @@
 	font-size: 14px;
 	letter-spacing: 0.1ch;
 	font-weight: 700;
-	color: var(--color-primary);
+	color: var(--text-primary);
 }
 
 .weekdays-grid,
@@ -42,9 +42,9 @@
 
 .day {
 	aspect-ratio: 1;
-	background-color: color-mix(in srgb, var(--color-primary), transparent 95%);
-	outline: 1px solid color-mix(in srgb, var(--color-primary), transparent 80%);
-	color: var(--color-primary);
+	background-color: color-mix(in srgb, var(--action-primary), transparent 95%);
+	outline: 1px solid color-mix(in srgb, var(--action-primary), transparent 80%);
+	color: var(--text-primary);
 	font-size: 16px;
 	font-weight: 700;
 	display: flex;
@@ -58,32 +58,32 @@
 .day.selected.disabled.today,
 .day.selected.today,
 .day.selected {
-	background-color: var(--color-primary);
+	background-color: var(--text-primary);
 	color: #000;
-	outline: var(--color-primary);
-	box-shadow: 0 0 5px var(--color-primary);
+	outline: var(--action-primary);
+	box-shadow: 0 0 5px var(--action-primary);
 }
 
 .day.disabled {
-	color: color-mix(in srgb, var(--text-dim), transparent 50%);
-	outline: 1px solid var(--color-border);
-	background-color: var(--color-dark);
+	color: color-mix(in srgb, var(--text-muted), transparent 50%);
+	outline: 1px solid var(--surface-border);
+	background-color: var(--surface-main);
 	text-decoration: line-through;
 	box-shadow: none;
 }
 
 .day.disabled.today,
 .day.today {
-	outline: 1px solid color-mix(in srgb, var(--color-yellow), transparent 50%);
+	outline: 1px solid color-mix(in srgb, var(--status-highlight), transparent 50%);
 }
 
 .day.today {
-	background-color: color-mix(in srgb, var(--color-yellow), transparent 95%);
-	color: var(--color-yellow);
+	background-color: color-mix(in srgb, var(--status-highlight), transparent 95%);
+	color: var(--status-highlight);
 }
 
 .day.disabled.today {
-	color: color-mix(in srgb, var(--text-dim), transparent 50%);
+	color: color-mix(in srgb, var(--text-muted), transparent 50%);
 }
 
 .day.empty {
@@ -121,21 +121,21 @@
 }
 
 .calendar-legend .selected {
-	--item-primary: var(--color-primary);
-	--item-secondary: var(--color-primary);
+	--item-primary: var(--action-primary);
+	--item-secondary: var(--action-primary);
 }
 
 .calendar-legend .today {
-	--item-primary: color-mix(in srgb, var(--color-yellow), transparent 95%);
-	--item-secondary: color-mix(in srgb, var(--color-yellow), transparent 50%);
+	--item-primary: color-mix(in srgb, var(--status-highlight), transparent 95%);
+	--item-secondary: color-mix(in srgb, var(--status-highlight), transparent 50%);
 }
 
 .calendar-legend .available {
-	--item-primary: color-mix(in srgb, var(--color-primary), transparent 95%);
-	--item-secondary: color-mix(in srgb, var(--color-primary), transparent 80%);
+	--item-primary: color-mix(in srgb, var(--action-primary), transparent 95%);
+	--item-secondary: color-mix(in srgb, var(--action-primary), transparent 80%);
 }
 
 .calendar-legend .disabled {
-	--item-primary: var(--color-dark);
-	--item-secondary: var(--color-border);
+	--item-primary: var(--surface-main);
+	--item-secondary: var(--surface-border);
 }

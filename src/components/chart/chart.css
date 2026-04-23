@@ -1,6 +1,0 @@
-.tick {
-	font-size: 11px;
-	text-anchor: "middle";
-	fill: color-mix(in srgb, var(--color-text), transparent 30%);
-	font-weight: 600;
-}

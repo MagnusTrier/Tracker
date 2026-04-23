@@ -27,18 +27,12 @@ const SettingsPage = () => {
 						<HeartPlus />
 					</div>
 					<div />
-					<h2 style={{ fontSize: 13, color: "var(--color-primary)", display: "flex", alignItems: "center" }}>UPDATE METRICS <ChevronRight style={{ height: 22, width: 22 }} /></h2>
+					<h2 style={{ fontSize: 13, color: "var(--text-primary)", display: "flex", alignItems: "center" }}>UPDATE METRICS <ChevronRight style={{ height: 22, width: 22 }} /></h2>
 				</Card>
 				<Card
 					header="WORKOUTS"
 					className="clickable"
 					style={{ marginTop: 10 }}
-					contentStyle={{
-						marginTop: 0,
-						display: "grid",
-						gridTemplateColumns: "2fr 1fr",
-						gap: 10,
-					}}
 					hideSettings
 				>
 					<h2
@@ -50,7 +44,7 @@ const SettingsPage = () => {
 						<Dumbbell />
 					</div>
 					<div />
-					<h2 style={{ fontSize: 13, color: "var(--color-yellow)", display: "flex", alignItems: "center" }}>CONFIGURE WORKOUTS <ChevronRight style={{ height: 22, width: 22 }} /></h2>
+					<h2 style={{ fontSize: 13, color: "var(--status-highlight)", display: "flex", alignItems: "center" }}>CONFIGURE WORKOUTS <ChevronRight style={{ height: 22, width: 22 }} /></h2>
 				</Card>
 
 				<ConfigureExercise />

@@ -22,9 +22,7 @@ const MountAppContent = () => {
 	}, [])
 
 	return (
-		<div
-			className="app-container"
-		>
+		<>
 			<Routes location={location} key={location.pathname}>
 				<Route path="/weight" element={<WeightPage />} />
 				<Route path="/workout" element={<WorkoutPage />} />
@@ -35,7 +33,7 @@ const MountAppContent = () => {
 				<Route path="/" element={<Navigate to="/weight" />} />
 			</Routes>
 			{location.pathname !== "/activeWorkout" && <Navbar />}
-		</div>
+		</>
 	)
 }
 

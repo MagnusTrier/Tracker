@@ -15,7 +15,7 @@
 .current-weight::after {
 	content: "KG";
 	font-size: 16px;
-	color: var(--text-dim);
+	color: var(--text-muted);
 	font-weight: 500;
 	height: 80%;
 	display: flex;
@@ -28,10 +28,10 @@
 	left: 100%;
 	font-size: 16px;
 	font-weight: 600;
-	background-color: color-mix(in srgb, var(--color-yellow), 95% transparent);
-	border: 1px solid color-mix(in srgb, var(--color-yellow), 75% transparent);
-	box-shadow: 0 0 10px color-mix(in srgb, var(--color-yellow), 95% transparent);
-	color: var(--color-yellow);
+	background-color: color-mix(in srgb, var(--status-highlight), 95% transparent);
+	border: 1px solid color-mix(in srgb, var(--status-highlight), 75% transparent);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--status-highlight), 95% transparent);
+	color: var(--status-highlight);
 	border-radius: 5px;
 	padding: 0px 5px;
 	display: flex;
@@ -59,7 +59,7 @@
 	left: 96%;
 
 	font-size: 16px;
-	color: var(--text-dim);
+	color: var(--text-muted);
 	font-weight: 500;
 }
 
@@ -85,8 +85,8 @@
 	left: 50%;
 	transform: translateX(-50%);
 
-	background-color: var(--color-primary);
-	box-shadow: 0 0 6px color-mix(in srgb, var(--color-primary), transparent 45%);
+	background-color: var(--action-primary);
+	box-shadow: 0 0 6px color-mix(in srgb, var(--action-primary), transparent 45%);
 	border-radius: 10px;
 	pointer-events: none;
 }
@@ -100,7 +100,7 @@
 	padding-left: 50%;
 	overflow-x: hidden;
 	overflow-y: visible;
-	background-color: var(--color-dark);
+	background-color: var(--surface-main);
 	border-radius: 5px;
 	touch-action: none;
 }
@@ -133,9 +133,9 @@
 
 .ruler-track::before {
 	height: 10px;
-	background-color: color-mix(in srgb, var(--text-dim), var(--color-bg) 60%);
+	background-color: color-mix(in srgb, var(--text-muted), var(--surface-main) 60%);
 
-	--mask-minor: url("data:image/svg+xml,%3Csvg width='20' height='12' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='2' height='12' rx='1' fill='black'/%3E%3C/svg%3E");
+	--mask-minor: url("data:image/svg+xml,%3Csvg width='20' height='12' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='2' height='10' rx='1' ry='1' fill='black'/%3E%3C/svg%3E");
 	-webkit-mask-image: var(--mask-minor);
 	mask-image: var(--mask-minor);
 
@@ -145,9 +145,9 @@
 
 .ruler-track::after {
 	height: 17px;
-	background-color: color-mix(in srgb, var(--text-dim), var(--color-bg) 40%);
+	background-color: color-mix(in srgb, var(--text-muted), var(--surface-main) 40%);
 
-	--mask-major: url("data:image/svg+xml,%3Csvg width='200' height='25' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='2' height='25' rx='1' fill='black'/%3E%3C/svg%3E");
+	--mask-major: url("data:image/svg+xml,%3Csvg width='200' height='25' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='2' height='16' rx='1' fill='black'/%3E%3C/svg%3E");
 	-webkit-mask-image: var(--mask-major);
 	mask-image: var(--mask-major);
 
@@ -161,9 +161,9 @@
 	transform: translateX(-50%);
 	z-index: 10;
 
-	font-family: var(--font-main);
+	font-family: var(--font-family-main);
 	font-size: 12px;
-	color: color-mix(in srgb, var(--text-dim), transparent 40%);
+	color: color-mix(in srgb, var(--text-muted), transparent 40%);
 	font-weight: 600;
 	user-select: none;
 }

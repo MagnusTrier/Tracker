@@ -42,7 +42,7 @@ const Modal = (props: ModalProps) => {
 						style={{
 							position: "fixed",
 							inset: 0,
-							backgroundColor: "color-mix(in srgb, var(--color-bg), transparent 20%)",
+							backgroundColor: "color-mix(in srgb, var(--surface-main), transparent 20%)",
 							backdropFilter: "blur(7px)",
 							WebkitBackdropFilter: "blur(7px)",
 							transform: "translate3d(0,0,0)",

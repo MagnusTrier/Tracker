@@ -75,9 +75,8 @@ const WeightAnalytics = () => {
 				{stats.currentAvg}
 				<span className="stats">{Number(stats.diff) > 0 ? <TrendingUp strokeWidth="1.5" size="24" /> : <TrendingDown strokeWidth="1.5" size="24" />}{stats.diff}</span>
 			</div>
-
-			<div style={{ backgroundColor: "var(--color-bg)", borderRadius: 5, minWidth: 0, minHeight: 0, display: "flex", flexDirection: "column" }}>
-				<SegmentedControl id="weight" options={modes} onChange={setMode} />
+			<div style={{ backgroundColor: "var(--surface-main)", borderRadius: 5, minWidth: 0, minHeight: 0, display: "flex", flexDirection: "column" }}>
+				<SegmentedControl id="weight" options={modes} value={mode} onChange={setMode} />
 				<D3Chart data={filteredData} yAccessor="weight" isOnScreen />
 			</div>
 		</Card>

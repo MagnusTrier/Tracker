@@ -8,7 +8,7 @@ const Navbar = () => {
 			className="navbar"
 		>
 			<NavbarLink to="/weight">
-				<Weight strokeWidth="1.5" size="28" />
+				<Weight strokeWidth="1.5" height="28" />
 				WEIGHT
 			</NavbarLink>
 			<NavbarLink to="/workout">
@@ -33,7 +33,7 @@ const NavbarLink = (props: { to: string, children: React.ReactNode }) => {
 
 	return (
 		<Link
-			className={`nav-link clickable ${isActive && "nav-active"}`}
+			className={`nav-link ${isActive && "nav-active"}`}
 			to={props.to}
 		>
 			{props.children}

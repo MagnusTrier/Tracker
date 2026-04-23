@@ -10,14 +10,14 @@
 }
 
 .add-exercise-button>div {
-	border: 1px solid color-mix(in srgb, var(--color-primary), transparent 50%);
-	box-shadow: 0 0 10px color-mix(in srgb, var(--color-primary), transparent 95%);
+	border: 1px solid color-mix(in srgb, var(--action-primary), transparent 50%);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--action-primary), transparent 95%);
 	height: 50px;
 	border-radius: 7px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: var(--color-primary);
+	color: var(--text-primary);
 	font-weight: 600;
 	letter-spacing: 0.05ch;
 	transition: 0.3s ease;
@@ -36,14 +36,14 @@
 	width: 70px;
 	height: 36px;
 	border-radius: 100px;
-	background-color: var(--color-bg);
+	background-color: var(--surface-main);
 	transition: all 0.3s ease;
-	border: 1px solid var(--color-border);
+	border: 1px solid var(--surface-border);
 }
 
 .toggle-track.active {
-	background: radial-gradient(circle at 0% 0%, #acacff, var(--color-primary) 30%, #7070ff 100%);
-	box-shadow: 0 0 12px color-mix(in srgb, var(--color-primary), transparent 70%);
+	background: radial-gradient(circle at 0% 0%, #acacff, var(--action-primary) 30%, #7070ff 100%);
+	box-shadow: 0 0 12px color-mix(in srgb, var(--action-primary), transparent 70%);
 }
 
 .toggle-thumb {
@@ -52,8 +52,8 @@
 	left: 5px;
 	height: 24px;
 	aspect-ratio: 1;
-	background: var(--color-card);
-	border: 1px solid var(--color-border);
+	background: var(--surface-card);
+	border: 1px solid var(--surface-border);
 	border-radius: 50%;
 	transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -67,7 +67,7 @@
 
 .selected-exercises-display {
 	display: flex;
-	background-color: var(--color-bg);
+	background-color: var(--surface-main);
 	border-radius: 10px;
 	width: 100%;
 	flex-direction: column;
@@ -88,16 +88,16 @@
 	overscroll-behavior-y: auto;
 	min-height: auto;
 	width: 100%;
-	background-color: color-mix(in srgb, var(--color-bg), transparent 0%);
+	background-color: color-mix(in srgb, var(--surface-main), transparent 0%);
 	font-weight: 600;
 	letter-spacing: 0.05ch;
-	color: var(--text-dim);
+	color: var(--text-muted);
 
 	min-height: 0;
 	overflow-y: auto;
 	/* Smooth scrolling for touch, but can interfere with drag if not careful */
 	-webkit-overflow-scrolling: touch;
-	border-bottom: 1px solid var(--color-border);
+	border-bottom: 1px solid var(--surface-border);
 }
 
 .reorder-group {
@@ -114,7 +114,7 @@
 	height: 55px;
 	cursor: default;
 	width: 100%;
-	border-bottom: 1px solid var(--color-border);
+	border-bottom: 1px solid var(--surface-border);
 }
 
 .reorder-item:last-child {
@@ -124,7 +124,7 @@
 
 .index-display {
 	width: 12px;
-	color: var(--color-primary);
+	color: var(--text-primary);
 }
 
 
@@ -134,7 +134,7 @@
 	padding-left: 20px;
 	padding-right: 10px;
 	gap: 20px;
-	color: var(--color-text);
+	color: var(--text-main);
 	width: 100%;
 	display: flex;
 	align-items: center;
@@ -145,7 +145,7 @@
 .item-content .name-display {
 	display: flex;
 	flex-direction: column;
-	color: var(--color-text);
+	color: var(--text-main);
 	letter-spacing: 0.1ch;
 }
 
@@ -155,7 +155,7 @@
 	display: flex;
 	align-items: center;
 	gap: 5px;
-	color: var(--text-dim);
+	color: var(--text-muted);
 	letter-spacing: 0;
 }
 
@@ -177,7 +177,7 @@
 	aspect-ratio: 1 !important;
 	background-color: rgba(0, 3, 6, 0.25);
 	border-radius: 10px;
-	color: var(--text-dim);
+	color: var(--text-muted);
 }
 
 .drag-handle:active {
@@ -190,7 +190,7 @@
 
 	position: relative;
 	border-radius: var(--radius);
-	box-shadow: 0 0 10px color-mix(in srgb, var(--color-primary), transparent 90%);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--action-primary), transparent 90%);
 
 	height: 56px;
 	margin: 10px;
@@ -199,7 +199,7 @@
 	align-items: center;
 	justify-content: center;
 	gap: 10px;
-	color: var(--color-primary);
+	color: var(--text-primary);
 
 	font-weight: 700;
 	font-size: 14px;
@@ -214,7 +214,7 @@
 	border-radius: var(--radius);
 	padding: var(--border-width);
 
-	background: radial-gradient(circle at 0% 0%, #acacff, var(--color-primary) 30%, #7070ff 100%);
+	background: radial-gradient(circle at 0% 0%, #acacff, var(--action-primary) 30%, #7070ff 100%);
 
 	/* 2. Create a mask that covers everything EXCEPT the padding area */
 	mask: linear-gradient(#fff 0 0) content-box,

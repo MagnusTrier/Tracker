@@ -42,7 +42,6 @@ const WorkoutPage = () => {
 					header="START WORKOUT"
 					subHeader="SELECT WORKOUT AND SLIDE TO START"
 					hideSettings
-					contentStyle={{ alignItems: "center", gap: 12 }}
 				>
 					<List
 						items={workouts.data}
@@ -54,14 +53,14 @@ const WorkoutPage = () => {
 							const isActive = selectedWorkout && selectedWorkout.id === item.id
 							return (
 								<div className="workout-item clickable" onClick={() => setSelectedWorkout(isActive ? null : item)}
-									style={{ borderColor: isActive ? "var(--color-primary)" : "" }}>
+									style={{ borderColor: isActive ? "var(--action-primary)" : "" }}>
 									<div className="name-display">
 										<span> {item.name}</span>
 										<div className="name-subheader">
 											<span>{item.exercises.length} EXERCISE{item.exercises.length === 1 ? "" : "S"}</span>
 										</div>
 									</div>
-									<ChevronRight style={{ color: isActive ? "var(--color-primary)" : "", marginLeft: "auto" }} />
+									<ChevronRight style={{ color: isActive ? "var(--text-primary)" : "", marginLeft: "auto" }} />
 								</div>
 							)
 						}}

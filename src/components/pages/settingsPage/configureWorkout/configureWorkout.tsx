@@ -113,7 +113,7 @@ const ConfigureWorkout = (props: ConfigureWorkoutProps) => {
 									minHeight: 0,
 								}}
 							>
-								<div className="list-input-wrapper" style={{ color: searchFilter.length > 0 ? "var(--color-text)" : "var(--text-dim)", borderBottom: "1px solid var(--color-border)" }}>
+								<div className="list-input-wrapper" style={{ color: searchFilter.length > 0 ? "var(--text-main)" : "var(--text-muted)", borderBottom: "1px solid var(--surface-border)" }}>
 									<FastInput
 										initialValue={searchFilter}
 										onChange={setSearchFilter}
@@ -319,7 +319,7 @@ const ModifyWorkout = (props: ModifyWorkoutProps) => {
 				onClick={(e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation() }}
 				settingsLogo={<CloseModalButton onClick={props.hideModify} />}
 			>
-				<div className="list-input-wrapper" style={{ color: workoutName.length > 0 ? "var(--color-text)" : "var(--text-dim)", borderRadius: 8 }}>
+				<div className="list-input-wrapper" style={{ color: workoutName.length > 0 ? "var(--text-main)" : "var(--text-muted)", borderRadius: 8 }}>
 					<FastInput
 						initialValue={workoutName}
 						onChange={setWorkoutName}
@@ -390,8 +390,8 @@ const ModifyWorkout = (props: ModifyWorkoutProps) => {
 						}}
 						onClick={handleDelete}
 						style={{
-							"--bg-active": "radial-gradient(circle at 0% 0%, #ff8597, var(--color-error) 30%, #ff4763 100%)",
-							"--shadow": "color-mix(in srgb, var(--color-error), transparent 70%)",
+							"--bg-active": "radial-gradient(circle at 0% 0%, #ff8597, var(--status-error) 30%, #ff4763 100%)",
+							"--shadow": "color-mix(in srgb, var(--status-error), transparent 70%)",
 							width: "100%",
 							marginTop: 0,
 						} as React.CSSProperties}
@@ -450,7 +450,7 @@ const ReorderItem = (props: { item: Exercise, index: number, onPointerUp: () => 
 					<span>{props.item.name}</span>
 					<span className="name-subheader">
 						{icons[categories.indexOf(props.item.category)]}
-						<Circle size="4" strokeWidth="1" fill="var(--text-dim)" />
+						<Circle size="4" strokeWidth="1" fill="var(--text-muted)" />
 						{props.item.category}
 					</span>
 				</div>
@@ -534,7 +534,6 @@ const SelectExercises = (props: { hide: () => void, selectedExercises: Exercise[
 			header={"SELECT EXERCISES (" + localSelectedExercises.length + ")"}
 			subHeader="SELECT OR DESELECT EXERCISES FOR YOUR WORKOUT"
 			style={{ maxHeight: "calc(100dvh - 40px)" }}
-			contentStyle={{ alignItems: "center", gap: 0 }}
 			onClick={(e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation() }}
 			hideSettings
 		>
@@ -551,7 +550,7 @@ const SelectExercises = (props: { hide: () => void, selectedExercises: Exercise[
 					minHeight: 0,
 				}}
 			>
-				<div className="list-input-wrapper" style={{ color: searchFilter.length > 0 ? "var(--color-text)" : "var(--text-dim)", borderBottom: "1px solid var(--color-border)" }}>
+				<div className="list-input-wrapper" style={{ color: searchFilter.length > 0 ? "var(--text-main)" : "var(--text-muted)", borderBottom: "1px solid var(--surface-border)" }}>
 					<FastInput
 						initialValue={searchFilter}
 						onChange={setSearchFilter}
@@ -587,13 +586,13 @@ const SelectExercises = (props: { hide: () => void, selectedExercises: Exercise[
 									<span>{item.data.name}</span>
 									<div className="name-subheader">
 										<span>{item.data.category}</span>
-										<Circle size="4" strokeWidth="1" fill="var(--text-dim)" />
+										<Circle size="4" strokeWidth="1" fill="var(--text-muted)" />
 										<span>PART OF {usageCount} WORKOUT{usageCount !== 1 ? "S" : ""}</span>
 									</div>
 								</div>
 								{
 									isSelected
-										? <SquareCheck style={{ marginLeft: "auto", color: "var(--color-primary)" }} />
+										? <SquareCheck style={{ marginLeft: "auto", color: "var(--action-primary)" }} />
 										: <Square style={{ marginLeft: "auto" }} />
 								}
 							</div>

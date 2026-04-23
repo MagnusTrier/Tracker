@@ -45,9 +45,9 @@ const Paginator = (props: { page: number, numPages: number, circuit?: boolean })
 					<div key={`item-${i}`}
 						style={
 							props.page === i
-								? { backgroundColor: "var(--color-primary)", width: 25, boxShadow: "0px 0px 4px color-mix(in srgb, var(--color-primary), transparent 70%)" }
+								? { backgroundColor: "var(--action-primary)", width: 25, boxShadow: "0px 0px 4px color-mix(in srgb, var(--action-primary), transparent 70%)" }
 								: isNeighbor(i)
-									? { backgroundColor: "color-mix(in srgb, var(--color-primary), transparent 60%)", boxShadow: "0px 0px 4px color-mix(in srgb, var(--color-primary), transparent 90%)" }
+									? { backgroundColor: "color-mix(in srgb, var(--action-primary), transparent 60%)", boxShadow: "0px 0px 4px color-mix(in srgb, var(--action-primary), transparent 90%)" }
 									: {}
 						}
 					/>

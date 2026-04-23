@@ -85,8 +85,7 @@ const ActiveWorkoutPage = () => {
 	if (previousWorkout) {
 		Object.keys(previousWorkout.exercises).map(k => {
 			if (!workout.data[k]) {
-				previousWorkout.exercises[k].forEach((_, i) => {
-					console.log(k, i, _)
+				previousWorkout.exercises[k].forEach(_ => {
 					addSet(k)
 				})
 			}
@@ -188,6 +187,7 @@ const ActiveWorkoutPage = () => {
 				slides={exerciseSlides}
 				circuit
 			/>
+
 			<div className="active-workout-navbar">
 				<div className="item" onClick={() => setShowExitPrompt(true)}>
 					<LogOut strokeWidth="1.5" size="28" />
@@ -199,6 +199,8 @@ const ActiveWorkoutPage = () => {
 					FINISH
 				</div>
 			</div>
+
+
 			<SystemPrompt
 				visible={showExitPrompt}
 				hide={() => setShowExitPrompt(false)}
@@ -233,7 +235,7 @@ const ActiveWorkoutPage = () => {
 												gap: 5
 											}}
 										>
-											<Circle size="4" strokeWidth="1" fill="var(--text-dim)" />
+											<Circle size="4" strokeWidth="1" fill="var(--text-muted)" />
 											{ex.name}
 										</div>
 										<span
@@ -290,12 +292,24 @@ const DigitalTimer = memo((props: { onChange: (seconds: number) => void, initial
 
 	return (
 		<div
-			className="active-workout-timer"
+			className="item"
 			onClick={() => setIsActive(prev => !prev)}
 		>
-			<div>{formatTime(seconds)} <div>{isActive ? <Pause strokeWidth="1.5" /> : <Play strokeWidth="1.5" />}{isActive ? <Pause strokeWidth="1.5" /> : <Play strokeWidth="1.5" />}</div> </div>
-			<span>WORKOUT DURATION</span>
-		</div>
+			<div
+				className="active-workout-timer"
+			>
+				{isActive
+					? <Pause strokeWidth="1.5" size="14" />
+					: <Play strokeWidth="1.5" size="14" />
+				}
+				{formatTime(seconds)}
+				{isActive
+					? <Pause strokeWidth="1.5" size="14" />
+					: <Play strokeWidth="1.5" size="14" />
+				}
+			</div >
+			WORKOUT DURATION
+		</div >
 	);
 })
 

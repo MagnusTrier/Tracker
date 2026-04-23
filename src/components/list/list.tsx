@@ -77,8 +77,8 @@ export const ListInput = (props: ListInputProps) => {
 			className="input-wrapper"
 			style={{
 				color: props.value.length > 0
-					? "var(--color-text)"
-					: "var(--text-dim)",
+					? "var(--text-main)"
+					: "var(--text-muted)",
 				...props.style
 			}}
 		>

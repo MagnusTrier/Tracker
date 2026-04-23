@@ -4,8 +4,6 @@ import { WorkoutManager, type Workout, type WorkoutHistoryMap } from "./managers
 import { WeightManager, type WeightLog } from "./managers/WeightManager"
 import { ExerciseManager, type Exercise } from "./managers/ExerciseManager"
 
-
-
 interface DataContextType {
 	workouts: {
 		data: Workout[]

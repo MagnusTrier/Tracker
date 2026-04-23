@@ -1,24 +1,30 @@
+:root {
+	--p-lavender: rgba(180, 190, 255, 1);
+	--p-iris: rgba(143, 150, 255, 1);
+	--p-charcoal: #0c0e12;
+	--p-gunmetal: #15171d;
+	--p-rose: #ff6e84;
+
+	--surface-main: var(--p-charcoal);
+	--surface-card: var(--p-gunmetal);
+	--surface-border: color-mix(in srgb, var(--surface-card), #fff 4%);
+
+	--text-main: var(--p-lavender);
+	--text-primary: var(--p-iris);
+	--text-muted: rgba(110, 110, 130, 1);
+
+	--action-primary: var(--p-iris);
+	--status-error: var(--p-rose);
+	--status-highlight: rgba(255, 242, 157, 1);
+
+	--font-family-base: 'Manrope Variable', sans-serif;
+}
+
 body {
-	--color-text: rgba(180, 190, 255, 1);
-	--color-primary: rgba(143, 150, 255, 1);
-	--color-error: #ff6e84;
-	--color-neutral: rgb(130, 130, 150);
-	--color-border-strong: rgba(53, 53, 63, 0.8);
-	--box-shadow: 0 0 10px #0008;
-	--text-dim: rgba(110, 110, 130, 1);
-	--color-bg: #0c0e12;
-	--color-yellow: rgba(255, 242, 157, 1);
-	--color-card: #15171d;
-	--color-dark: var(--color-bg);
-	--color-border: color-mix(in srgb, var(--color-card), #fff 4%);
+	font-family: var(--font-family-base);
 
-	--font-main: 'Manrope Variable', 'Manrope', -apple-system, BlinkMacSystemFont,
-		'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
-		'Apple Color Emoji', 'Segoe UI Emoji';
-	font-family: var(--font-main);
-
-	color: var(--color-text);
-	background-color: var(--color-bg);
+	color: var(--text-main);
+	background-color: var(--surface-main);
 
 	background-image:
 		url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='-6 -2 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='white' fill-opacity='0.075'/%3E%3C/svg%3E");
@@ -26,9 +32,22 @@ body {
 	background-repeat: repeat, no-repeat, no-repeat, no-repeat;
 	position: fixed;
 	inset: 0;
-	overscroll-behavior-x: none;
-	overscroll-behavior-y: none;
 	font-size: 14px;
+}
+
+#root {
+	position: fixed;
+	inset: 0;
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-template-rows: 1fr 30px 95px;
+	contain: strict;
+}
+
+#root>* {
+	flex-shrink: 0;
+	overflow: hidden;
+	max-height: 100%;
 }
 
 * {
@@ -60,11 +79,11 @@ h1 {
 	letter-spacing: 0.110ch;
 
 	gap: 2px;
-	text-shadow: 0 0 6px color-mix(in srgb, var(--color-primary), transparent 75%)
+	text-shadow: 0 0 6px color-mix(in srgb, var(--action-primary), transparent 75%)
 }
 
 h2 {
-	color: var(--text-dim);
+	color: var(--text-muted);
 	font-size: 11px;
 	font-weight: 600;
 	letter-spacing: 0.07ch;
@@ -83,17 +102,17 @@ input {
 	background-color: rgba(22, 22, 26, 0.5);
 	font-weight: 500;
 	letter-spacing: 0.05ch;
-	color: var(--color-text);
+	color: var(--text-main);
 	border: 1px solid transparent;
 }
 
 input::placeholder {
-	color: var(--text-dim);
+	color: var(--text-muted);
 }
 
 input:focus {
-	border-color: color-mix(in srgb, var(--color-primary), transparent 30%);
-	box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary), transparent 80%);
+	border-color: color-mix(in srgb, var(--action-primary), transparent 30%);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--action-primary), transparent 80%);
 }
 
 .clickable {
@@ -106,23 +125,28 @@ input:focus {
 }
 
 .splash-screen {
+
+	background-color: var(--surface-main);
+	background-image:
+		url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='-6 -2 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='white' fill-opacity='0.075'/%3E%3C/svg%3E");
+	background-attachment: fixed;
+	background-repeat: repeat, no-repeat, no-repeat, no-repeat;
 	position: fixed;
 	inset: 0;
-	z-index: 100;
+	z-index: 100000000000;
 
-	color: var(--color-primary);
-	font-family: var(--font-main);
+	color: var(--text-primary);
 	font-size: 30px;
 	font-weight: 800;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	text-shadow: 0 0 20px color-mix(in srgb, var(--color-primary), transparent 50%);
+	text-shadow: 0 0 20px color-mix(in srgb, var(--action-primary), transparent 50%);
+	transition: 400ms ease;
+	transition-delay: 250ms;
+	pointer-events: none;
 }
 
-.splash-screen>div {
-	transform: translateY(-50%);
-}
 
 .page {
 	width: 100%;
@@ -145,26 +169,26 @@ input:focus {
 	font-weight: 700;
 	font-size: 16px;
 	letter-spacing: 0.075ch;
-	background: radial-gradient(circle at 0% 0%, #acacff, var(--color-primary) 30%, #7070ff 100%);
+	background: radial-gradient(circle at 0% 0%, #acacff, var(--action-primary) 30%, #7070ff 100%);
 
 	cursor: not-allowed;
 	transition: 0.3s ease;
 	-webkit-tap-highlight-color: transparent;
-	box-shadow: 0 0 10px color-mix(in srgb, var(--color-primary), transparent 70%);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--action-primary), transparent 70%);
 
 	flex-shrink: 0;
 }
 
 .button.disabled {
-	background: var(--color-bg);
+	background: var(--surface-main);
 	box-shadow: none;
-	color: var(--text-dim);
+	color: var(--text-muted);
 }
 
 .button.neutral {
 	position: relative;
 	background: none;
-	color: var(--color-text);
+	color: var(--text-main);
 	box-shadow: none;
 }
 
@@ -179,7 +203,7 @@ input:focus {
 	border-radius: var(--radius);
 	padding: var(--border-width);
 
-	background: radial-gradient(circle at 0% 0%, #acacff, var(--color-primary) 30%, #7070ff 100%);
+	background: radial-gradient(circle at 0% 0%, #acacff, var(--action-primary) 30%, #7070ff 100%);
 
 	mask: linear-gradient(#fff 0 0) content-box,
 		linear-gradient(#fff 0 0);
@@ -191,21 +215,6 @@ input:focus {
 	z-index: 10;
 }
 
-.app-container {
-	position: fixed;
-	inset: 0;
-	display: grid;
-	grid-template-columns: 1fr;
-	grid-template-rows: 1fr 30px 95px;
-	contain: strict;
-}
-
-.app-container>* {
-	flex-shrink: 0;
-	overflow: hidden;
-	max-height: 100%;
-}
-
 .card {
 	display: flex;
 	flex-direction: column;
@@ -215,8 +224,8 @@ input:focus {
 	max-height: 100%;
 	min-height: 0;
 
-	background-color: var(--color-card);
-	border: 1px solid var(--color-border);
+	background-color: var(--surface-card);
+	border: 1px solid var(--surface-border);
 
 	flex-shrink: 0;
 }
@@ -239,8 +248,8 @@ input:focus {
 	width: 5px;
 	height: 5px;
 	border-radius: 50%;
-	background-color: var(--color-primary);
-	box-shadow: 0 0 5px color-mix(in srgb, var(--color-primary), transparent 60%);
+	background-color: var(--text-primary);
+	box-shadow: 0 0 5px color-mix(in srgb, var(--action-primary), transparent 60%);
 	transform: translateZ(0);
 	will-change: transform;
 }
@@ -267,8 +276,8 @@ input:focus {
 }
 
 .login-button {
-	background: radial-gradient(circle at 0% 0%, #acacff, var(--color-primary) 30%, #7070ff 100%);
-	box-shadow: 0 0 10px color-mix(in srgb, var(--color-primary), transparent 70%);
+	background: radial-gradient(circle at 0% 0%, #acacff, var(--action-primary) 30%, #7070ff 100%);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--action-primary), transparent 70%);
 
 	display: flex;
 	align-items: center;
@@ -290,43 +299,36 @@ input:focus {
 
 .segmented-control-tab-list {
 	display: flex;
-	position: relative;
-	padding: 6px;
+	padding: 10px 10px 5px 10px;
 }
 
 .segmented-control-tab-item {
 	flex: 1;
 	padding: 8px 0;
-	font-size: 12px;
+	font-size: 13px;
 	font-weight: 700;
 	letter-spacing: 0.075ch;
 	text-align: center;
 	cursor: pointer;
 	position: relative;
-	display: flex;
-	justify-content: center;
-	align-items: center;
 	transition: color 0.2s ease;
-	-webkit-tap-highlight-color: transparent;
-	color: var(--text-dim);
+	color: var(--text-muted);
 }
 
 .segmented-control-tab-item.active {
-	color: var(--color-primary);
+	color: var(--text-primary);
 }
 
 .segmented-control-active-indicator {
 	position: absolute;
 	inset: 0;
-	z-index: 1;
-	border-radius: 6px !important;
 }
 
 .action-button-primary {
-	background-color: color-mix(in srgb, var(--color-primary), 95% transparent);
-	border: 1px solid color-mix(in srgb, var(--color-primary), 50% transparent);
-	box-shadow: 0 0 10px color-mix(in srgb, var(--color-primary), 90% transparent);
-	color: var(--color-primary);
+	background-color: color-mix(in srgb, var(--action-primary), 95% transparent);
+	border: 1px solid color-mix(in srgb, var(--action-primary), 50% transparent);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--action-primary), 90% transparent);
+	color: var(--text-primary);
 	border-radius: 5px;
 }
 
@@ -338,7 +340,7 @@ input:focus {
 
 .slider-track {
 	border-radius: 100px;
-	border: 1px solid var(--color-border);
+	border: 1px solid var(--surface-border);
 	display: flex;
 	align-items: center;
 	padding: 8px;
@@ -348,8 +350,8 @@ input:focus {
 }
 
 .slider-handle {
-	background-color: var(--color-card);
-	border: 1px solid var(--color-border);
+	background-color: var(--surface-card);
+	border: 1px solid var(--surface-border);
 	border-radius: 50%;
 	display: flex;
 	align-items: center;
@@ -364,7 +366,7 @@ input:focus {
 	width: 100%;
 	left: 0;
 	text-align: center;
-	color: var(--text-dim);
+	color: var(--text-muted);
 	font-size: 14;
 	font-weight: 600;
 	pointer-events: none;
@@ -373,7 +375,7 @@ input:focus {
 .system-prompt-container {
 	position: fixed;
 	inset: 0;
-	background-color: color-mix(in srgb, var(--color-bg), transparent 20%);
+	background-color: color-mix(in srgb, var(--surface-main), transparent 20%);
 	backdrop-filter: blur(6px);
 	-webkit-backdrop-filter: blur(6px);
 	padding: 40px;
@@ -412,7 +414,7 @@ input:focus {
 
 .system-prompt-container .content {
 	margin-top: -7px;
-	color: var(--text-dim);
+	color: var(--text-muted);
 	font-size: 11px;
 	text-align: center;
 	padding-inline: 20px;
