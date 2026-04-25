@@ -25,6 +25,13 @@
 	line-height: 0px;
 
 	margin-left: calc(var(--w1) + var(--w2));
+
+	padding-left: calc(24px + 5px + 8px);
+
+	background-image: var(--icon);
+	background-repeat: no-repeat;
+	background-position: center left 5px;
+	background-size: 24px;
 }
 
 .current-weight::before {

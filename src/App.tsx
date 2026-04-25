@@ -1,15 +1,18 @@
 import "./App.css"
+import { useEffect } from "react"
 import { SessionProvider } from "./components/sessionContext"
 import { DataProvider } from "./components/dataApi/dataContext"
 import SplashScreen from "./components/splashScreen"
 import { BrowserRouter } from "react-router-dom";
 
 function App() {
-	window.addEventListener('touchstart', (e: any) => {
-		if (e.pageX < 30) {
-			e.preventDefault()
-		}
-	}, { passive: false });
+	useEffect(() => {
+		const handler = (e: TouchEvent) => {
+			if (e.touches[0].pageX < 30) e.preventDefault();
+		};
+		window.addEventListener('touchstart', handler, { passive: false });
+		return () => window.removeEventListener('touchstart', handler);
+	}, []);
 	return (
 		<BrowserRouter>
 			<SessionProvider>

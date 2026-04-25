@@ -5,7 +5,6 @@ import React, { useMemo, useState, useRef } from "react"
 import { CustomButton, SegmentedControl } from "../../../generics.tsx"
 import "react-datepicker/dist/react-datepicker.css"
 import { isSameDay } from "date-fns"
-import { TrendingUp, TrendingDown } from "lucide-react"
 import { Datepicker } from "../../../datepicker/datepicker.tsx"
 import Card from "../../../card"
 import D3Chart from "../../../chart/chart"
@@ -67,7 +66,6 @@ const WeightAnalytics = () => {
 	}, [mode, weightLogs.data])
 
 	return (
-
 		<Card
 			header="CURRENT WEIGHT"
 			subHeader="AVERAGE WEIGHT FROM THE PAST 7 DAYS"
@@ -75,9 +73,15 @@ const WeightAnalytics = () => {
 		>
 			<div
 				className="current-weight"
-				style={{ "--content-before": `"${stats.currentAvg}"`, "--content-after": '"KG"' } as React.CSSProperties}
+				style={{
+					"--content-before": `"${stats.currentAvg}"`,
+					"--content-after": '"KG"',
+					"--icon": Number(stats.diff) < 0
+						? 'url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYyOWQiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXRyZW5kaW5nLWRvd24taWNvbiBsdWNpZGUtdHJlbmRpbmctZG93biI+PHBhdGggZD0iTTE2IDE3aDZ2LTYiLz48cGF0aCBkPSJtMjIgMTctOC41LTguNS01IDVMMiA3Ii8+PC9zdmc+")'
+						: 'url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYyOWQiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXRyZW5kaW5nLXVwLWljb24gbHVjaWRlLXRyZW5kaW5nLXVwIj48cGF0aCBkPSJNMTYgN2g2djYiLz48cGF0aCBkPSJtMjIgNy04LjUgOC41LTUtNUwyIDE3Ii8+PC9zdmc+")'
+				} as React.CSSProperties}
 			>
-				{Number(stats.diff) > 0 ? <TrendingUp strokeWidth="1.5" size="24" /> : <TrendingDown strokeWidth="1.5" size="24" />}{stats.diff}
+				{stats.diff}
 			</div>
 			<div style={{ backgroundColor: "var(--surface-main)", borderRadius: 5, minWidth: 0, minHeight: 0, display: "flex", flexDirection: "column" }}>
 				<SegmentedControl id="weight" options={modes} value={mode} onChange={setMode} />
@@ -196,7 +200,7 @@ const LogWeight = () => {
 		<Card
 			header="LOG WEIGHT"
 			subHeader="SLIDE TO ADJUST YOUR DAILY ENTRY"
-			style={{ alignItems: "center" }}
+			style={{ alignItems: "center", marginTop: 0 }}
 		>
 			<div
 				className="date action-button-primary"

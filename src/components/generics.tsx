@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo, useRef, useLayoutEffect, useCallback } from "react"
-import { useMotionValue, useSpring, useTransform, useMotionValueEvent, motion, AnimatePresence } from "motion/react"
+import { useState, useEffect, useMemo, useRef, useLayoutEffect, useCallback, memo } from "react"
+import { useMotionValue, useSpring, useTransform, useMotionValueEvent, motion, AnimatePresence, LayoutGroup } from "motion/react"
 import { useDrag } from "@use-gesture/react"
 import { ScaleLoader } from "react-spinners"
 import { ArrowBigRight, X } from "lucide-react"
@@ -144,12 +144,55 @@ export const CustomButton = (props: CustomButtonProps) => {
 	)
 }
 
+
+const TabItem = memo(({
+	tab,
+	isActive,
+	onClick,
+	id,
+	className,
+	indicatorClass
+}: {
+	tab: string;
+	isActive: boolean;
+	onClick: () => void;
+	id: string | number;
+	className: string;
+	indicatorClass: string;
+}) => (
+	<div
+		role="tab"
+		aria-selected={isActive}
+		className={`${className} ${isActive ? "active" : ""}`}
+		onClick={onClick}
+		style={{ position: 'relative', cursor: 'pointer' }}
+	>
+		{/* We keep the text on a higher z-index than the pill */}
+		<span style={{ position: 'relative', zIndex: 2 }}>{tab}</span>
+
+		{isActive && (
+			<motion.div
+				layoutId={`active-pill-${id}`}
+				className={indicatorClass}
+				transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+				style={{
+					position: 'absolute',
+					inset: 0,
+					zIndex: 1,
+					willChange: 'transform' // Force GPU acceleration for the spring
+				}}
+			/>
+		)}
+	</div>
+));
+
+TabItem.displayName = "TabItem";
+
 interface SegmentedControlProps {
 	options: string[]
 	value: string
 	onChange: (val: string) => void
 	id: string | number
-	containerClass?: string
 	tabListClass?: string
 	tabItemClass?: string
 	activeIndicatorClass?: string
@@ -160,48 +203,33 @@ export const SegmentedControl = ({
 	value,
 	onChange,
 	id,
-	containerClass = "segmented-control-container",
 	tabListClass = "segmented-control-tab-list",
 	tabItemClass = "segmented-control-tab-item",
 	activeIndicatorClass = "segmented-control-active-indicator action-button-primary"
 }: SegmentedControlProps) => {
 
 	const handleTabClick = useCallback((tab: string) => {
-		if (tab !== value) {
-			onChange(tab)
-		}
-	}, [onChange, value])
+		if (tab !== value) onChange(tab);
+	}, [onChange, value]);
 
 	return (
-		<div key={id} className={containerClass}>
-			<div className={tabListClass} role="tablist">
-				{options.map((tab) => {
-					const isActive = value === tab;
-
-					return (
-						<div
-							key={`${id}-${tab}`}
-							role="tab"
-							aria-selected={isActive}
-							className={`${tabItemClass} ${isActive ? "active" : ""}`}
-							onClick={() => handleTabClick(tab)}
-						>
-							<span>{tab}</span>
-							{isActive && (
-								<motion.div
-									layoutId={`active-pill-${id}`}
-									transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
-									className={activeIndicatorClass}
-								/>
-							)}
-						</div>
-					);
-				})}
+		<LayoutGroup id={`group-${id}`}>
+			<div className={tabListClass} role="tablist" style={{ display: 'flex' }}>
+				{options.map((tab) => (
+					<TabItem
+						key={tab}
+						id={id}
+						tab={tab}
+						isActive={value === tab}
+						onClick={() => handleTabClick(tab)}
+						className={tabItemClass}
+						indicatorClass={activeIndicatorClass}
+					/>
+				))}
 			</div>
-		</div>
+		</LayoutGroup>
 	);
 };
-
 export const PageContainer = (props: { children: React.ReactNode, style?: React.CSSProperties }) => {
 	return (
 		<motion.div

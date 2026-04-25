@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router-dom"
 import "./activeWorkoutPage.css"
-import { HeaderIcon } from "../../card"
+import Card from "../../card"
 import type { Exercise } from "../../dataApi/managers/ExerciseManager"
 import Swiper from "../../swiper/swiper"
 import { useSession } from "../../sessionContext"
 import { type ActiveWorkout, type ExerciseSetMap, type SetLog } from "../../dataApi/managers/WorkoutManager"
 import { useCallback, memo, useEffect, useState, useRef, useMemo } from "react"
 import { motion, AnimatePresence, } from "motion/react"
-import { CheckCheck, LogOut, Pause, Play, Circle } from "lucide-react"
+import { Pause, Play, Circle } from "lucide-react"
 import { useData } from "../../dataApi/dataContext"
 import SystemPrompt from "../../systemPrompt"
 
@@ -188,13 +188,19 @@ const ActiveWorkoutPage = () => {
 			/>
 
 			<div className="active-workout-navbar">
-				<div className="item" onClick={() => setShowExitPrompt(true)}>
-					<LogOut strokeWidth="1.5" size="28" />
+				<div
+					className="item icon"
+					onClick={() => setShowExitPrompt(true)}
+					style={{ "--icon": 'url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYyOWQiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWxvZy1vdXQtaWNvbiBsdWNpZGUtbG9nLW91dCI+PHBhdGggZD0ibTE2IDE3IDUtNS01LTUiLz48cGF0aCBkPSJNMjEgMTJIOSIvPjxwYXRoIGQ9Ik05IDIxSDVhMiAyIDAgMCAxLTItMlY1YTIgMiAwIDAgMSAyLTJoNCIvPjwvc3ZnPg==")' } as React.CSSProperties}
+				>
 					LEAVE
 				</div>
 				<DigitalTimer onChange={updateTimer} initialValue={workout.timer} />
-				<div className="item" onClick={() => allowFinish && setShowFinishPrompt(true)}>
-					<CheckCheck strokeWidth="1.5" size="28" />
+				<div
+					className="item icon"
+					onClick={() => allowFinish && setShowFinishPrompt(true)}
+					style={{ "--icon": 'url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYyOWQiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWNoZWNrLWNoZWNrLWljb24gbHVjaWRlLWNoZWNrLWNoZWNrIj48cGF0aCBkPSJNMTggNiA3IDE3bC01LTUiLz48cGF0aCBkPSJtMjIgMTAtNy41IDcuNUwxMyAxNiIvPjwvc3ZnPg==")' } as React.CSSProperties}
+				>
 					FINISH
 				</div>
 			</div>
@@ -328,9 +334,10 @@ const ExerciseCard = memo((props: {
 	}
 
 	return (
-		<div className="card">
-			<h1>{HeaderIcon}{`${props.exercise.name} (${props.index + 1}/${props.total})`}</h1>
-			<h2>LOG SETS FOR THIS EXERCISE</h2>
+		<Card
+			header={`${props.exercise.name} (${props.index + 1}/${props.total})`}
+			subHeader="LOG SETS FOR THIS EXERCISE"
+		>
 			{
 				props.data &&
 				<div className="sets-grid">
@@ -338,7 +345,6 @@ const ExerciseCard = memo((props: {
 						<span>SET</span>
 						<span>REPS</span>
 						<span>WEIGHT</span>
-						<span></span>
 					</div>
 					<AnimatePresence initial={false} mode="popLayout">
 						{props.data.map((item, i) => (
@@ -357,7 +363,7 @@ const ExerciseCard = memo((props: {
 			<div className="add-set-button" onClick={() => props.addSet(props.exercise.id)}>
 				ADD SET
 			</div>
-		</div>
+		</Card>
 	)
 })
 

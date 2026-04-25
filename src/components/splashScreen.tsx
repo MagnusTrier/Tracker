@@ -1,43 +1,56 @@
-import { useEffect, useState, startTransition, lazy } from "react";
-import { useSession } from "./sessionContext";
-import { useData } from "./dataApi/dataContext";
+import { useEffect, useState, startTransition, lazy } from "react"
+import { useSession } from "./sessionContext"
+import { useData } from "./dataApi/dataContext"
 
 const Card = lazy(() => import("./card"))
 const MountAppContent = lazy(() => import("./mountAppContent"))
 
 const SplashScreen = () => {
-	const { exercises, weightLogs, workouts } = useData();
+	const { exercises, weightLogs, workouts } = useData()
 	const { user, isLoading, login } = useSession()
 
-	const [isDataBooted, setIsDataBooted] = useState(false);
+	const [showSplash, setShowSplash] = useState(true)
+	const [isDataBooted, setIsDataBooted] = useState(false)
 
-	const allDataLoaded = !exercises.isLoading && !weightLogs.isLoading && !workouts.isLoading;
-	const isReadyToShow = allDataLoaded && !isLoading;
+	const allDataLoaded = !exercises.isLoading && !weightLogs.isLoading && !workouts.isLoading
+	const isReadyToShow = allDataLoaded && !isLoading
 
 	useEffect(() => {
 		if (isReadyToShow && !isDataBooted) {
 			startTransition(() => {
-				setIsDataBooted(true);
-			});
+				setIsDataBooted(true)
+			})
 		}
-	}, [isReadyToShow, isDataBooted]);
+	}, [isReadyToShow, isDataBooted])
 
+	const handleTransitionEnd = () => {
+		if (isDataBooted) setShowSplash(false)
+	}
 
 	if (!user && !isLoading) return <Login onLogin={login} />
 
 	return (
 		<>
-			<div
-				key="splash"
-				className="splash-screen"
-				style={{ opacity: isDataBooted ? 0 : 1 }}
-			>
-				TRACKER
-			</div>
-			{isDataBooted && <MountAppContent />}
+			{showSplash && (
+				<div
+					className="splash-screen"
+					onTransitionEnd={handleTransitionEnd}
+					style={{
+						opacity: isDataBooted ? 0 : 1,
+						transition: "opacity 500ms ease-out",
+						pointerEvents: isDataBooted ? "none" : "auto"
+					}}
+				>
+					TRACKER
+				</div>
+			)}
+
+			{isDataBooted && (
+				<MountAppContent />
+			)}
 		</>
-	);
-};
+	)
+}
 
 
 const Login = (props: { onLogin: () => void }) => {

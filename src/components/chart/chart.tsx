@@ -19,17 +19,14 @@ const MARGIN = { top: 30, right: 80, bottom: 85, left: 120 };
 
 const CanvasChart = ({ data = [], yAccessor, isOnScreen }: CanvasChartProps) => {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const containerRef = useRef<HTMLDivElement>(null); // Added for measuring
+	const containerRef = useRef<HTMLDivElement>(null);
 	const requestRef = useRef<number | null>(null);
 	const startTimeRef = useRef<number | null>(null);
 
 	const [isDone, setIsDone] = useState(false);
-	// Replace hardcoded width/height with dynamic state
 	const [{ width, height }, setDimensions] = useState({ width: 0, height: 0 });
-
 	const dpr = window.devicePixelRatio || 2;
 
-	// Added: Observer to handle "shrink/grow" logic
 	useEffect(() => {
 		if (!containerRef.current) return;
 		const observer = new ResizeObserver((entries) => {
@@ -45,10 +42,7 @@ const CanvasChart = ({ data = [], yAccessor, isOnScreen }: CanvasChartProps) => 
 		setIsDone(false);
 
 		const points = data
-			.map((d) => ({
-				x: startOfDay(new Date(d.date)),
-				y: d[yAccessor],
-			}))
+			.map((d) => ({ x: startOfDay(new Date(d.date)), y: d[yAccessor] }))
 			.sort((a, b) => a.x.getTime() - b.x.getTime());
 
 		const xDomain = extent(points, (d) => d.x) as [Date, Date];
@@ -67,9 +61,7 @@ const CanvasChart = ({ data = [], yAccessor, isOnScreen }: CanvasChartProps) => 
 		const areaGen = area<any>().x(d => xScale(d.x)).y0(height - MARGIN.bottom).y1(d => yScale(d.y)).curve(curveFunc);
 
 		return {
-			points,
-			xScale,
-			yScale,
+			points, xScale, yScale,
 			fullPath: new Path2D(lineGen(points)!),
 			areaD: areaGen(points)!,
 			yTicks: yTicksValues,
@@ -80,49 +72,62 @@ const CanvasChart = ({ data = [], yAccessor, isOnScreen }: CanvasChartProps) => 
 	useEffect(() => {
 		setIsDone(false);
 		startTimeRef.current = null;
-
 		if (!canvasRef.current || !calculations || !isOnScreen) return;
 
 		const ctx = canvasRef.current.getContext("2d");
 		if (!ctx) return;
 
-		// Sync internal canvas resolution to the measured width/height
 		canvasRef.current.width = width;
 		canvasRef.current.height = height;
 
-		const easeInOutQuad = (t: number) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-
 		const renderFrame = (progress: number) => {
+			const { xScale, yScale, points, fullPath, yTicks, xTicks } = calculations;
 			ctx.clearRect(0, 0, width, height);
-			const { xScale, yScale, points, fullPath } = calculations;
-			const revealX = MARGIN.left + (width - MARGIN.left - MARGIN.right + 60) * progress;
 
+			ctx.textAlign = "right";
+			ctx.textBaseline = "middle";
+			ctx.font = `bold ${20 * (dpr / 2)}px Manrope, sans-serif`;
+			ctx.fillStyle = TEXT_COLOR;
+			ctx.strokeStyle = GRID_COLOR;
+			ctx.lineWidth = 2 * (dpr / 2);
+
+			yTicks.forEach(tick => {
+				const y = yScale(tick);
+				ctx.beginPath();
+				ctx.moveTo(MARGIN.left - 10, y);
+				ctx.lineTo(width - MARGIN.right + 10, y);
+				ctx.stroke();
+				ctx.fillText(tick.toFixed(1), MARGIN.left - 25, y);
+			});
+
+			ctx.textAlign = "center";
+			xTicks.forEach(tick => {
+				ctx.fillText(format(tick, "MMM d").toUpperCase(), xScale(tick), height - MARGIN.bottom + 50);
+			});
+
+			// 2. DRAW ANIMATED LINE
+			const revealX = MARGIN.left + (width - MARGIN.left - MARGIN.right + 60) * progress;
 			ctx.save();
 			ctx.beginPath();
 			ctx.rect(0, 0, revealX, height);
 			ctx.clip();
 
-			ctx.shadowBlur = 15;
+			ctx.shadowBlur = 15 * (dpr / 2);
 			ctx.shadowColor = "rgba(144, 151, 255, 0.4)";
 			ctx.strokeStyle = PRIMARY_COLOR;
-			ctx.lineWidth = 3 * (dpr / 2); // Scale line thickness with resolution
-			ctx.lineJoin = "round";
-			ctx.lineCap = "round";
+			ctx.lineWidth = 3 * (dpr / 2);
 			ctx.stroke(fullPath);
 			ctx.restore();
 
 			points.forEach((point) => {
 				const dotX = xScale(point.x);
 				const dotY = yScale(point.y);
-				const distancePastDot = revealX - dotX;
-				const opacity = Math.max(0, Math.min(1, (distancePastDot + 10) / 40));
-
+				const opacity = Math.max(0, Math.min(1, (revealX - dotX + 10) / 40));
 				if (opacity > 0) {
 					ctx.save();
 					ctx.globalAlpha = opacity;
-					const s = 0.8 + (0.2 * opacity);
 					ctx.beginPath();
-					ctx.arc(dotX, dotY, 4.5 * s * (dpr / 2), 0, Math.PI * 2);
+					ctx.arc(dotX, dotY, 4.5 * (dpr / 2), 0, Math.PI * 2);
 					ctx.fillStyle = BG_COLOR;
 					ctx.fill();
 					ctx.strokeStyle = PRIMARY_COLOR;
@@ -136,110 +141,39 @@ const CanvasChart = ({ data = [], yAccessor, isOnScreen }: CanvasChartProps) => 
 		const animate = (time: number) => {
 			if (!startTimeRef.current) startTimeRef.current = time;
 			const p = Math.min((time - startTimeRef.current) / ANIMATION_DURATION, 1);
-			renderFrame(easeInOutQuad(p));
+			renderFrame(p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2); // EaseInOut
 
-			if (p < 0.9) {
-				requestRef.current = requestAnimationFrame(animate);
-			} else {
-				setIsDone(true);
-			}
+			if (p < 0.98) requestRef.current = requestAnimationFrame(animate);
+			else setIsDone(true);
 		};
 
 		requestRef.current = requestAnimationFrame(animate);
-
-		return () => {
-			if (requestRef.current) cancelAnimationFrame(requestRef.current);
-		};
+		return () => { if (requestRef.current) cancelAnimationFrame(requestRef.current); };
 	}, [calculations, isOnScreen, width, height, dpr]);
 
 	return (
-		<div
-			ref={containerRef}
-			style={{
-				position: "relative",
-				flexGrow: 1,
-				flexShrink: 1,
-				minHeight: 0,
-				width: "100%",
-				aspectRatio: "16 / 9"
-			}}
-		>
+		<div ref={containerRef} style={{ position: "relative", minHeight: 0, aspectRatio: "16/9" }}>
+			<canvas ref={canvasRef} style={{ width: "100%", height: "100%", position: "absolute" }} />
+
 			{calculations && (
-				<>
-					<svg
-						viewBox={`0 0 ${width} ${height}`}
+				<svg viewBox={`0 0 ${width} ${height}`} style={{ position: "absolute", width: "100%", height: "100%", pointerEvents: "none" }}>
+					<defs>
+						<linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+							<stop offset="0%" stopColor={PRIMARY_COLOR} stopOpacity="0.18" />
+							<stop offset="100%" stopColor={PRIMARY_COLOR} stopOpacity="0" />
+						</linearGradient>
+					</defs>
+					<path
+						d={calculations.areaD}
+						fill="url(#chartFill)"
 						style={{
-							position: "absolute",
-							top: 0, left: 0, width: "100%", height: "100%",
-							pointerEvents: "none", zIndex: 0
-						}}
-					>
-						<defs>
-							<linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
-								<stop offset="0%" stopColor={PRIMARY_COLOR} stopOpacity="0.18" />
-								<stop offset="100%" stopColor={PRIMARY_COLOR} stopOpacity="0" />
-							</linearGradient>
-						</defs>
-
-						{calculations.yTicks.map((tick, i) => (
-							<g key={`${i}-${tick}`}>
-								<line
-									x1={MARGIN.left - 10}
-									x2={width - MARGIN.right + 10}
-									y1={calculations.yScale(tick)}
-									y2={calculations.yScale(tick)}
-									stroke={GRID_COLOR}
-									strokeWidth="2"
-								/>
-								<text
-									x={MARGIN.left - 25}
-									y={calculations.yScale(tick)}
-									fill={TEXT_COLOR}
-									fontSize="30"
-									fontWeight="700"
-									fontFamily="Manrope, sans-serif"
-									textAnchor="end"
-									dominantBaseline="middle"
-								>
-									{tick.toFixed(1)}
-								</text>
-							</g>
-						))}
-
-						{calculations.xTicks.map((tick, i) => (
-							<text
-								key={`${i}-${tick.getTime()}`}
-								x={calculations.xScale(tick)}
-								y={height - MARGIN.bottom + 50}
-								fill={TEXT_COLOR}
-								fontSize="28"
-								fontWeight="700"
-								fontFamily="Manrope, sans-serif"
-								textAnchor="middle"
-							>
-								{format(tick, "MMM d").toUpperCase()}
-							</text>
-						))}
-
-						<path
-							d={calculations.areaD}
-							fill="url(#chartFill)"
-							style={{
-								opacity: (isOnScreen && isDone) ? 1 : 0,
-								transition: isDone ? "opacity 500ms ease-out" : "none"
-							}}
-						/>
-					</svg>
-
-					<canvas
-						ref={canvasRef}
-						style={{
-							position: "absolute",
-							top: 0, left: 0, width: "100%", height: "100%",
-							display: "block",
+							opacity: (isOnScreen && isDone) ? 1 : 0,
+							transition: isDone
+								? "opacity 600ms ease-out"
+								: "none",
 						}}
 					/>
-				</>
+				</svg>
 			)}
 		</div>
 	);
