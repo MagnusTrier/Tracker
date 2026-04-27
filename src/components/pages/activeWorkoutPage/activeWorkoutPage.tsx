@@ -7,7 +7,7 @@ import { useSession } from "../../sessionContext"
 import { type ActiveWorkout, type ExerciseSetMap, type SetLog } from "../../dataApi/managers/WorkoutManager"
 import { useCallback, memo, useEffect, useState, useRef, useMemo } from "react"
 import { motion, AnimatePresence, } from "motion/react"
-import { Pause, Play, Circle } from "lucide-react"
+import { Circle } from "lucide-react"
 import { useData } from "../../dataApi/dataContext"
 import SystemPrompt from "../../systemPrompt"
 
@@ -56,8 +56,6 @@ const ActiveWorkoutPage = () => {
 		handleClose()
 		return
 	}
-
-
 
 	useEffect(() => {
 		localStorage.setItem("active_workout", JSON.stringify(workout))
@@ -302,16 +300,14 @@ const DigitalTimer = memo((props: { onChange: (seconds: number) => void, initial
 		>
 			<div
 				className="active-workout-timer"
+				style={{
+					"--icon":
+						isActive
+							? 'url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgY2xhc3M9Imx1Y2lkZSBsdWNpZGUtcGF1c2UtaWNvbiBsdWNpZGUtcGF1c2UiPjxyZWN0IHg9IjE0IiB5PSIzIiB3aWR0aD0iNSIgaGVpZ2h0PSIxOCIgcng9IjEiLz48cmVjdCB4PSI1IiB5PSIzIiB3aWR0aD0iNSIgaGVpZ2h0PSIxOCIgcng9IjEiLz48L3N2Zz4=")'
+							: 'url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgY2xhc3M9Imx1Y2lkZSBsdWNpZGUtcGxheS1pY29uIGx1Y2lkZS1wbGF5Ij48cGF0aCBkPSJNNSA1YTIgMiAwIDAgMSAzLjAwOC0xLjcyOGwxMS45OTcgNi45OThhMiAyIDAgMCAxIC4wMDMgMy40NThsLTEyIDdBMiAyIDAgMCAxIDUgMTl6Ii8+PC9zdmc+")'
+				} as React.CSSProperties}
 			>
-				{isActive
-					? <Pause strokeWidth="1.5" size="14" />
-					: <Play strokeWidth="1.5" size="14" />
-				}
 				{formatTime(seconds)}
-				{isActive
-					? <Pause strokeWidth="1.5" size="14" />
-					: <Play strokeWidth="1.5" size="14" />
-				}
 			</div >
 			WORKOUT DURATION
 		</div >
@@ -342,9 +338,7 @@ const ExerciseCard = memo((props: {
 				props.data &&
 				<div className="sets-grid">
 					<div className="sets-header-subgrid">
-						<span>SET</span>
-						<span>REPS</span>
-						<span>WEIGHT</span>
+						REPS
 					</div>
 					<AnimatePresence initial={false} mode="popLayout">
 						{props.data.map((item, i) => (
@@ -376,10 +370,8 @@ const Item = memo((props: { set: SetLogExtended, onRemove: () => void, last: boo
 			exit={{ height: 0, opacity: 0 }}
 			transition={{ duration: 0.2, ease: 'easeOut' }}
 			className="set-item-subgrid set-item"
+			style={{ "--set-nr": `"${props.set.set_nr}"` } as React.CSSProperties}
 		>
-			<span>
-				{props.set.set_nr}
-			</span>
 			<SetInput
 				value={props.set.reps}
 				onBlur={(val: string) => props.onBlur({ reps: val })}
@@ -406,7 +398,7 @@ const SetInput = (props: { value: string, onBlur: (val: string) => void, placeho
 			value={val}
 			onChange={(e) => setVal(e.target.value)}
 			onFocus={(e) => e.target.select()}
-			onBlur={() => props.onBlur(val)}
+			onBlur={(e) => props.onBlur(e.target.value)}
 			placeholder={props.placeholder || "--"}
 		/>
 	)
